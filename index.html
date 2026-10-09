@@ -1573,6 +1573,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   const known = t => Object.prototype.hasOwnProperty.call(DATA.assets, t);
   const monthsTxt = n => { const y = Math.floor(n / 12), m = n % 12; return (y ? y + '년' : '') + (m ? (y ? ' ' : '') + m + '개월' : ''); };
   const dur = n => (n > 0 ? monthsTxt(n) : '0개월');
+  // number field with a default only when it is left empty (a typed 0 stays 0)
+  const fieldNum = (sel, d) => { const v = $(sel).value.trim(); return v === '' || !isFinite(+v) ? d : +v; };
 
   /* ---------- static controls ---------- */
   function fillSelect(sel, items, val) { sel.innerHTML = ''; for (const [v, t] of items) { const o = el('option', null, t); o.value = v; sel.appendChild(o); } if (val != null) sel.value = val; }
@@ -2146,13 +2148,13 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
 
   function optInputs() {
     const step = +$('#o-step').value, U = Math.round(1 / step);
-    const maxW = Math.min(1, Math.max(step, (+$('#o-max').value || 100) / 100));
+    const maxW = Math.min(1, Math.max(step, fieldNum('#o-max', 100) / 100));
     const maxU = Math.max(1, Math.min(U, Math.floor(maxW * U + 1e-9)));
     return { step, U, maxW, maxU, mode: state.ext ? 'ext' : 'etf' };
   }
   function currentCrits() {
     const uw = +$('#o-uw').value || 0;
-    const lo = (+$('#o-lo').value || 0) / 100, hi = (+$('#o-hi').value || 100) / 100;
+    const lo = (+$('#o-lo').value || 0) / 100, hi = fieldNum('#o-hi', 100) / 100;
     const cr = [{ id: 'ai', kind: 'ai', uw }, { id: 'user', kind: 'range', lo, hi, uw }];
     for (const s of state.stages) cr.push({ id: s.id, kind: 'cap', cap: s.mdd / 100, uw: Math.round(s.uw * 12) });
     return cr;
@@ -2247,7 +2249,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (!state.last) { st.textContent = '분석 기간이 아직 정해지지 않았어요. 위 포트폴리오 중 하나 이상을 비중 합계 100%로 입력해 주세요.'; return; }
     const tickers = [...state.optSel].filter(known);
     if (!tickers.length) { st.textContent = '대상 자산을 1개 이상 골라 주세요.'; return; }
-    const lo = +$('#o-lo').value || 0, hi = +$('#o-hi').value || 100;
+    const lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
     if (!(hi > lo)) { st.textContent = '내 기준 MDD 범위의 상한이 하한보다 커야 해요.'; return; }
     const { step, maxW, mode } = optInputs();
     const rule = state.rebal, start = state.last.s, end = state.last.e, key = optKey();
@@ -2263,7 +2265,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
         if (y) st.textContent = `최근 ${y}년 구간 계산 중… (전체 ${Math.round(f * 50)}%)`;
       });
     } catch (err) {
-      st.textContent = '계산 중 문제가 생겼어요: ' + err.message; btn.disabled = false; optBusy = false; return;
+      st.textContent = '계산 중 문제가 생겼어요: ' + err.message; btn.disabled = false; optBusy = false; flushCrit(); return;
     }
     state.opt = { res, rule, mode, s: start, end, key, tickers, step, maxW, real: state.real, sec: ((performance.now() - t0) / 1000).toFixed(1), oldDone: false };
     clearWalk();
@@ -2290,6 +2292,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     await runOptAdj(true);
     if (state.rerun) { state.rerun = false; runOpt(); return; }
     markOptStale();
+    flushCrit();
   }
   $('#o-run').addEventListener('click', runOpt);
 
@@ -2371,14 +2374,16 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     }
     renderAdjCompare();
     if (state.rerun) { state.rerun = false; critPending = null; runOpt(); return; }
-    if (critPending) { const next = [...critPending]; critPending = null; critChanged(next); }
+    flushCrit();
   }
+  /* criteria edited while another run held the optimizer: apply them once it is free */
+  function flushCrit() { if (!critPending || optBusy) return; const next = [...critPending]; critPending = null; critChanged(next); }
   ['#o-lo', '#o-hi'].forEach(id => $(id).addEventListener('input', () => { clearTimeout(lifeTimer); lifeTimer = setTimeout(() => critChanged(['user']), 250); }));
   $('#o-uw').addEventListener('change', () => critChanged(['ai', 'user']));
 
   function renderCritLine() {
     const uw = +$('#o-uw').value || 0;
-    const lo = +$('#o-lo').value || 0, hi = +$('#o-hi').value || 100;
+    const lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
     const uwT = uw ? ` · 최장 회복 ${dur(uw)} 이내` : '';
     $('#o-crit').textContent = `AI 추천 = 구간 전체와 앞·뒤 절반의 샤프 비율 중 가장 낮은 값이 최대인 조합(현금성 자산 제외${uwT}). 내 기준 = MDD ${lo}% 이상 ${hi}% 미만${uwT}인 조합 중 CAGR 최고.`;
   }
@@ -2432,7 +2437,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function renderHz() {
     const host = $('#o-hz'); host.innerHTML = '';
     const o = state.opt; renderCritLine(); if (!o) return;
-    const lo = +$('#o-lo').value || 0, hi = +$('#o-hi').value || 100;
+    const lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
     const adjView = state.optView === 'adj' && o.resAdj;
     if (adjView) host.appendChild(el('p', 'notice hz-banner', '추세 보정 데이터로 찾은 결과를 보고 있어요. 급등 종목의 최근 구간을 과거 추세 속도로 바꾼 데이터라, CAGR·MDD도 그 데이터 기준이에요.'));
     for (const H of viewPlans()) {
@@ -2596,7 +2601,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const y0 = Math.min(yt[0], ymin - ypad), y1 = Math.max(yt[yt.length - 1], ymax + ypad);
     const X = x => m.l + x / xm * iw, Y = y => m.t + ih - (y - y0) / (y1 - y0) * ih;
     const root = svg('svg', { viewBox: `0 0 ${W} ${HT}`, width: W, height: HT, role: 'img', 'aria-label': `${posLab(H)} 비중 조합별 MDD와 CAGR 산점도` }, host);
-    const lo = (+$('#o-lo').value || 0) / 100, hi = (+$('#o-hi').value || 100) / 100;
+    const lo = (+$('#o-lo').value || 0) / 100, hi = fieldNum('#o-hi', 100) / 100;
     const bx0 = X(Math.min(lo, xm)), bx1 = X(Math.min(hi, xm));
     if (bx1 > bx0) { const r = svg('rect', { x: bx0, y: m.t, width: bx1 - bx0, height: ih }, root); r.style.fill = 'var(--band)'; }
     const g = svg('g', { class: 'grid' }, root), ax = svg('g', { class: 'axis' }, root);
@@ -2882,6 +2887,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (state.rerun && !fromRunOpt) { state.rerun = false; runOpt(); return; }
     if (o.resAdj) { pickAll(); st.textContent = ''; }
     renderAdjCompare(); renderOptResults();
+    flushCrit();
   }
   $('#o-adj-rerun').addEventListener('click', () => { if (state.opt && state.opt.key === optKey()) runOptAdj(); else runOpt(); });
   document.querySelectorAll('#o-view button').forEach(b => b.addEventListener('click', () => {
@@ -3053,6 +3059,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     finally { optBusy = false; $('#w-run').disabled = false; $('#o-run').disabled = false; }
     if (state.rerun) { state.rerun = false; runOpt(); return; }
     if (out.length) { state.walk = { out }; renderWalk(); }
+    flushCrit();
   }
   $('#w-run').addEventListener('click', runWalk);
   function walkCell(td, r) {
