@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v7-2026-10-10">
+<meta name="app-version" content="v7.1-2026-10-10">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -532,6 +532,17 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   .grp-t { font-size: 19px; }
   .vd-badge { font-size: 15px; }
 }
+/* v7.1: return & risk beyond the single worst drop */
+.risk th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
+.risk tbody tr.sep th { text-align: left; font-size: 11.5px; letter-spacing: 0.03em; color: var(--ink-2); background: var(--panel-2); font-weight: 700; border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; }
+.tbl-wrap .risk tr.sep th:first-child { background: var(--panel-2); }
+.risk td.best { font-weight: 700; color: var(--ink); }
+.risk td .tagrow { display: block; margin-top: 3px; }
+.risk-key { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.ddtbl td, .ddtbl th { vertical-align: middle; }
+.ddtbl td.neg { color: var(--neg); }
+.dd-share { display: grid; grid-template-columns: 38px 90px; align-items: center; gap: 8px; justify-content: end; }
+.dd-share .mbar i { background: var(--hm-neg); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -555,9 +566,14 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v7</span><span class="mono">2026.10.10</span><span>업데이트 · 구간별 점검, 내 포트폴리오 추세 보정 백테스트, 간단히 보기, 어두운 화면 색상</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v7.1</span><span class="mono">2026.10.10</span><span>업데이트 · 수익과 위험 지표(마틴 비율·울서 지수·평균 낙폭·보통의 10년)와 주요 하락 목록</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v7.1 · 2026.10.10</dt>
+          <dd><ul>
+            <li>결과 › 수익과 위험: 한 번의 폭락에 덜 휘둘리는 지표 — 보통의 10년 CAGR·MDD, 평균 낙폭, 울서 지수, 마틴 비율, 10% 넘는 하락 횟수, 두 번째로 큰 하락, 가장 큰 하락의 비중</li>
+            <li>주요 하락 목록(큰 하락 5개의 고점·저점·회복 시점과 기간)</li>
+          </ul></dd>
           <dt>v7 · 2026.10.10</dt>
           <dd><ul>
             <li>내 포트폴리오도 추세 보정 데이터로 백테스트 (설정 › 결과 데이터)</li>
@@ -680,6 +696,28 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   <section class="panel" aria-labelledby="h-sum">
     <div class="panel-head"><h2 id="h-sum">성과 요약</h2><p id="sum-note"></p></div>
     <div class="tbl-wrap"><table id="t-summary"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-risk" id="sec-risk">
+    <div class="panel-head"><h2 id="h-risk">수익과 위험 — 한 번의 폭락에 덜 휘둘리는 지표</h2><p>MDD·칼마 비율은 가장 큰 하락 한 번으로 정해져요. 여기서는 모든 하락의 깊이·기간·횟수와 10년 구간의 보통 성적으로 수익과 위험을 봅니다.</p></div>
+    <div class="tbl-wrap"><table id="t-risk" class="risk"></table></div>
+    <p class="risk-key">굵은 값이 그 줄에서 가장 좋은 값이에요. 10년 구간은 1개월 간격으로 잡은 모든 10년이에요.</p>
+    <details class="vd-crit" style="margin-top:8px">
+      <summary>지표 읽는 법</summary>
+      <ul>
+        <li><b>보통의 10년</b>: 모든 10년 구간의 중앙값이에요. 분석을 언제 시작하고 끝냈는지, 큰 폭락이 기간의 어디에 있었는지에 덜 좌우돼요.</li>
+        <li><b>평균 낙폭</b>: 매달 직전 고점보다 몇 % 아래에 있었는지를 전체 기간 평균한 값이에요(Pain Index). 한 번의 폭락보다 ‘평소에 얼마나 빠져 있었나’를 봐요.</li>
+        <li><b>울서 지수</b>: 매달 고점 대비 낙폭을 제곱해 평균한 뒤 제곱근을 씌운 값이에요(Ulcer Index). 깊게 빠질수록, 오래 회복하지 못할수록 커져요.</li>
+        <li><b>마틴 비율</b>: (CAGR − 같은 기간 단기국채 수익률) ÷ 울서 지수예요(Ulcer Performance Index). 샤프 비율이 오르내림(변동성)을 위험으로 본다면, 마틴 비율은 실제로 손실 상태였던 깊이와 기간을 위험으로 봐요. 1986~2026년 기준 60/40은 약 1.1, S&amp;P 500은 약 0.6이에요.</li>
+        <li><b>가장 큰 하락의 비중</b>: 가장 큰 하락 한 번이 울서 지수(제곱한 낙폭의 합)에서 차지하는 몫이에요. 70%가 넘으면 위험 지표의 대부분이 그 한 번에서 나온 것이라, 그 폭락이 다시 오느냐에 따라 평가가 크게 바뀌어요.</li>
+        <li>한 번의 하락은 고점에서 떨어지기 시작해 그 고점을 되찾을 때까지예요. 회복하기 전에 더 떨어지면 같은 하락으로 봐요.</li>
+      </ul>
+    </details>
+    <div class="sub-sec" data-detail>
+      <div class="sub-head"><h3>주요 하락 목록 — 큰 하락 5개</h3><div class="chips" id="dd-port" role="group" aria-label="하락 목록을 볼 포트폴리오"></div></div>
+      <p class="small muted" id="dd-note"></p>
+      <div class="tbl-wrap"><table id="t-dd" class="ddtbl"></table></div>
+    </div>
   </section>
 
   <section class="panel" aria-labelledby="h-charts">
@@ -935,6 +973,16 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
           <li><b>추세 유지 보정</b>: 분석 종료 시점 기준 최근 3년(바꿀 수 있음) 연평균 수익률이 그 직전 10년 추세보다 연 15%p 이상 높은 종목을 ‘급등’으로 잡습니다. 그 종목은 최근 구간의 매달 수익률에서 같은 크기의 상승분(로그 기준)을 덜어 내, 월별 오르내림의 모양과 변동성은 그대로 두고 최근 구간 전체의 상승 속도만 직전 추세와 같게 만든 데이터를 따로 만들어 백테스트와 최적화를 한 번 더 합니다. 3배 레버리지 ETF는 기초 지수가 보정될 때 덜어 낸 상승분의 3배를 덜어 내는데, 변동성 비용은 그대로라 보정 후 수익률이 크게 낮아질 수 있어요. 급등이 일시적인 과열인지 실제 변화인지는 알 수 없으니, 두 결과를 함께 보고 판단하는 ‘만약’ 계산으로 쓰세요. 내 포트폴리오도 ‘기간과 규칙 › 결과 데이터’에서 추세 보정 데이터를 고르면 성과 요약·차트·기간별 표·롤링·구간별 점검을 모두 보정 데이터로 계산합니다.</li>
           <li><b>과최적화 점검</b>은 같은 방법으로 직전 10·20년에서 고른 비중을 최근 10·20년에 그대로 적용한 결과입니다. 기본 6개 자산으로 해 보면 2006–2016년에 MDD 15% 이하로 고른 은퇴용 비중이 2016–2026년에는 MDD −32%였어요(2022년 주식·채권 동반 하락). 최적화 결과의 MDD·회복 기간은 ‘과거에 그랬다’이지 ‘앞으로 그렇다’가 아닙니다.</li>
           <li>과거 최적 비중은 미래 최적 비중을 보장하지 않습니다. 특히 최근 10년처럼 짧은 구간이나 레버리지·섹터 ETF를 넣으면 지나간 강세 자산에 쏠리기 쉽습니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>수익과 위험 지표</h3>
+        <ul>
+          <li>모두 월말 잔고로 계산합니다. 배당을 현금으로 받으면 평가액, 물가 반영이면 실질, 추세 보정 데이터를 고르면 보정 데이터 기준이에요.</li>
+          <li><b>보통의 10년 CAGR·MDD</b>: 분석 기간 안의 모든 10년 구간(1개월 간격)에서 CAGR과 구간 내 최대 낙폭의 중앙값. <b>나쁜 10년 CAGR</b>은 하위 10% 값입니다. 분석 기간이 10년보다 짧으면 비워 둡니다.</li>
+          <li><b>평균 낙폭</b>(Pain Index) = 매달 직전 고점 대비 낙폭의 평균. <b>울서 지수</b>(Ulcer Index, Peter Martin 1987) = √(매달 낙폭² 의 평균). <b>마틴 비율</b>(Ulcer Performance Index) = (CAGR − 같은 기간 미국 단기국채 연수익률) ÷ 울서 지수.</li>
+          <li><b>하락</b>은 고점에서 떨어지기 시작해 그 고점을 다시 넘을 때까지(회복 전이면 마지막 달까지)를 하나로 셉니다. ‘10% 넘는 하락’은 이런 하락 중 깊이가 −10%를 넘은 횟수, ‘큰 하락 5개 평균’은 −5%를 넘은 하락 가운데 깊은 순서로 5개(5개 미만이면 있는 만큼)의 평균입니다.</li>
+          <li><b>가장 큰 하락의 비중</b> = 가장 큰 하락 기간의 낙폭² 합 ÷ 전체 기간 낙폭² 합. 70% 이상이면 ‘한 번에 집중’, 40% 미만이면 ‘여러 번에 나뉨’으로 표시합니다.</li>
         </ul>
       </div>
       <div>
@@ -1792,7 +1840,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     dataAdj: false,    // v7: run my portfolios on the trend-kept data instead of the actual data
     simple: false,     // v7: simple view (core results only)
     optDeferred: false,
-    pc: { key: null, metric: 'cagr', range: null, auto: true }   // v7: period check (portfolio, map metric, chosen window)
+    pc: { key: null, metric: 'cagr', range: null, auto: true },  // v7: period check (portfolio, map metric, chosen window)
+    ddKey: null       // v7.1: portfolio shown in the drawdown list
   };
   let optBusy = false, pickerReady = false, lifeTimer = null;
 
@@ -2053,13 +2102,14 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     msg.hidden = notes.length === 0; msg.className = 'notice'; msg.textContent = notes.join(' ');
     $('#avail-note').textContent = `선택한 자산의 공통 데이터: ${BT.label(cs)} ~ ${BT.label(ce)}`;
     state.last = { s, e, series, cs, ce, adj };
-    renderSummary(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
+    renderSummary(); renderRisk(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
   }
 
   function renderEmpty() {
     for (const id of ['#t-summary', '#t-trail', '#t-roll']) $(id).innerHTML = '';
     for (const id of ['#c-growth', '#c-dd', '#c-ann', '#lg-growth', '#lg-dd', '#lg-ann']) $(id).innerHTML = '';
-    for (const id of ['#pc-port', '#pc-verdict', '#pc-table', '#pc-key', '#pc-heat', '#pc-legend', '#pc-custom', '#pc-quick']) $(id).innerHTML = '';
+    for (const id of ['#pc-port', '#pc-verdict', '#pc-table', '#pc-key', '#pc-heat', '#pc-legend', '#pc-custom', '#pc-quick', '#t-risk', '#t-dd', '#dd-port']) $(id).innerHTML = '';
+    $('#dd-note').textContent = ''; state.riskData = null;
     $('#pc-heat-note').textContent = ''; $('#pc-tbl-note').textContent = ''; $('#pc-data').textContent = '';
     $('#dm-banner').hidden = true; state.pcHeat = null;
     $('#cov').innerHTML = ''; $('#sum-note').textContent = '';
@@ -3767,7 +3817,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const hits = adjHits(), show = on && !!state.last;
     $('#dm-banner').hidden = !show;
     if (show) $('#dm-banner-txt').textContent = hits.length ? `보정 종목 ${hits.map(t => `${t} ${trendTxt(t)}`).join(', ')}. 성과 요약·차트·기간별 표·롤링·구간별 점검이 모두 이 데이터 기준이에요.` : '포트폴리오에 보정한 종목이 없어 결과가 실제 데이터와 같아요.';
-    for (const id of ['h-sum', 'h-charts', 'h-trail', 'h-roll', 'h-period']) {
+    for (const id of ['h-sum', 'h-risk', 'h-charts', 'h-trail', 'h-roll', 'h-period']) {
       const h = document.getElementById(id); if (!h) continue;
       let m = h.querySelector('.adj-mark');
       if (show && hits.length) { if (!m) { m = el('span', 'adj-mark', '보정 데이터'); m.style.marginLeft = '8px'; h.appendChild(m); } }
@@ -3782,6 +3832,120 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   document.querySelectorAll('#dm button').forEach(b => b.addEventListener('click', () => setDataAdj(b.dataset.v === 'adj')));
   $('#dm-off').addEventListener('click', () => setDataAdj(false));
+
+  /* ---------- v7.1: return and risk beyond the single worst drop ---------- */
+  /* drawdowns as episodes: from a peak until that peak is regained (or the end); a further fall before recovery is the same episode */
+  function ddEpisodes(v) {
+    const out = []; let pk = 0, tr = 0, inDD = false;
+    for (let t = 1; t < v.length; t++) {
+      if (v[t] >= v[pk]) { if (inDD) out.push({ pk, tr, rec: t }); inDD = false; pk = t; tr = t; }
+      else if (!inDD) { inDD = true; tr = t; }
+      else if (v[t] < v[tr]) tr = t;
+    }
+    if (inDD) out.push({ pk, tr, rec: -1 });
+    return out.map(e => Object.assign(e, { depth: v[e.tr] / v[e.pk] - 1 }));
+  }
+  function riskOf(x) {
+    const v = x.res.vals, n = x.res.n, i0 = x.res.i0, dd = new Float64Array(n + 1);
+    let pk = v[0], sq = 0, ab = 0, deep = 0;
+    for (let t = 0; t <= n; t++) { if (v[t] > pk) pk = v[t]; dd[t] = v[t] / pk - 1; }
+    for (let t = 1; t <= n; t++) { sq += dd[t] * dd[t]; ab -= dd[t]; if (dd[t] < -0.10) deep++; }
+    const lab = t => (t === 0 ? '시작' : BT.label(i0 + t - 1));
+    const eps = ddEpisodes(v).sort((a, b) => a.depth - b.depth);
+    for (const e of eps) {
+      const end = e.rec < 0 ? n : e.rec; let s2 = 0; for (let t = e.pk + 1; t <= end; t++) s2 += dd[t] * dd[t];
+      Object.assign(e, { share: sq > 0 ? s2 / sq : 0, fall: e.tr - e.pk, recM: e.rec < 0 ? null : e.rec - e.tr, len: end - e.pk, since: n - e.tr, pkL: lab(e.pk), trL: lab(e.tr), recL: e.rec < 0 ? null : lab(e.rec) });
+    }
+    const top = eps.filter(e => e.depth <= -0.05).slice(0, 5);
+    let r10 = null;
+    if (n >= 120) {   // every 10-year window, 1-month steps (sliced from this run, like the rolling table)
+      const c = [], m = [];
+      for (let a = 0; a + 120 <= n; a++) {
+        c.push(Math.pow(v[a + 120] / v[a], 0.1) - 1);
+        let p2 = v[a], d2 = 0; for (let t = a + 1; t <= a + 120; t++) { const y = v[t]; if (y > p2) p2 = y; else if (y / p2 - 1 < d2) d2 = y / p2 - 1; }
+        m.push(d2);
+      }
+      const qs = (arr, q) => { const z = arr.slice().sort((a2, b2) => a2 - b2); return z[Math.min(z.length - 1, Math.floor(q * (z.length - 1) + 0.5))]; };
+      r10 = { med: qs(c, 0.5), p10: qs(c, 0.1), mddMed: qs(m, 0.5) };
+    }
+    const ui = Math.sqrt(sq / n);
+    return { ui, martin: ui > 1e-9 ? (x.st.cagr - x.st.cash) / ui : null, calmar: x.st.calmar, pain: ab / n, deep: deep / n,
+      n10: eps.filter(e => e.depth <= -0.10).length, years: n / 12, eps, top, top5: top.length ? top.reduce((a, e) => a + e.depth, 0) / top.length : null, r10, n };
+  }
+  const shareTag = v => (v >= 0.7 ? ['tag no', '한 번에 집중'] : v >= 0.4 ? ['tag', '보통'] : ['tag ok', '여러 번에 나뉨']);
+  function renderRisk() {
+    const t = $('#t-risk'); t.innerHTML = ''; if (!state.last) return;
+    const { series } = state.last, R = series.map(riskOf); state.riskData = R;
+    const thead = el('thead'), hr = el('tr'); headRow(hr, series, '지표'); thead.appendChild(hr); t.appendChild(thead);
+    const tb = el('tbody'); t.appendChild(tb);
+    const sep = (txt, detail) => { const tr = el('tr', 'sep'); const th = el('th', null, txt); th.colSpan = series.length + 1; tr.appendChild(th); if (detail) tr.setAttribute('data-detail', ''); tb.appendChild(tr); };
+    const row = (label, hint, vals, fmt, better, opts = {}) => {
+      const tr = el('tr'); if (opts.detail) tr.setAttribute('data-detail', ''); if (opts.hl) tr.className = 'hl';
+      const th = el('th', null, label); if (hint) th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
+      const ok = vals.filter(v => v != null && isFinite(v));
+      const best = better && ok.length > 1 ? (better === 'hi' ? Math.max(...ok) : Math.min(...ok)) : null;
+      vals.forEach((v, i) => {
+        const td = el('td');
+        if (v == null || !isFinite(v)) td.appendChild(el('span', 'na', opts.na || '–')); else fmt(td, v, i);
+        if (best != null && v != null && Math.abs(v - best) < 1e-9 && !ok.every(z => Math.abs(z - best) < 1e-9)) td.classList.add('best');
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    };
+    const P1 = (td, v) => { td.textContent = pctm(v, 1); if (v < 0) td.classList.add('neg'); };
+    const M1 = (td, v) => { td.textContent = mpct1(v); if (v < 0) td.classList.add('neg'); };
+    const has10 = R.some(r => r.r10);
+    sep('수익 — 시작·끝 시점에 덜 좌우되는 10년 구간 성적');
+    row('보통의 10년 CAGR', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.med : null), P1, 'hi', { na: '기간 부족' });
+    row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족', detail: true });
+    sep('위험 — 모든 하락의 깊이·기간·횟수');
+    row('보통의 10년 MDD', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.mddMed : null), M1, 'hi', { na: '기간 부족' });
+    row('평균 낙폭', '매달 고점 대비 평균', R.map(r => -r.pain), M1, 'hi');
+    row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo', { detail: true });
+    row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo', { detail: true });
+    row('10% 넘는 하락', '횟수', R.map(r => r.n10), (td, v, i) => { td.textContent = `${v}번`; td.appendChild(el('span', 'sub', `10년에 ${(v / R[i].years * 10).toFixed(1)}번`)); }, 'lo', { detail: true });
+    sep('수익 ÷ 위험');
+    row('마틴 비율', '(CAGR − 현금 수익) ÷ 울서 지수', R.map(r => r.martin), (td, v) => { td.textContent = num(v); }, 'hi', { hl: true });
+    row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
+    row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
+    sep('한 번의 폭락에 얼마나 좌우되나');
+    row('가장 큰 하락', 'MDD', R.map(r => r.eps[0] ? r.eps[0].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[0]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '하락 없음' });
+    row('두 번째로 큰 하락', '따로 일어난 하락', R.map(r => r.eps[1] ? r.eps[1].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[1]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '없음' });
+    row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음', detail: true });
+    row('가장 큰 하락의 비중', '전체 낙폭(울서 지수) 중', R.map(r => r.eps[0] ? r.eps[0].share : null), (td, v) => { td.textContent = pctm(v, 0); const [c, txt] = shareTag(v); const w = el('span', 'tagrow'); w.appendChild(el('span', c, txt)); td.appendChild(w); }, null, { na: '하락 없음' });
+    if (!has10) { const tr = el('tr'); const td = el('td', 'na', '분석 기간이 10년보다 짧아 ‘10년 구간’ 지표는 비워 뒀어요.'); td.colSpan = series.length + 1; td.style.textAlign = 'left'; tr.appendChild(td); tb.appendChild(tr); }
+  }
+  function renderDD() {
+    const host = $('#t-dd'), chips = $('#dd-port'); host.innerHTML = ''; chips.innerHTML = ''; $('#dd-note').textContent = '';
+    if (!state.last || !state.riskData) return;
+    const L = state.last.series; let i = L.findIndex(x => x.key === state.ddKey); if (i < 0) i = 0;
+    L.forEach((x, k) => {
+      const b = el('button', 'chip'); b.type = 'button'; b.setAttribute('aria-pressed', k === i ? 'true' : 'false');
+      const key = el('span', 'key'); key.style.background = x.color; b.append(key, document.createTextNode(x.name));
+      b.addEventListener('click', () => { state.ddKey = x.key; renderDD(); }); chips.appendChild(b);
+    });
+    const r = state.riskData[i], x = L[i], eps = r.eps.filter(e => e.depth < -0.005).slice(0, 5);
+    if (!eps.length) { host.appendChild(el('caption', null, '0.5% 넘게 떨어진 적이 없어요.')); return; }
+    const thead = el('thead'), hr = el('tr');
+    ['순위', '고점 → 저점', '낙폭', '하락 기간', '회복 기간', '고점 회복까지', '전체 낙폭 중 비중'].forEach(h => hr.appendChild(el('th', null, h)));
+    thead.appendChild(hr); host.appendChild(thead);
+    const tb = el('tbody');
+    eps.forEach((e, k) => {
+      const tr = el('tr');
+      tr.appendChild(el('th', null, `${k + 1}`));
+      const c1 = el('td', null, `${e.pkL} → ${e.trL}`); c1.appendChild(el('span', 'sub', e.recL ? `회복 ${e.recL}` : '아직 회복 전')); tr.appendChild(c1);
+      tr.appendChild(el('td', 'neg', mpct1(e.depth)));
+      tr.appendChild(el('td', null, dur(e.fall)));
+      const c4 = el('td', null, e.recM != null ? dur(e.recM) : '회복 중'); if (e.recM == null) c4.appendChild(el('span', 'sub', `저점 후 ${dur(e.since)}`)); tr.appendChild(c4);
+      tr.appendChild(el('td', null, dur(e.len) + (e.rec < 0 ? '+' : '')));
+      const c6 = el('td'); const g = el('div', 'dd-share'); const b = el('div', 'mbar'); const f = el('i'); f.style.left = '0'; f.style.width = Math.max(1, e.share * 100) + '%'; b.appendChild(f); b.setAttribute('aria-hidden', 'true');
+      g.append(el('span', null, pctm(e.share, 0)), b); c6.appendChild(g); tr.appendChild(c6);
+      tb.appendChild(tr);
+    });
+    host.appendChild(tb);
+    const e0 = r.eps[0], [, tagTxt] = shareTag(e0.share);
+    $('#dd-note').textContent = `${x.name}: 10% 넘는 하락 ${r.n10}번(10년에 ${(r.n10 / r.years * 10).toFixed(1)}번). 가장 큰 하락(${e0.pkL}–${e0.recL || '회복 전'})이 전체 낙폭의 ${pctm(e0.share, 0)}를 차지해요 — ${tagTxt}.` + (r.eps[1] ? ` 그 한 번을 빼면 가장 깊은 하락은 ${mpct1(r.eps[1].depth)}예요.` : '');
+  }
 
   /* ---------- period check: does the same mix hold up in other periods? ---------- */
   const PCT = { ret: [0.05, 0.10], risk: [0.15, 0.30], era20: [0.02, 0.05], era10: [0.03, 0.06], surge: [0.01, 0.03] };

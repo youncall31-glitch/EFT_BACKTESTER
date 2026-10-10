@@ -1,6 +1,6 @@
 /* offline cache for the backtester: app files are served from the cache (so it runs without a connection)
    and refreshed in the background, so a newly uploaded version shows up on the next launch */
-const CACHE = 'etf-backtester-v7-2026-10-10';
+const CACHE = 'etf-backtester-v7.1-2026-10-10';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-64.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
