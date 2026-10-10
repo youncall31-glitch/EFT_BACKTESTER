@@ -1,7 +1,7 @@
 {
   "name": "ETF 포트폴리오 백테스터",
   "short_name": "ETF 백테스터",
-  "description": "미국 상장 ETF 포트폴리오를 Portfolio Visualizer 방식으로 백테스트해 CAGR·MDD·회복 기간, 배당 재투자/현금 수령, 추세 보정, 최적 비중을 보여주는 도구",
+  "description": "미국 상장 ETF 포트폴리오를 Portfolio Visualizer 방식으로 백테스트해 CAGR·MDD·회복 기간, 구간별 점검, 배당 재투자/현금 수령, 추세 보정, 최적 비중을 보여주는 도구",
   "lang": "ko",
   "dir": "ltr",
   "id": "./",
