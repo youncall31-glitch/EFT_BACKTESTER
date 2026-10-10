@@ -1,0 +1,31 @@
+{
+  "name": "120세 은퇴자금 계산기",
+  "short_name": "은퇴자금",
+  "description": "물가·국민연금·대출·계좌별 세금과 건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금과 최적 인출 순서를 계산합니다. 입력값은 이 브라우저에만 저장됩니다.",
+  "lang": "ko",
+  "dir": "ltr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e9edeb",
+  "theme_color": "#e9edeb",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
