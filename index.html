@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v7.2-2026-10-10">
+<meta name="app-version" content="v7.3-2026-10-10">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -147,8 +147,6 @@ td.neg { color: var(--neg); }
 td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
 .hl td, .hl th { background: var(--panel-2); }
 /* trailing grid */
-.trail th.grp { text-align: center; border-bottom: 1px solid var(--line); color: var(--ink-2); font-size: 12px; }
-.trail th.grp .when { display: block; font-weight: 400; color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
 .cellbar { display: grid; gap: 3px; justify-items: end; }
 .cellbar i { display: block; height: 3px; border-radius: 2px; }
 .na { color: var(--muted); font-family: var(--font-sans); font-size: 12px; }
@@ -173,7 +171,6 @@ td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var
 .scroll-x { overflow-x: auto; max-width: 100%; }
 .tbl-wrap th:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); }
 .tbl-wrap .hl th:first-child { background: var(--panel-2); }
-#t-roll th:nth-child(2), #t-roll td:nth-child(2) { text-align: left; }
 .legend i.sq { width: 10px; height: 10px; border-radius: 2px; }
 .seg-toggle { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
 .seg-toggle button { font: inherit; font-size: 12px; border: 0; background: transparent; color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
@@ -300,7 +297,7 @@ td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var
 .ac-w b.hot { color: var(--p2); font-weight: 600; }
 .tag.hot { color: var(--ink); background: color-mix(in srgb, var(--p2) 16%, transparent); }
 .hz-banner { grid-column: 1 / -1; }
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   .trend thead, .trendcmp thead { display: none; }
   .trend, .trend tbody, .trendcmp, .trendcmp tbody { display: block; width: 100%; }
   .trend tr, .trendcmp tr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; border-bottom: 1px solid var(--line); padding: 10px 0; }
@@ -433,7 +430,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .upd-body dd { margin: 0; font-size: 12.5px; line-height: 1.5; }
 .upd-body dd ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; }
 @media (max-width: 560px) { .upd-body dl { grid-template-columns: 1fr; gap: 2px; } .upd-body dd { margin-bottom: 8px; } }
-.grp { display: flex; align-items: center; gap: 12px; padding-top: 18px; margin-top: 12px; border-top: 2px solid var(--line-2); }
+.gsec { display: flex; align-items: center; gap: 12px; padding-top: 18px; margin-top: 12px; border-top: 2px solid var(--line-2); }
 .grp-n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
 .grp-tx { display: grid; gap: 1px; min-width: 0; }
 .grp-t { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
@@ -496,7 +493,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .pc-key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
 .pc-key span { display: inline-flex; align-items: center; gap: 6px; }
 .pc-key s { display: inline-block; width: 2px; height: 12px; background: var(--ink); }
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   .pctbl thead { display: none; }
   .pctbl, .pctbl tbody { display: block; width: 100%; }
   .pctbl tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
@@ -519,7 +516,6 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 #pc-heat .ax-t { fill: var(--ink-2); font-family: var(--font-sans); font-size: 11px; }
 @media (max-width: 860px) { .heat-wrap { grid-template-columns: 1fr; } .heat-legend { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } .heat-legend .ttl { grid-column: 1 / -1; } }
 .pc-range { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--ink-2); }
-.pc-range .gap { width: 8px; }
 .pccmp { font-size: 12.5px; max-width: 720px; }
 .pccmp td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
 .pccmp td.dlt .up { color: var(--pos); } .pccmp td.dlt .dn { color: var(--neg); }
@@ -548,7 +544,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .pane > * { min-width: 0; }
 :root.tabs .pane:not(.on) { display: none; }
 :root.tabs:not([data-tab="g-setup"]) .hdr { display: none; }
-:root.tabs .grp { border-top: 0; margin-top: 0; padding-top: 4px; }
+:root.tabs .gsec { border-top: 0; margin-top: 0; padding-top: 4px; }
 .tabs-only { display: none; }
 :root.tabs .tabs-only { display: block; }
 :root.tabs nav.pane-nav.tabs-only { display: flex; }
@@ -585,6 +581,83 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   :root.tabs .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
   .layout-sw .seg-toggle button { padding: 6px 10px; }
 }
+/* ---------- v7.3: every table says which period (and which MDD) a number belongs to ---------- */
+/* trailing grid: each period's CAGR·MDD pair sits in its own band under its own heading */
+.trail th.grp { text-align: center; vertical-align: bottom; border-bottom: 1px solid var(--line-2); padding-block: 8px 6px; white-space: nowrap; }
+.trail th.grp .gname { display: block; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.trail th.grp .when { display: block; font-weight: 400; color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.trail .gs { border-left: 1px solid var(--line-2); }
+.trail .gb { background: color-mix(in srgb, var(--ink) 4%, var(--panel)); }
+.trail thead th .yy { display: block; font-size: 10.5px; font-weight: 500; color: var(--muted); }
+.trail-narrow { display: none; }
+@media (max-width: 900px) { .trail-wide { display: none; } .trail-narrow { display: block; } }
+.trail td, .trail thead th:not(:first-child) { padding-inline: 7px; }
+.trail tbody th { white-space: normal; min-width: 104px; }
+.mtbl td .sub, .trail td .sub { white-space: normal; }
+@media (max-width: 900px) { .mtbl th, .mtbl td { padding-inline: 7px; } }
+/* period heading rows (phone trailing table, rolling table) */
+.trail-m tr.ph th, #t-roll tr.ph th { background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; vertical-align: bottom; }
+.tbl-wrap .trail-m tr.ph th:first-child, .tbl-wrap #t-roll tr.ph th:first-child { background: var(--panel-2); text-align: left; }
+.trail-m tr.ph .gname, #t-roll tr.ph .gname { font-size: 14px; font-weight: 700; color: var(--ink); margin-right: 8px; letter-spacing: -0.01em; }
+.trail-m tr.ph .when, #t-roll tr.ph .when { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted); }
+.trail-m tr.ph .when { display: block; }
+.trail-m tbody tr:not(.ph) th { padding-left: 12px; }
+.hzc { display: inline-block; margin-left: 7px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 0 5px; line-height: 1.5; vertical-align: 1px; }
+#t-roll tbody tr:not(.ph) th { font-weight: 500; }
+/* metric tables: row hints, and cards on a phone so each value carries its portfolio's name */
+.mtbl th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
+.mddtbl tbody th { white-space: normal; min-width: 180px; }
+.mdd-note { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; padding: 9px 12px; border-left: 3px solid var(--line-2); background: var(--panel-2); border-radius: 0 8px 8px 0; }
+.mdd-note:empty { display: none; }
+.mdd-note b { color: var(--ink); }
+@media (max-width: 760px) {
+  .mtbl thead { display: none; }
+  .mtbl, .mtbl tbody { display: block; width: 100%; }
+  .mtbl tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .mtbl tr.sep { display: block; padding: 0; border: 0; }
+  .tbl-wrap .mtbl th:first-child, .mtbl th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; color: var(--ink); font-weight: 600; font-size: 13px; }
+  .tbl-wrap .mtbl tr.sep th:first-child, .mtbl tr.sep th { display: block; padding: 8px 10px; border-radius: 6px; margin-top: 8px; background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; }
+  .mtbl td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  .mtbl td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 11px; font-weight: 500; color: var(--ink-2); border-left: 3px solid var(--k, var(--line-2)); padding-left: 6px; margin-bottom: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mtbl tr.hl { background: var(--panel-2); border-radius: 8px; padding-inline: 10px; border-bottom-color: transparent; margin-bottom: 1px; }
+  .tbl-wrap .mtbl .hl th:first-child, .mtbl .hl td, .mtbl .hl th { background: transparent; }
+  .mtbl td .sub { white-space: normal; }
+  .mddtbl tbody th { min-width: 0; }
+  /* rolling table: one card per portfolio under its holding-period heading */
+  #t-roll thead { display: none; }
+  #t-roll, #t-roll tbody { display: block; width: 100%; }
+  #t-roll tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  #t-roll tr.ph { display: block; padding: 0; border: 0; }
+  .tbl-wrap #t-roll th:first-child, #t-roll th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; }
+  .tbl-wrap #t-roll tr.ph th:first-child { display: block; padding: 8px 10px; border-radius: 6px; margin-top: 10px; background: var(--panel-2); border: 0; }
+  #t-roll tr.ph .when { display: block; margin-top: 1px; }
+  #t-roll td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  #t-roll td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 10.5px; color: var(--muted); }
+  /* drawdown list and the chosen-window comparison as cards */
+  .ddtbl thead, .pccmp thead { display: none; }
+  .ddtbl, .ddtbl tbody, .pccmp, .pccmp tbody { display: block; width: 100%; }
+  .ddtbl tr, .pccmp tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .tbl-wrap .ddtbl th:first-child, .ddtbl th, .tbl-wrap .pccmp th:first-child, .pccmp th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; color: var(--ink); font-weight: 600; }
+  .ddtbl td, .pccmp td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  .ddtbl td.when-c { grid-column: 1 / -1; }
+  .ddtbl td::before, .pccmp td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 10.5px; color: var(--muted); }
+  .dd-share { justify-content: start; grid-template-columns: 34px minmax(40px, 1fr); }
+  /* card tables: a row heading may use the full width */
+  .tbl-wrap .pctbl th:first-child, .pctbl th, .tbl-wrap .trend th:first-child, .tbl-wrap .trendcmp th:first-child, .trend th, .trendcmp th { max-width: none; min-width: 0; }
+}
+/* optimizer tables: the period of each cell, written above it once the table becomes a list */
+.cell-cap { display: none; }
+@media (max-width: 860px) {
+  .adjcmp td::before, .walk td::before { content: none; }
+  .adjcmp .cell-cap, .walk .cell-cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 10px 0 6px; padding: 5px 9px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); }
+  .cell-cap b { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .cell-cap span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .life td.stage-td::before { font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 8px 0 4px; }
+}
+.pc-range .pr-g { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; margin-right: 10px; }
+/* column-group headings (10·20·30년, 점검 구간) stand out from the column names under them */
+thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
+.life thead th.grp, .adjcmp thead th.grp, .walk thead th.grp { border-left: 1px solid var(--line); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
 </style>
 </head>
@@ -608,9 +681,17 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v7.2</span><span class="mono">2026.10.10</span><span>업데이트 · 탭으로 나눈 화면(이전 한 페이지 방식도 선택 가능), 입력 탭 결과 미리보기, 최적화 입력 오류 수정</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v7.3</span><span class="mono">2026.10.10</span><span>업데이트 · MDD 구분 표, 표마다 10·20·30년 기간 표시, 휴대폰에서 표를 카드로, 오류 수정</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v7.3 · 2026.10.10</dt>
+          <dd><ul>
+            <li>결과 › MDD 구분: 전체 기간 MDD, 최근 10·20년 MDD, 10년 보유 시 최악 MDD, 보통의 10년 MDD, 평균 낙폭을 한 표에서 비교 (간단히 보기에서도 표시)</li>
+            <li>‘기간별 CAGR · MDD’와 최적화 표(생애 주기, 가장 과거 vs 최근, 실제 vs 추세 보정, 과최적화 점검)에서 10·15·20·25·30년 머리글이 한 칸에 몰려 기간을 알 수 없던 문제 수정</li>
+            <li>열 이름마다 기간 표시(예: ‘10년 MDD’), 롤링 표는 보유 기간별로 묶음</li>
+            <li>휴대폰: 성과 요약·MDD 구분·수익과 위험·하락 목록·롤링·직접 고른 구간 표를 카드로 바꿔, 옆으로 밀지 않아도 포트폴리오 이름과 기간이 값 옆에 보임. 기간별 표는 기간마다 묶어 표시</li>
+            <li>오류 수정: 최적화 계산 중 ‘점검 실행’을 누르면 반응이 없던 문제(이제 계산이 끝나면 바로 점검), 차이가 0인데 ‘CAGR −0.0%p’처럼 부호가 붙던 표시, ‘보통의 10년 CAGR’과 롤링 표 중앙값이 0.1%p 다르게 나오던 문제, 음수 기호가 섞여 있던 문제</li>
+          </ul></dd>
           <dt>v7.2 · 2026.10.10</dt>
           <dd><ul>
             <li>1 입력 · 2 결과 · 3 점검 · 4 최적화 · 5 도움말 탭으로 나눔 (휴대폰은 아래쪽 탭 막대). 맨 위 ‘화면 배치’에서 이전 한 페이지 방식으로 바꿀 수 있고 기기마다 기억</li>
@@ -650,7 +731,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </header>
 
   <div class="pane" data-g="g-setup" id="pane-setup">
-  <div class="grp" id="g-setup"><span class="grp-n" aria-hidden="true">1</span><div class="grp-tx"><h2 class="grp-t">입력</h2><p class="grp-d">기간·리밸런싱·결과 데이터를 정하고, 포트폴리오 세 개까지 티커와 비중을 넣어요.</p></div></div>
+  <div class="gsec" id="g-setup"><span class="grp-n" aria-hidden="true">1</span><div class="grp-tx"><h2 class="grp-t">입력</h2><p class="grp-d">기간·리밸런싱·결과 데이터를 정하고, 포트폴리오 세 개까지 티커와 비중을 넣어요.</p></div></div>
 
   <ol class="howto" aria-label="사용 순서">
     <li><b>기간과 규칙</b>을 정해요. 처음이면 그대로 둬도 돼요.</li>
@@ -755,19 +836,25 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </div>
 
   <div class="pane" data-g="g-results" id="pane-results">
-  <div class="grp" id="g-results"><span class="grp-n" aria-hidden="true">2</span><div class="grp-tx"><h2 class="grp-t">결과</h2><p class="grp-d">성과 요약, 차트, 기간별·롤링 수익률.</p></div></div>
+  <div class="gsec" id="g-results"><span class="grp-n" aria-hidden="true">2</span><div class="grp-tx"><h2 class="grp-t">결과</h2><p class="grp-d">성과 요약, MDD 구분, 수익과 위험, 차트, 기간별·롤링 수익률.</p></div></div>
 
   <div class="adj-banner" id="dm-banner" hidden><span class="ttl"><span class="adj-mark">보정</span>추세 보정 데이터로 계산한 결과예요</span><span class="small" id="dm-banner-txt"></span><button class="btn ghost sm" type="button" id="dm-off">실제 데이터로 보기</button></div>
   <div id="msg" class="notice" hidden></div>
 
   <section class="panel" aria-labelledby="h-sum">
     <div class="panel-head"><h2 id="h-sum">성과 요약</h2><p id="sum-note"></p></div>
-    <div class="tbl-wrap"><table id="t-summary"></table></div>
+    <div class="tbl-wrap"><table id="t-summary" class="mtbl"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-mdd" id="sec-mdd">
+    <div class="panel-head"><h2 id="h-mdd">MDD 구분 — 어느 구간의 MDD인가요?</h2><p>MDD(최대 낙폭)는 고점에서 가장 크게 떨어진 폭이에요. 같은 포트폴리오라도 어느 구간에서 재느냐에 따라 값이 달라서, 이 앱의 표에 나오는 MDD를 한곳에 모았어요.</p></div>
+    <div class="tbl-wrap"><table id="t-mdd" class="mtbl mddtbl"></table></div>
+    <p class="mdd-note" id="mdd-note"></p>
   </section>
 
   <section class="panel" aria-labelledby="h-risk" id="sec-risk">
     <div class="panel-head"><h2 id="h-risk">수익과 위험 — 한 번의 폭락에 덜 휘둘리는 지표</h2><p>MDD·칼마 비율은 가장 큰 하락 한 번으로 정해져요. 여기서는 모든 하락의 깊이·기간·횟수와 10년 구간의 보통 성적으로 수익과 위험을 봅니다.</p></div>
-    <div class="tbl-wrap"><table id="t-risk" class="risk"></table></div>
+    <div class="tbl-wrap"><table id="t-risk" class="risk mtbl"></table></div>
     <p class="risk-key">굵은 값이 그 줄에서 가장 좋은 값이에요. 10년 구간은 1개월 간격으로 잡은 모든 10년이에요.</p>
     <details class="vd-crit" style="margin-top:8px">
       <summary>지표 읽는 법</summary>
@@ -813,13 +900,14 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </section>
 
   <section class="panel" aria-labelledby="h-trail">
-    <div class="panel-head"><h2 id="h-trail">기간별 CAGR · MDD</h2><p>종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작해 계산합니다. MDD 아래 작은 글씨는 그 구간의 최장 회복 기간이고, +는 구간 끝까지 아직 회복하지 못했다는 뜻입니다.</p></div>
+    <div class="panel-head"><h2 id="h-trail">기간별 CAGR · MDD — 최근 10·15·20·25·30년</h2><p>종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작해 계산합니다. 그래서 ‘최근 10년 MDD’는 그 10년 안에서 가장 크게 떨어진 폭이에요. MDD 아래 작은 글씨는 그 구간의 최장 회복 기간이고, +는 구간 끝까지 아직 회복하지 못했다는 뜻입니다.</p></div>
     <p class="small muted" id="trail-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 CAGR·MDD는 평가액(가격) 기준이에요. CAGR 아래 작은 글씨는 그 구간에 받은 배당금을 평가액에 견준 연평균 배당률입니다.</p>
-    <div class="tbl-wrap"><table id="t-trail" class="trail"></table></div>
+    <div class="tbl-wrap trail-wide"><table id="t-trail" class="trail"></table></div>
+    <div class="tbl-wrap trail-narrow"><table id="t-trail-m" class="trail-m"></table></div>
   </section>
 
   <section data-detail class="panel" aria-labelledby="h-roll">
-    <div class="panel-head"><h2 id="h-roll">롤링 CAGR — N년 보유하면 어땠나</h2><p>분석 기간 안의 모든 N년 구간(1개월 간격)에서 연복리 수익률의 최저·중앙·최고값과 구간 내 최대 낙폭의 최악값입니다.</p></div>
+    <div class="panel-head"><h2 id="h-roll">롤링 CAGR — N년 보유하면 어땠나</h2><p>분석 기간 안의 모든 N년 구간(1개월 간격)에서 연복리 수익률의 최저·중앙·최고값과, 각 구간 안에서 가장 크게 떨어진 폭(MDD) 중 최악값입니다. 보유 기간(10·15·20·25·30년)마다 묶어 보여줘요.</p></div>
     <p class="small muted" id="roll-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 평가액(가격) 기준 연복리입니다. 받은 배당금은 포함하지 않아요.</p>
     <div class="tbl-wrap"><table id="t-roll"></table></div>
   </section>
@@ -828,7 +916,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </div>
 
   <div class="pane" data-g="g-checks" id="pane-checks">
-  <div class="grp" id="g-checks"><span class="grp-n" aria-hidden="true">3</span><div class="grp-tx"><h2 class="grp-t">점검</h2><p class="grp-d">같은 비중이 시기마다 얼마나 달랐는지, 최근 급등에 기대고 있지 않은지 확인해요.</p></div></div>
+  <div class="gsec" id="g-checks"><span class="grp-n" aria-hidden="true">3</span><div class="grp-tx"><h2 class="grp-t">점검</h2><p class="grp-d">같은 비중이 시기마다 얼마나 달랐는지, 최근 급등에 기대고 있지 않은지 확인해요.</p></div></div>
 
   <section class="panel" aria-labelledby="h-period" id="sec-period">
     <div class="panel-head"><h2 id="h-period">구간별 점검 — 시기가 바뀌어도 비슷했을까?</h2><p>같은 비중을 분석 기간 안의 여러 시기에 새로 시작해 따로 계산하고, CAGR·MDD가 얼마나 달라지는지 봅니다.</p></div>
@@ -848,7 +936,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
     </div>
     <div class="sub-sec" data-detail id="pc-custom-sec">
       <div class="sub-head"><h3>직접 고른 구간</h3><div class="row" id="pc-quick"></div></div>
-      <div class="pc-range"><span>시작</span><select id="pc-sy" aria-label="구간 시작 연도"></select><select id="pc-sm" aria-label="구간 시작 월"></select><span class="gap"></span><span>종료</span><select id="pc-ey" aria-label="구간 종료 연도"></select><select id="pc-em" aria-label="구간 종료 월"></select></div>
+      <div class="pc-range"><span class="pr-g"><span>시작</span><select id="pc-sy" aria-label="구간 시작 연도"></select><select id="pc-sm" aria-label="구간 시작 월"></select></span><span class="pr-g"><span>종료</span><select id="pc-ey" aria-label="구간 종료 연도"></select><select id="pc-em" aria-label="구간 종료 월"></select></span></div>
       <div id="pc-custom"></div>
     </div>
   </section>
@@ -877,7 +965,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </div>
 
   <div class="pane" data-g="g-opt" id="pane-opt">
-  <div class="grp" id="g-opt"><span class="grp-n" aria-hidden="true">4</span><div class="grp-tx"><h2 class="grp-t">최적화</h2><p class="grp-d">고른 자산으로 구간별 최적 비중과 생애 주기별 추천을 찾아요.</p></div></div>
+  <div class="gsec" id="g-opt"><span class="grp-n" aria-hidden="true">4</span><div class="grp-tx"><h2 class="grp-t">최적화</h2><p class="grp-d">고른 자산으로 구간별 최적 비중과 생애 주기별 추천을 찾아요.</p></div></div>
 
   <div class="panel simple-only" id="simple-opt"><div class="simple-card"><p>비중 최적화, 생애 주기별 추천, 과최적화 점검은 ‘자세히’ 보기에서 볼 수 있어요. 고른 자산으로 최근·가장 과거 10·20·30년의 최적 비중을 찾아 줍니다.</p><button class="btn sm" type="button" id="to-full">자세히 보기로 바꾸기</button></div></div>
 
@@ -981,7 +1069,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   </div>
 
   <div class="pane" data-g="g-ref" id="pane-ref" data-detail>
-  <div class="grp" id="g-ref" data-detail><span class="grp-n" aria-hidden="true">5</span><div class="grp-tx"><h2 class="grp-t">도움말</h2><p class="grp-d">사용한 데이터, 지원 티커, 계산 방식과 데이터 출처.</p></div></div>
+  <div class="gsec" id="g-ref" data-detail><span class="grp-n" aria-hidden="true">5</span><div class="grp-tx"><h2 class="grp-t">도움말</h2><p class="grp-d">사용한 데이터, 지원 티커, 계산 방식과 데이터 출처.</p></div></div>
 
   <section data-detail class="panel" aria-labelledby="h-cov">
     <div class="panel-head"><h2 id="h-cov">사용한 데이터</h2><p>포트폴리오에 들어간 티커별로 어떤 데이터가 쓰였는지 보여줍니다.</p></div>
@@ -1016,6 +1104,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
           <li>칼마 비율 = CAGR ÷ |MDD|. 최고·최악 연도는 1월~12월이 모두 포함된 해만 비교합니다.</li>
           <li>MDD는 월말 잔고로 재기 때문에 한 달 안에서 떨어졌다 회복한 낙폭은 빠집니다. S&amp;P 500의 2020년 코로나 하락은 일간 기준 −34%였지만 월말 기준 −19%, 2008년 금융위기는 −55% 대 −51%, 3배 레버리지는 2020년에 −76% 대 −59%였어요. 실제로 겪는 낙폭은 표의 MDD보다 깊을 수 있습니다.</li>
           <li><b>물가 반영</b>을 켜면 모든 수익률에서 미국 소비자물가(CPI-U, 미국 노동통계국)를 빼 실질 수익률로 계산합니다(Portfolio Visualizer의 Inflation Adjusted와 같은 방식). 지난 30년 물가는 연 2.55%, 1972년 이후는 연 3.91%였어요. 2025년 10월 물가(미발표)는 앞뒤 달 사이 값으로, 2026년 9월 물가(발표 전)는 최근 12개월 평균으로 넣었습니다.</li>
+          <li><b>MDD 구분</b>: 전체 기간 MDD는 분석 기간 전체에서 가장 크게 떨어진 한 번이고, 최근 N년 MDD는 그 N년만 목표 비중으로 새로 시작해 계산한 값입니다. N년 보유 시 최악 MDD는 모든 N년 구간(1개월 간격)의 MDD 중 가장 깊은 값, 보통의 10년 MDD는 모든 10년 구간 MDD의 중앙값, 평균 낙폭은 매달 직전 고점 대비 낙폭의 평균이에요. 구간이 짧으면 큰 폭락이 빠질 수 있어 MDD가 얕게 나옵니다.</li>
           <li><b>MDD 회복 기간</b>은 MDD 저점에서 직전 고점을 다시 넘은 달까지, <b>최장 회복 기간</b>은 어느 하락이든 고점에서 떨어진 뒤 그 고점을 되찾기까지 걸린 기간 중 가장 긴 값입니다(Portfolio Visualizer의 Recovery Time·Underwater Period). 구간 끝까지 회복하지 못했으면 그때까지의 기간에 +를 붙입니다.</li>
         </ul>
       </div>
@@ -1438,7 +1527,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
       const L = sorted.length, med = L % 2 ? sorted[(L - 1) / 2] : (sorted[L / 2 - 1] + sorted[L / 2]) / 2;
       return { years: Y, ok: true, count: c.length, min: sorted[0], median: med, max: sorted[sorted.length - 1],
         minStart: label(res.i0 + minI), maxStart: label(res.i0 + maxI), pctPositive: c.filter(v => v > 0).length / c.length,
-        worstMDD: worstDD, series: c };
+        worstMDD: worstDD, worstMDDStart: label(res.i0 + worstDDStart), series: c };
     });
   }
 
@@ -1935,14 +2024,19 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   let optBusy = false, pickerReady = false, lifeTimer = null;
 
   /* ---------- formatting ---------- */
-  const pct = (x, d = 2) => (x == null || !isFinite(x) ? '–' : (x * 100).toFixed(d) + '%');
-  const spct = (x, d = 1) => (x == null || !isFinite(x) ? '–' : (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x * 100).toFixed(d) + '%');
-  const mpct = x => (x == null || !isFinite(x) ? '–' : (x < 0 ? '−' : '') + Math.abs(x * 100).toFixed(2) + '%');
+  /* percent text with a true minus sign; a value that rounds to zero gets no sign */
+  const sgnTxt = (x, d, plus) => { const t = Math.abs(x * 100).toFixed(d); return (+t === 0 ? '' : x < 0 ? '−' : plus && x > 0 ? '+' : '') + t + '%'; };
+  const pct = (x, d = 2) => (x == null || !isFinite(x) ? '–' : sgnTxt(x, d));
+  const spct = (x, d = 1) => (x == null || !isFinite(x) ? '–' : sgnTxt(x, d, true));
+  const mpct = x => (x == null || !isFinite(x) ? '–' : sgnTxt(x, 2));
   const money = x => '$' + Math.round(x).toLocaleString('en-US');
-  const num = (x, d = 2) => (x == null || !isFinite(x) ? '–' : x.toFixed(d));
+  const num = (x, d = 2) => { if (x == null || !isFinite(x)) return '–'; const t = Math.abs(x).toFixed(d); return (x < 0 && +t !== 0 ? '−' : '') + t; };
   const known = t => Object.prototype.hasOwnProperty.call(DATA.assets, t);
   const monthsTxt = n => { const y = Math.floor(n / 12), m = n % 12; return (y ? y + '년' : '') + (m ? (y ? ' ' : '') + m + '개월' : ''); };
   const dur = n => (n > 0 ? monthsTxt(n) : '0개월');
+  const SAME = 0.0005;   // differences below 0.05%p show as '같음'
+  const ppTxt = d => (Math.abs(d) < SAME ? '0.0%p' : (d > 0 ? '+' : '−') + Math.abs(d * 100).toFixed(1) + '%p');
+  const nbsp = t => t.replace(/ /g, '\u00a0');   // keep 'label value' pieces on one line
   // number field with a default only when it is left empty (a typed 0 stays 0)
   const fieldNum = (sel, d) => { const v = $(sel).value.trim(); return v === '' || !isFinite(+v) ? d : +v; };
 
@@ -2193,11 +2287,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     msg.hidden = notes.length === 0; msg.className = 'notice'; msg.textContent = notes.join(' ');
     $('#avail-note').textContent = `선택한 자산의 공통 데이터: ${BT.label(cs)} ~ ${BT.label(ce)}`;
     state.last = { s, e, series, cs, ce, adj };
-    renderSummary(); renderQuickRes(); renderRisk(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
+    renderSummary(); renderQuickRes(); renderRisk(); renderMDD(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
   }
 
   function renderEmpty() {
-    for (const id of ['#t-summary', '#t-trail', '#t-roll']) $(id).innerHTML = '';
+    for (const id of ['#t-summary', '#t-trail', '#t-trail-m', '#t-roll', '#t-mdd']) $(id).innerHTML = '';
+    $('#mdd-note').textContent = '';
     for (const id of ['#c-growth', '#c-dd', '#c-ann', '#lg-growth', '#lg-dd', '#lg-ann']) $(id).innerHTML = '';
     for (const id of ['#pc-port', '#pc-verdict', '#pc-table', '#pc-key', '#pc-heat', '#pc-legend', '#pc-custom', '#pc-quick', '#t-risk', '#t-dd', '#dd-port']) $(id).innerHTML = '';
     $('#dd-note').textContent = ''; state.riskData = null; renderQuickRes();
@@ -2225,7 +2320,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const tr = el('tr'); if (opts.hl) tr.className = 'hl';
       if (opts.detail) tr.setAttribute('data-detail', '');   // hidden in the simple view
       tr.appendChild(el('th', null, label));
-      for (const x of series) { const td = el('td'); const v = fn(x, td); if (typeof v === 'string') td.textContent = v; tr.appendChild(td); }
+      for (const x of series) { const td = cellFor(el('td'), x); const v = fn(x, td); if (typeof v === 'string') td.textContent = v; tr.appendChild(td); }
       tb.appendChild(tr);
     };
     add('초기 금액', () => money(state.initial));
@@ -2241,7 +2336,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       add('최종 금액', x => money(state.initial * x.st.final));
       add('CAGR (연복리)', x => pct(x.st.cagr), { hl: true });
     }
-    add(state.div ? 'MDD (평가액 기준)' : 'MDD (최대 낙폭)', (x, td) => {
+    add(state.div ? 'MDD · 전체 기간 (평가액 기준)' : 'MDD · 전체 기간 최대 낙폭', (x, td) => {
       const m = x.st.mddInfo; td.textContent = mpct(m.mdd); if (m.mdd < 0) td.classList.add('neg');
       const sub = el('span', 'sub', m.mdd < 0 ? `${m.peakLabel} → ${m.troughLabel}${m.recLabel ? ' · 회복 ' + m.recLabel : ' · 미회복'}` : '');
       td.appendChild(sub);
@@ -2268,68 +2363,110 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     add('상승한 달 비율', x => pct(x.st.posMonths, 1), { detail: true });
   }
 
+  /* series name with its colour key (table row header) */
+  function seriesTh(x, extra) {
+    const th = el('th'); const sh = el('span', 'serieshead'); const k = el('span', 'key'); k.style.background = x.bench ? 'var(--bench)' : x.color;
+    sh.append(k, document.createTextNode(x.name)); th.appendChild(sh); if (extra) th.appendChild(extra); return th;
+  }
+  /* the column a cell belongs to, written above it when a wide table turns into a list on narrower screens */
+  function capOf(main, sub) { const d = el('div', 'cell-cap'); d.appendChild(el('b', null, main)); if (sub) d.appendChild(el('span', null, sub.replace(/–/g, '–\u2060'))); return d; }   // no line break inside a date range
+  /* label + colour of a value cell, used when a table turns into cards on a phone */
+  function cellFor(td, x, label) { td.dataset.label = label || x.name; td.style.setProperty('--k', x.bench ? 'var(--bench)' : x.color); return td; }
+
+  /* trailing N years: a wide grid (periods across, CAGR·MDD pairs) and, for phones, the same numbers grouped by period */
   function renderTrailing() {
-    const { s, e, series } = state.last; const t = $('#t-trail'); t.innerHTML = '';
+    const { s, e, series } = state.last; const t = $('#t-trail'), tm = $('#t-trail-m'); t.innerHTML = ''; tm.innerHTML = '';
     const n = e - s + 1;
     const cols = YEARS.map(Y => ({ Y, ok: Y * 12 <= n, start: BT.label(e - Y * 12 + 1), end: BT.label(e) }));
     cols.push({ Y: 'full', ok: true, start: BT.label(s), end: BT.label(e) });
-    const thead = el('thead');
-    const r1 = el('tr'); r1.appendChild(el('th', null, ''));
-    for (const c of cols) {
-      const th = el('th', 'grp'); th.colSpan = 2; th.textContent = c.Y === 'full' ? '전체 기간' : `${c.Y}년`;
-      th.appendChild(el('span', 'when', c.ok ? `${c.start}–${c.end}` : '기간 부족')); r1.appendChild(th);
-    }
-    const r2 = el('tr'); r2.appendChild(el('th', null, '포트폴리오'));
-    for (let i = 0; i < cols.length; i++) { r2.appendChild(el('th', null, 'CAGR')); r2.appendChild(el('th', null, 'MDD')); }
-    thead.append(r1, r2); t.appendChild(thead);
+    const name = c => (c.Y === 'full' ? '전체 기간' : `최근 ${c.Y}년`);
     let maxC = 0.0001, maxM = 0.0001;
     const vals = series.map(x => cols.map((c, j) => {
       if (!c.ok) return null;
       const v = c.Y === 'full' ? { cagr: x.st.cagr, mdd: x.st.mdd, uw: x.st.uw, income: x.st.income } : x.trail[j];
       maxC = Math.max(maxC, Math.abs(v.cagr)); maxM = Math.max(maxM, Math.abs(v.mdd)); return v;
     }));
+    const cagrCell = (x, v) => {
+      const c1 = el('td'); const b1 = el('div', 'cellbar'); b1.appendChild(el('span', null, pct(v.cagr)));
+      const i1 = el('i'); i1.style.width = Math.round(Math.abs(v.cagr) / maxC * 48) + 'px'; i1.style.background = x.bench ? 'var(--bench)' : x.color; b1.appendChild(i1); c1.appendChild(b1);
+      if (v.cagr < 0) c1.classList.add('neg');
+      if (state.div && v.income) c1.appendChild(el('span', 'sub', `배당 연 ${pct(v.income.avgYield, 1)}`));
+      return c1;
+    };
+    const mddCell = (x, v) => {
+      const c2 = el('td'); const b2 = el('div', 'cellbar'); b2.appendChild(el('span', null, mpct(v.mdd)));
+      const i2 = el('i'); i2.style.width = Math.round(Math.abs(v.mdd) / maxM * 48) + 'px'; i2.style.background = x.bench ? 'var(--bench)' : x.color; i2.style.opacity = '0.45'; b2.appendChild(i2); c2.appendChild(b2);
+      c2.appendChild(el('span', 'sub', v.uw && v.uw.months ? `회복 ${dur(v.uw.months)}${v.uw.ongoing ? '+' : ''}` : '낙폭 없음'));
+      return c2;
+    };
+    // wide grid
+    const thead = el('thead');
+    const r1 = el('tr'); r1.appendChild(el('th', 'corner', ''));
+    cols.forEach((c, j) => {
+      const th = el('th', 'grp gs' + (j % 2 ? ' gb' : '')); th.colSpan = 2; th.scope = 'colgroup';
+      th.appendChild(el('span', 'gname', name(c)));
+      th.appendChild(el('span', 'when', c.ok ? `${c.start}–${c.end}` : '기간 부족')); r1.appendChild(th);
+    });
+    const r2 = el('tr'); r2.appendChild(el('th', null, '포트폴리오'));
+    cols.forEach((c, j) => {
+      const yy = c.Y === 'full' ? '전체' : `${c.Y}년`, band = j % 2 ? ' gb' : '';
+      const a = el('th', 'gs' + band); a.append(el('span', 'yy', yy), document.createTextNode('CAGR')); a.title = `${name(c)} CAGR`;
+      const b = el('th', band.trim() || null); b.append(el('span', 'yy', yy), document.createTextNode('MDD')); b.title = `${name(c)} MDD`;
+      r2.append(a, b);
+    });
+    thead.append(r1, r2); t.appendChild(thead);
     const tb = el('tbody');
     series.forEach((x, i) => {
-      const tr = el('tr'); const th = el('th'); const sh = el('span', 'serieshead'); const k = el('span', 'key'); k.style.background = x.color;
-      sh.append(k, document.createTextNode(x.name)); th.appendChild(sh); tr.appendChild(th);
-      vals[i].forEach(v => {
-        if (!v) { const td = el('td'); td.colSpan = 2; td.appendChild(el('span', 'na', '–')); td.style.textAlign = 'center'; tr.appendChild(td); return; }
-        const c1 = el('td'); const b1 = el('div', 'cellbar'); b1.appendChild(el('span', null, pct(v.cagr)));
-        const i1 = el('i'); i1.style.width = Math.round(Math.abs(v.cagr) / maxC * 56) + 'px'; i1.style.background = x.color; b1.appendChild(i1); c1.appendChild(b1);
-        if (v.cagr < 0) c1.classList.add('neg');
-        if (state.div && v.income) c1.appendChild(el('span', 'sub', `배당 연 ${pct(v.income.avgYield, 1)}`));
-        const c2 = el('td'); const b2 = el('div', 'cellbar'); b2.appendChild(el('span', null, mpct(v.mdd)));
-        const i2 = el('i'); i2.style.width = Math.round(Math.abs(v.mdd) / maxM * 56) + 'px'; i2.style.background = x.color; i2.style.opacity = '0.45'; b2.appendChild(i2); c2.appendChild(b2);
-        c2.appendChild(el('span', 'sub', v.uw && v.uw.months ? `회복 ${dur(v.uw.months)}${v.uw.ongoing ? '+' : ''}` : '낙폭 없음'));
+      const tr = el('tr'); tr.appendChild(seriesTh(x));
+      vals[i].forEach((v, j) => {
+        const band = j % 2 ? ' gb' : '';
+        if (!v) { const td = el('td', 'gs' + band); td.colSpan = 2; td.appendChild(el('span', 'na', '–')); td.style.textAlign = 'center'; tr.appendChild(td); return; }
+        const c1 = cagrCell(x, v), c2 = mddCell(x, v); c1.className += ' gs' + band; if (band) c2.classList.add('gb');
+        c1.title = `${x.name} · ${name(cols[j])} CAGR`; c2.title = `${x.name} · ${name(cols[j])} MDD`;
         tr.append(c1, c2);
       });
       tb.appendChild(tr);
     });
     t.appendChild(tb);
+    // phones: one block per period, so the period is always written right above its numbers
+    const tbm = el('tbody');
+    cols.forEach((c, j) => {
+      const hr = el('tr', 'ph'); const h0 = el('th'); h0.scope = 'colgroup';
+      h0.append(el('span', 'gname', name(c)), el('span', 'when', c.ok ? `${c.start}–${c.end}` : '분석 기간이 짧아 계산 안 함'));
+      hr.appendChild(h0);
+      if (c.ok) { hr.appendChild(el('th', null, 'CAGR')); hr.appendChild(el('th', null, 'MDD')); } else h0.colSpan = 3;
+      tbm.appendChild(hr);
+      if (!c.ok) return;
+      series.forEach((x, i) => { const tr = el('tr'); tr.append(seriesTh(x), cagrCell(x, vals[i][j]), mddCell(x, vals[i][j])); tbm.appendChild(tr); });
+    });
+    tm.appendChild(tbm);
   }
 
+  /* rolling N-year windows: one block per holding period */
   function renderRolling() {
-    const { series } = state.last; const t = $('#t-roll'); t.innerHTML = '';
+    const { s, e, series } = state.last; const t = $('#t-roll'); t.innerHTML = '';
     const thead = el('thead'); const hr = el('tr');
-    ['보유 기간', '포트폴리오', '구간 수', '최저 CAGR', '중앙값', '최고 CAGR', '플러스 구간', '구간 내 최악 MDD'].forEach(h => hr.appendChild(el('th', null, h)));
+    ['포트폴리오', '최저 CAGR', '중앙값 CAGR', '최고 CAGR', '플러스 구간', '구간 안 최악 MDD'].forEach(h => hr.appendChild(el('th', null, h)));
     thead.appendChild(hr); t.appendChild(thead);
-    const tb = el('tbody'); let any = false;
+    const tb = el('tbody'); let any = false; const n = e - s + 1;
     YEARS.forEach((Y, j) => {
-      series.forEach((x, i) => {
-        const r = x.roll[j]; if (!r.ok) return; any = true;
-        const tr = el('tr'); if (i === 0) tr.style.borderTop = '2px solid var(--line-2)';
-        tr.appendChild(el('th', null, i === 0 ? `${Y}년` : ''));
-        const th = el('th'); const sh = el('span', 'serieshead'); const k = el('span', 'key'); k.style.background = x.color; sh.append(k, document.createTextNode(x.name)); th.appendChild(sh); tr.appendChild(th);
-        const td0 = el('td', null, String(r.count)); tr.appendChild(td0);
-        const tdMin = el('td', null, pct(r.min)); if (r.min < 0) tdMin.classList.add('neg'); tdMin.appendChild(el('span', 'sub', `${r.minStart} 시작`)); tr.appendChild(tdMin);
-        tr.appendChild(el('td', null, pct(r.median)));
-        const tdMax = el('td', null, pct(r.max)); tdMax.appendChild(el('span', 'sub', `${r.maxStart} 시작`)); tr.appendChild(tdMax);
-        tr.appendChild(el('td', null, pct(r.pctPositive, 0)));
-        const tdM = el('td', 'neg', mpct(r.worstMDD)); tr.appendChild(tdM);
+      const L = series.filter(x => x.roll[j].ok); if (!L.length) return; any = true;
+      const cnt = L[0].roll[j].count;
+      const g = el('tr', 'ph'); const gh = el('th'); gh.colSpan = 6; gh.scope = 'colgroup';
+      gh.append(el('span', 'gname', `${Y}년 보유`), el('span', 'when', `${Y}년 구간 ${cnt}개 · ${BT.label(s)}~${BT.label(e - Y * 12 + 1)}에 시작 (1개월 간격)`));
+      g.appendChild(gh); tb.appendChild(g);
+      L.forEach(x => {
+        const r = x.roll[j]; const tr = el('tr');
+        tr.appendChild(seriesTh(x, el('span', 'hzc', `${Y}년`)));
+        const tdMin = cellFor(el('td', null, pct(r.min)), x, `${Y}년 최저 CAGR`); if (r.min < 0) tdMin.classList.add('neg'); tdMin.appendChild(el('span', 'sub', `${r.minStart} 시작`)); tr.appendChild(tdMin);
+        tr.appendChild(cellFor(el('td', null, pct(r.median)), x, `${Y}년 중앙값`));
+        const tdMax = cellFor(el('td', null, pct(r.max)), x, `${Y}년 최고 CAGR`); tdMax.appendChild(el('span', 'sub', `${r.maxStart} 시작`)); tr.appendChild(tdMax);
+        tr.appendChild(cellFor(el('td', null, pct(r.pctPositive, 0)), x, '플러스 구간'));
+        const tdW = cellFor(el('td', 'neg', mpct(r.worstMDD)), x, `${Y}년 안 최악 MDD`); if (r.worstMDDStart) tdW.appendChild(el('span', 'sub', `${r.worstMDDStart} 시작`)); tr.appendChild(tdW);
         tb.appendChild(tr);
       });
     });
-    if (!any) { const tr = el('tr'); const td = el('td', 'na', '분석 기간이 10년보다 짧아 롤링 구간이 없어요.'); td.colSpan = 8; td.style.textAlign = 'left'; tr.appendChild(td); tb.appendChild(tr); }
+    if (!any) { const tr = el('tr'); const td = el('td', 'na', `분석 기간(${monthsTxt(n)})이 10년보다 짧아 롤링 구간이 없어요.`); td.colSpan = 6; td.style.textAlign = 'left'; tr.appendChild(td); tb.appendChild(tr); }
     t.appendChild(tb);
   }
 
@@ -2519,7 +2656,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   /* ---------- optimizer ---------- */
   const listShort = (arr, n) => (arr.length <= n ? arr.join(', ') : arr.slice(0, n).join(', ') + ` 외 ${arr.length - n}개`);
   const fmtW = w => (w * 100).toFixed(1).replace(/\.0$/, '') + '%';
-  const mpct1 = x => (x == null || !isFinite(x) ? '–' : (x < 0 ? '−' : '') + Math.abs(x * 100).toFixed(1) + '%');
+  const mpct1 = x => (x == null || !isFinite(x) ? '–' : sgnTxt(x, 1));
   const uwTxt = u => (u.months ? dur(u.months) + (u.ongoing ? '+' : '') : '없음');
 
   function optInputs() {
@@ -2753,7 +2890,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     flushCrit();
   }
   /* criteria edited while another run held the optimizer: apply them once it is free */
-  function flushCrit() { if (!critPending || optBusy) return; const next = [...critPending]; critPending = null; critChanged(next); }
+  function flushCrit() {
+    if (optBusy) return;
+    if (critPending) { const next = [...critPending]; critPending = null; critChanged(next); return; }
+    if (state.walkQueued) { state.walkQueued = false; runWalk(); }   // '점검 실행' pressed while the optimizer was busy
+  }
   ['#o-lo', '#o-hi'].forEach(id => $(id).addEventListener('input', () => { clearTimeout(lifeTimer); lifeTimer = setTimeout(() => critChanged(['user']), 250); }));
   $('#o-uw').addEventListener('change', () => critChanged(['ai', 'user']));
 
@@ -3153,7 +3294,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (!T.on || !state.last) return;
     const { s, e, series } = state.last;
     const head = el('thead'), h2 = el('tr');
-    ['포트폴리오', `최근 ${yr(T.R)} CAGR`, '최근 10년 CAGR', `전체 기간 CAGR`, '전체 MDD', '최장 회복'].forEach(h => h2.appendChild(el('th', null, h)));
+    ['포트폴리오', `최근 ${yr(T.R)} CAGR`, '최근 10년 CAGR', '전체 기간 CAGR', '전체 기간 MDD', '전체 기간 최장 회복'].forEach(h => h2.appendChild(el('th', null, h)));
     head.appendChild(h2); cmp.appendChild(head);
     const body = el('tbody');
     const pair = (td, a, b, fmt, lowerIsWorse) => {
@@ -3171,7 +3312,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       // explicit actual vs trend-kept runs (the results above may already be on the trend-kept data)
       const stA = BT.stats(BT.backtest(x.tickers, x.weights, s, e, rule, false, state.div));
       const stB = BT.stats(BT.backtest(x.tickers, x.weights, s, e, rule, true, state.div));
-      const cl = [`최근 ${yr(T.R)} CAGR`, '최근 10년 CAGR', '전체 기간 CAGR', '전체 MDD', '최장 회복'];
+      const cl = [`최근 ${yr(T.R)} CAGR`, '최근 10년 CAGR', '전체 기간 CAGR', '전체 기간 MDD', '전체 기간 최장 회복'];
       const c1 = el('td'); c1.dataset.label = cl[0]; tA[0].ok ? pair(c1, tA[0].cagr, tB[0].cagr, v => pct(v, 1), true) : c1.appendChild(el('span', 'na', '기간 부족')); tr.appendChild(c1);
       const c2 = el('td'); c2.dataset.label = cl[1]; tA[1].ok ? pair(c2, tA[1].cagr, tB[1].cagr, v => pct(v, 1), true) : c2.appendChild(el('span', 'na', '기간 부족')); tr.appendChild(c2);
       const c3 = el('td'); c3.dataset.label = cl[2]; pair(c3, stA.cagr, stB.cagr, v => pct(v, 2), true); tr.appendChild(c3);
@@ -3291,8 +3432,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     for (const c of currentCrits()) {
       const tr = el('tr'); tr.appendChild(el('th', 'wname', critLabel(c)));
       HZ.forEach(Y => {
-        const td = el('td'); td.dataset.label = `${POS_TXT[state.optPos]} ${Y}년`;
+        const td = el('td');
         const A = planOf(o.res, state.optPos, Y), B = planOf(o.resAdj, state.optPos, Y);
+        td.appendChild(capOf(`${POS_TXT[state.optPos]} ${Y}년`, A && A.i0 >= 0 ? `${BT.label(A.i0)}–${BT.label(A.i1)}` : ''));
         if (!A || !A.ok || !B || !B.ok) { td.appendChild(el('span', 'na', A && A.reason && !A.ok ? '계산 불가' : '계산 전')); tr.appendChild(td); return; }
         if (A === B) { td.appendChild(el('span', 'na', '추세 보정 구간(최근 몇 년)과 겹치지 않아 결과가 같아요')); tr.appendChild(td); return; }
         const line = (lab, pk) => {
@@ -3312,7 +3454,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
           const tags = el('div', 'row');
           const same = pa.w.length === pb.w.length && pa.w.every(([tk, x], i) => pb.w[i][0] === tk && Math.abs(pb.w[i][1] - x) < 1e-9);
           const dc = pb.st.cagr - pa.st.cagr;
-          tags.appendChild(same ? el('span', 'tag', '같은 비중') : el('span', dc < -0.0005 ? 'tag no' : 'tag ok', `CAGR ${dc < 0 ? '−' : '+'}${Math.abs(dc * 100).toFixed(1)}%p`));
+          tags.appendChild(same ? el('span', 'tag', '같은 비중') : Math.abs(dc) < SAME ? el('span', 'tag', 'CAGR 같음') : el('span', dc < 0 ? 'tag no' : 'tag ok', `CAGR ${ppTxt(dc)}`));
           if (Math.abs(hotB - hotA) > 1e-9) tags.appendChild(el('span', 'tag hot', `보정 종목 비중 ${fmtW(hotA)} → ${fmtW(hotB)}`));
           td.appendChild(tags);
         }
@@ -3345,8 +3487,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     for (const c of currentCrits()) {
       const tr = el('tr'); tr.appendChild(el('th', 'wname', critLabel(c)));
       HZ.forEach(Y => {
-        const td = el('td'); td.dataset.label = `${Y}년 구간`;
+        const td = el('td');
         const A = planOf(o.res, 'recent', Y), B = planOf(o.res, 'old', Y);
+        td.appendChild(capOf(`${Y}년 구간`, [B && B.i0 >= 0 && !B.reason ? `과거 ${BT.label(B.i0)}–${BT.label(B.i1)}` : '', A && A.i0 >= 0 ? `최근 ${BT.label(A.i0)}–${BT.label(A.i1)}` : ''].filter(Boolean).join(' · ')));
         if (!B || !B.ok) { td.appendChild(el('span', 'na', B && B.reason ? B.reason : '계산 불가')); tr.appendChild(td); return; }
         if (!A || !A.ok) { td.appendChild(el('span', 'na', A && A.reason ? A.reason : '계산 불가')); tr.appendChild(td); return; }
         if (A.i0 === B.i0) { td.appendChild(el('span', 'na', `분석 기간이 ${Y}년이라 두 구간이 같아요`)); tr.appendChild(td); return; }
@@ -3405,9 +3548,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function clearWalk() { state.walk = null; renderWalk(); }
   function markWalkStale() { if (state.walk) $('#w-status').textContent = '기준이 바뀌었어요. ‘점검 실행’을 다시 누르면 새 기준으로 점검합니다.'; }
   async function runWalk() {
-    const o = state.opt, st = $('#w-status');
+    const st = $('#w-status');
+    if (optBusy) { state.walkQueued = true; st.textContent = '최적화 계산이 끝나면 바로 점검할게요…'; return; }
+    state.walkQueued = false;
+    const o = state.opt;
     if (!o) { st.textContent = '먼저 위에서 ‘최적 비중 찾기’를 실행해 주세요.'; return; }
-    if (optBusy) return;
     if (o.key !== optKey()) { st.textContent = '최적화 설정이 바뀌었어요. ‘최적 비중 찾기’를 먼저 다시 실행해 주세요.'; return; }
     const crits = currentCrits();
     optBusy = true; $('#w-run').disabled = true; $('#o-run').disabled = true;
@@ -3446,7 +3591,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function walkCell(td, r) {
     const line = (lab, s, bad) => {
       const d = el('div', 'wl'); d.appendChild(el('span', 'wk', lab));
-      const v = el('span', 'wv', `CAGR ${pct(s.cagr, 1)} · MDD ${mpct1(s.mdd)} · 회복 ${uwTxt(s.uw)}`); if (bad) v.classList.add('neg');
+      const v = el('span', 'wv', [`CAGR ${pct(s.cagr, 1)}`, `MDD ${mpct1(s.mdd)}`, `회복 ${uwTxt(s.uw)}`].map(nbsp).join(' · ')); if (bad) v.classList.add('neg');
       d.appendChild(v); return d;
     };
     td.appendChild(line('고를 때', r.a, false));
@@ -3455,16 +3600,17 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     td.appendChild(line('그 뒤', r.b, over.length > 0));
     const d = r.b.cagr - r.a.cagr;
     const tags = el('div', 'row');
-    tags.appendChild(el('span', d < 0 ? 'tag no' : 'tag ok', `CAGR ${d < 0 ? '−' : '+'}${Math.abs(d * 100).toFixed(1)}%p`));
+    tags.appendChild(Math.abs(d) < SAME ? el('span', 'tag', 'CAGR 같음') : el('span', d < 0 ? 'tag no' : 'tag ok', `CAGR ${ppTxt(d)}`));
     over.forEach(x => tags.appendChild(el('span', 'tag no', x)));
     if (r.c && !r.feasible) tags.appendChild(el('span', 'badge warn', '고를 때도 한도 밖'));
     td.appendChild(tags);
     if (r.w) td.appendChild(el('div', 'ww', r.w.slice(0, 5).map(([t, w]) => `${t} ${fmtW(w)}`).join(' · ') + (r.w.length > 5 ? ` 외 ${r.w.length - 5}개` : '')));
   }
+  const walkCap = r => capOf(`${r.Y}년 점검`, r.i0 >= 0 ? `고른 구간 ${BT.label(r.i0)}–${BT.label(r.trainEnd)} → 그 뒤 ${BT.label(r.t0)}–${BT.label(r.t1)}` : '');
   function renderWalk() {
     const t = $('#w-table'), st = $('#w-status'), sm = $('#w-sum'); t.innerHTML = ''; sm.textContent = '';
     const w = state.walk;
-    if (!w) { st.textContent = state.opt ? '‘점검 실행’을 누르면 계산합니다. 몇 초 걸려요.' : ''; return; }
+    if (!w) { st.textContent = state.walkQueued ? '최적화 계산이 끝나면 바로 점검할게요…' : state.opt ? '‘점검 실행’을 누르면 계산합니다. 몇 초 걸려요.' : ''; return; }
     st.textContent = '';
     const thead = el('thead'), hr = el('tr'); hr.appendChild(el('th', null, '기준'));
     w.out.forEach(r => {
@@ -3479,7 +3625,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const c = (w.out.find(r => r.rows[k]) || {}).rows[k].c;
       const tr = el('tr'); tr.appendChild(el('th', 'wname', critLabel(c)));
       w.out.forEach(r => {
-        const td = el('td'); td.dataset.label = `${r.Y}년 점검`;
+        const td = el('td'); td.appendChild(walkCap(r));
         if (!r.ok) td.appendChild(el('span', 'na', r.reason || '계산 불가'));
         else walkCell(td, r.rows[k]);
         tr.appendChild(td);
@@ -3489,7 +3635,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     BASES.forEach(([nm]) => {
       const tr = el('tr', 'base'); tr.appendChild(el('th', 'wname', '비교: ' + nm));
       w.out.forEach(r => {
-        const td = el('td'); td.dataset.label = `${r.Y}년 점검`;
+        const td = el('td'); td.appendChild(walkCap(r));
         const b = r.base.find(x => x.nm === nm);
         if (!b) td.appendChild(el('span', 'na', '데이터 부족')); else walkCell(td, { a: b.a, b: b.b });
         tr.appendChild(td);
@@ -3886,7 +4032,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   $('#cu-add').addEventListener('click', addCustom);
 
   /* ================= v7 ================= */
-  const pctm = (x, d = 2) => (x == null || !isFinite(x) ? '–' : (x < 0 ? '−' : '') + Math.abs(x * 100).toFixed(d) + '%');   // percent with a true minus sign
+  const pctm = (x, d = 2) => (x == null || !isFinite(x) ? '–' : sgnTxt(x, d));   // percent with a true minus sign
   /* ---------- my portfolios on actual or trend-kept data ---------- */
   function adjHits() {
     if (!state.last) return [];
@@ -3962,8 +4108,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
         let p2 = v[a], d2 = 0; for (let t = a + 1; t <= a + 120; t++) { const y = v[t]; if (y > p2) p2 = y; else if (y / p2 - 1 < d2) d2 = y / p2 - 1; }
         m.push(d2);
       }
-      const qs = (arr, q) => { const z = arr.slice().sort((a2, b2) => a2 - b2); return z[Math.min(z.length - 1, Math.floor(q * (z.length - 1) + 0.5))]; };
-      r10 = { med: qs(c, 0.5), p10: qs(c, 0.1), mddMed: qs(m, 0.5) };
+      const srt = arr => arr.slice().sort((a2, b2) => a2 - b2);
+      const qs = (z, q) => z[Math.min(z.length - 1, Math.floor(q * (z.length - 1) + 0.5))];
+      const med = z => { const L = z.length; return L % 2 ? z[(L - 1) / 2] : (z[L / 2 - 1] + z[L / 2]) / 2; };   // the same median as the rolling table
+      const cs = srt(c), ms = srt(m);
+      let wI = 0; m.forEach((d, k) => { if (d < m[wI]) wI = k; });
+      r10 = { med: med(cs), p10: qs(cs, 0.1), mddMed: med(ms), mddWorst: m[wI], mddWorstWin: `${BT.label(i0 + wI)}–${BT.label(i0 + wI + 119)}` };
     }
     const ui = Math.sqrt(sq / n);
     return { ui, martin: ui > 1e-9 ? (x.st.cagr - x.st.cash) / ui : null, calmar: x.st.calmar, pain: ab / n, deep: deep / n,
@@ -3982,7 +4132,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const ok = vals.filter(v => v != null && isFinite(v));
       const best = better && ok.length > 1 ? (better === 'hi' ? Math.max(...ok) : Math.min(...ok)) : null;
       vals.forEach((v, i) => {
-        const td = el('td');
+        const td = cellFor(el('td'), series[i]);
         if (v == null || !isFinite(v)) td.appendChild(el('span', 'na', opts.na || '–')); else fmt(td, v, i);
         if (best != null && v != null && Math.abs(v - best) < 1e-9 && !ok.every(z => Math.abs(z - best) < 1e-9)) td.classList.add('best');
         tr.appendChild(td);
@@ -3996,7 +4146,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     row('보통의 10년 CAGR', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.med : null), P1, 'hi', { na: '기간 부족' });
     row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족', detail: true });
     sep('위험 — 모든 하락의 깊이·기간·횟수');
-    row('보통의 10년 MDD', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.mddMed : null), M1, 'hi', { na: '기간 부족' });
+    row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값', R.map(r => r.r10 ? r.r10.mddMed : null), M1, 'hi', { na: '기간 부족' });
     row('평균 낙폭', '매달 고점 대비 평균', R.map(r => -r.pain), M1, 'hi');
     row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo', { detail: true });
     row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo', { detail: true });
@@ -4006,7 +4156,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
     row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
     sep('한 번의 폭락에 얼마나 좌우되나');
-    row('가장 큰 하락', 'MDD', R.map(r => r.eps[0] ? r.eps[0].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[0]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '하락 없음' });
+    row('가장 큰 하락', '= 전체 기간 MDD', R.map(r => r.eps[0] ? r.eps[0].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[0]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '하락 없음' });
     row('두 번째로 큰 하락', '따로 일어난 하락', R.map(r => r.eps[1] ? r.eps[1].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[1]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '없음' });
     row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음', detail: true });
     row('가장 큰 하락의 비중', '전체 낙폭(울서 지수) 중', R.map(r => r.eps[0] ? r.eps[0].share : null), (td, v) => { td.textContent = pctm(v, 0); const [c, txt] = shareTag(v); const w = el('span', 'tagrow'); w.appendChild(el('span', c, txt)); td.appendChild(w); }, null, { na: '하락 없음' });
@@ -4027,15 +4177,16 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     ['순위', '고점 → 저점', '낙폭', '하락 기간', '회복 기간', '고점 회복까지', '전체 낙폭 중 비중'].forEach(h => hr.appendChild(el('th', null, h)));
     thead.appendChild(hr); host.appendChild(thead);
     const tb = el('tbody');
+    const lb = (td, t) => { td.dataset.label = t; return td; };
     eps.forEach((e, k) => {
       const tr = el('tr');
-      tr.appendChild(el('th', null, `${k + 1}`));
-      const c1 = el('td', null, `${e.pkL} → ${e.trL}`); c1.appendChild(el('span', 'sub', e.recL ? `회복 ${e.recL}` : '아직 회복 전')); tr.appendChild(c1);
-      tr.appendChild(el('td', 'neg', mpct1(e.depth)));
-      tr.appendChild(el('td', null, dur(e.fall)));
-      const c4 = el('td', null, e.recM != null ? dur(e.recM) : '회복 중'); if (e.recM == null) c4.appendChild(el('span', 'sub', `저점 후 ${dur(e.since)}`)); tr.appendChild(c4);
-      tr.appendChild(el('td', null, dur(e.len) + (e.rec < 0 ? '+' : '')));
-      const c6 = el('td'); const g = el('div', 'dd-share'); const b = el('div', 'mbar'); const f = el('i'); f.style.left = '0'; f.style.width = Math.max(1, e.share * 100) + '%'; b.appendChild(f); b.setAttribute('aria-hidden', 'true');
+      tr.appendChild(el('th', null, `${k + 1}위`));
+      const c1 = lb(el('td', 'when-c', `${e.pkL} → ${e.trL}`), '고점 → 저점'); c1.appendChild(el('span', 'sub', e.recL ? `회복 ${e.recL}` : '아직 회복 전')); tr.appendChild(c1);
+      tr.appendChild(lb(el('td', 'neg', mpct1(e.depth)), '낙폭'));
+      tr.appendChild(lb(el('td', null, dur(e.fall)), '하락 기간'));
+      const c4 = lb(el('td', null, e.recM != null ? dur(e.recM) : '회복 중'), '회복 기간'); if (e.recM == null) c4.appendChild(el('span', 'sub', `저점 후 ${dur(e.since)}`)); tr.appendChild(c4);
+      tr.appendChild(lb(el('td', null, dur(e.len) + (e.rec < 0 ? '+' : '')), '고점 회복까지'));
+      const c6 = lb(el('td'), '전체 낙폭 중 비중'); const g = el('div', 'dd-share'); const b = el('div', 'mbar'); const f = el('i'); f.style.left = '0'; f.style.width = Math.max(1, e.share * 100) + '%'; b.appendChild(f); b.setAttribute('aria-hidden', 'true');
       g.append(el('span', null, pctm(e.share, 0)), b); c6.appendChild(g); tr.appendChild(c6);
       tb.appendChild(tr);
     });
@@ -4044,11 +4195,50 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     $('#dd-note').textContent = `${x.name}: 10% 넘는 하락 ${r.n10}번(10년에 ${(r.n10 / r.years * 10).toFixed(1)}번). 가장 큰 하락(${e0.pkL}–${e0.recL || '회복 전'})이 전체 낙폭의 ${pctm(e0.share, 0)}를 차지해요 — ${tagTxt}.` + (r.eps[1] ? ` 그 한 번을 빼면 가장 깊은 하락은 ${mpct1(r.eps[1].depth)}예요.` : '');
   }
 
+  /* ---------- v7.3: which MDD is which — every drawdown figure used in the app, side by side ---------- */
+  function renderMDD() {
+    const t = $('#t-mdd'), note = $('#mdd-note'); t.innerHTML = ''; note.textContent = '';
+    if (!state.last || !state.riskData) return;
+    const { s, e, series } = state.last, R = state.riskData, n = e - s + 1;
+    const thead = el('thead'), hr = el('tr'); headRow(hr, series, 'MDD 종류 (어느 구간에서 쟀나)'); thead.appendChild(hr); t.appendChild(thead);
+    const tb = el('tbody'); t.appendChild(tb);
+    const row = (label, hint, fill, opts = {}) => {
+      const tr = el('tr'); if (opts.hl) tr.className = 'hl'; if (opts.detail) tr.setAttribute('data-detail', '');
+      const th = el('th', null, label); th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
+      series.forEach((x, i) => { const td = cellFor(el('td'), x); fill(td, x, i); tr.appendChild(td); });
+      tb.appendChild(tr);
+    };
+    const M = (td, v, sub) => {
+      if (v == null || !isFinite(v)) { td.appendChild(el('span', 'na', '기간 부족')); return; }
+      td.appendChild(document.createTextNode(mpct1(v))); if (v < 0) td.classList.add('neg');
+      if (sub) td.appendChild(el('span', 'sub', sub));
+    };
+    const when = m => (m.mdd < 0 ? `${m.peakLabel} → ${m.troughLabel}` : '낙폭 없음');
+    row('전체 기간 MDD', `${BT.label(s)}–${BT.label(e)} 전체에서 가장 크게 떨어진 한 번 · 성과 요약의 MDD`, (td, x) => M(td, x.st.mddInfo.mdd, when(x.st.mddInfo)), { hl: true });
+    const rec = [10, 20].map(Y => ({ Y, j: YEARS.indexOf(Y), ok: Y * 12 <= n }));
+    rec.forEach(({ Y, j, ok }) => row(`최근 ${Y}년 MDD`, ok ? `${BT.label(e - Y * 12 + 1)}–${BT.label(e)}만 새로 시작해 계산 · 기간별 표` : `분석 기간이 ${Y}년보다 짧아 계산 안 함`, (td, x) => {
+      const v = ok ? x.trail[j] : null; if (!v || !v.ok) { M(td, null); return; }
+      M(td, v.mdd, when(v.mddInfo));
+    }));
+    row('10년 보유 시 최악 MDD', '모든 10년 구간(1개월 간격) 중 가장 깊은 값 · 롤링 표', (td, x, i) => { const r = R[i].r10; if (!r) { M(td, null); return; } M(td, r.mddWorst, `${r.mddWorstWin} 구간`); }, { detail: true });
+    row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값 · 수익과 위험', (td, x, i) => { const r = R[i].r10; M(td, r ? r.mddMed : null); });
+    row('평균 낙폭', '매달 직전 고점보다 얼마나 아래 있었나의 평균 · 수익과 위험', (td, x, i) => M(td, -R[i].pain));
+    // one plain sentence for the first portfolio
+    const x = series[0], m = x.st.mddInfo, R0 = R[0];
+    if (!(m.mdd < 0)) { note.textContent = `${x.name}: 분석 기간에 떨어진 달이 없어 MDD가 0%예요.`; return; }
+    const parts = rec.filter(r => r.ok && x.trail[r.j] && x.trail[r.j].ok).map(r => {
+      const v = x.trail[r.j], same = Math.abs(v.mdd - m.mdd) < SAME && v.mddInfo.troughLabel === m.troughLabel;
+      return `최근 ${r.Y}년 ${mpct1(v.mdd)}${same ? '(전체와 같은 하락)' : ''}`;
+    });
+    note.append(el('b', null, x.name + ': '), `전체 기간 MDD ${mpct1(m.mdd)}는 ${m.peakLabel}→${m.troughLabel} 한 번의 하락에서 나온 값이에요.` +
+      (parts.length ? ` 구간을 좁혀 보면 ${parts.join(', ')}` + (R0.r10 ? `이고, 10년 구간의 보통 MDD는 ${mpct1(R0.r10.mddMed)}예요.` : '이에요.') : '') +
+      ' 표마다 어느 구간의 MDD인지 이름을 붙여 뒀어요.');
+  }
+
   /* ---------- period check: does the same mix hold up in other periods? ---------- */
   const PCT = { ret: [0.05, 0.10], risk: [0.15, 0.30], era20: [0.02, 0.05], era10: [0.03, 0.06], surge: [0.01, 0.03] };
   const ST_IC = { good: '✓', warn: '!', bad: '✕', na: '–' };
   const stIcon = k => { const i = el('span', 'st-ic ' + k, ST_IC[k]); i.setAttribute('aria-hidden', 'true'); return i; };
-  const ppTxt = d => (d >= 0 ? '+' : '−') + Math.abs(d * 100).toFixed(1) + '%p';
   const bnum = t => el('b', null, t);
   /* the portfolio picked in the chips; until one is picked (or while the picked one is incomplete) the first one */
   function pcCur() {
@@ -4172,7 +4362,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const ws = rows.filter(r => r.w).map(r => r.w);
     const cLo = Math.min(0, ...ws.map(w => w.cagr)), cHi = Math.max(0.0001, ...ws.map(w => w.cagr)), mLo = Math.min(-0.01, ...ws.map(w => w.mdd));
     const thead = el('thead'), hr = el('tr');
-    ['구간', 'CAGR', 'MDD', '최장 회복', '전체 대비 CAGR'].forEach(h => hr.appendChild(el('th', null, h)));
+    ['구간', 'CAGR', 'MDD (구간 안)', '최장 회복', '전체 기간 대비 CAGR'].forEach(h => hr.appendChild(el('th', null, h)));
     thead.appendChild(hr); t.appendChild(thead);
     const bar = (v, lo, hi, ref) => {
       const b = el('div', 'mbar'), span = hi - lo || 1, z = (0 - lo) / span * 100, p = (v - lo) / span * 100;
@@ -4189,11 +4379,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       if (r.full) tr.classList.add('full'); if (r.end) tr.classList.add('pair-end');
       const w = r.w, lab = k => (k === 0 ? '시작' : BT.label(w.a + k - 1));
       const th = el('th', null, r.lab); th.appendChild(el('span', 'when', `${BT.label(w.a)}–${BT.label(w.b)}`)); tr.appendChild(th);
-      const c1 = el('td'); c1.dataset.label = 'CAGR'; const v1 = el('div', 'mval'); v1.append(el('span', null, pctm(w.cagr, 1)), bar(w.cagr, cLo, cHi, r.full ? null : P.full.cagr)); c1.appendChild(v1); if (w.cagr < 0) c1.classList.add('neg'); tr.appendChild(c1);
-      const c2 = el('td'); c2.dataset.label = 'MDD'; const v2 = el('div', 'mval'); v2.append(el('span', null, mpct1(w.mdd)), bar(w.mdd, mLo, 0, r.full ? null : P.full.mdd)); c2.appendChild(v2);
+      const c1 = el('td'); c1.dataset.label = 'CAGR (이 구간)'; const v1 = el('div', 'mval'); v1.append(el('span', null, pctm(w.cagr, 1)), bar(w.cagr, cLo, cHi, r.full ? null : P.full.cagr)); c1.appendChild(v1); if (w.cagr < 0) c1.classList.add('neg'); tr.appendChild(c1);
+      const c2 = el('td'); c2.dataset.label = 'MDD (이 구간)'; const v2 = el('div', 'mval'); v2.append(el('span', null, mpct1(w.mdd)), bar(w.mdd, mLo, 0, r.full ? null : P.full.mdd)); c2.appendChild(v2);
       if (w.mdd < 0) c2.title = `${lab(w.mPk)} → ${lab(w.mTr)}`; tr.appendChild(c2);
       const c3 = el('td', null, w.uw ? dur(w.uw) + (w.ong ? '+' : '') : '없음'); c3.dataset.label = '최장 회복'; tr.appendChild(c3);
-      const c4 = el('td', 'dlt'); c4.dataset.label = '전체 대비 CAGR';
+      const c4 = el('td', 'dlt'); c4.dataset.label = '전체 기간 대비 CAGR';
       const d = w.cagr - P.full.cagr;
       if (r.full) c4.appendChild(el('span', 'na', '기준'));
       else if (Math.abs(d) < 0.0005) c4.appendChild(el('span', 'na', '같음'));
@@ -4309,26 +4499,26 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const mTxt = Math.abs(dM) < 0.0005 ? `MDD는 ${mpct1(sA.mdd)}로 전체 기간과 같았어요` : `MDD는 ${mpct1(sA.mdd)}로 전체(${mpct1(sF.mdd)})보다 ${dM > 0 ? '얕았어요' : '깊었어요'}`;
     host.appendChild(el('p', 'small', `이 구간은 ${cTxt}, ${mTxt}.`));
     const t = el('table', 'pccmp'), thead = el('thead'), hr = el('tr');
-    ['지표', '선택 구간', `전체 (${BT.label(P.s)}–${BT.label(P.e)})`, '차이'].forEach(h => hr.appendChild(el('th', null, h)));
+    ['지표', `선택 구간 (${BT.label(a)}–${BT.label(b)})`, `전체 기간 (${BT.label(P.s)}–${BT.label(P.e)})`, '차이'].forEach(h => hr.appendChild(el('th', null, h)));
     thead.appendChild(hr); t.appendChild(thead);
     const tb = el('tbody');
     const row = (lab, va, vf, diff, good, subA, subF) => {
       const tr = el('tr'); tr.appendChild(el('th', null, lab));
-      const ta = el('td', null, va); if (subA) ta.appendChild(el('span', 'sub', subA)); tr.appendChild(ta);
-      const tf = el('td', null, vf); if (subF) tf.appendChild(el('span', 'sub', subF)); tr.appendChild(tf);
-      const td = el('td', 'dlt'); if (diff) td.appendChild(el('span', good == null ? null : good ? 'up' : 'dn', diff)); tr.appendChild(td);
+      const ta = el('td', null, va); ta.dataset.label = '선택 구간'; if (subA) ta.appendChild(el('span', 'sub', subA)); tr.appendChild(ta);
+      const tf = el('td', null, vf); tf.dataset.label = '전체 기간'; if (subF) tf.appendChild(el('span', 'sub', subF)); tr.appendChild(tf);
+      const td = el('td', 'dlt'); td.dataset.label = '차이'; if (diff) td.appendChild(el('span', good == null ? null : good ? 'up' : 'dn', diff)); tr.appendChild(td);
       tb.appendChild(tr);
     };
     const mi = s2 => { const m2 = s2.mddInfo; return m2.mdd < 0 ? `${m2.peakLabel} → ${m2.troughLabel}` : ''; };
-    row('CAGR', pctm(sA.cagr), pctm(sF.cagr), (dC >= 0 ? '▲ ' : '▼ ') + ppTxt(dC), dC >= 0);
+    row('CAGR', pctm(sA.cagr), pctm(sF.cagr), Math.abs(dC) < SAME ? '같음' : (dC > 0 ? '▲ ' : '▼ ') + ppTxt(dC), Math.abs(dC) < SAME ? null : dC > 0);
     row(`최종 금액 (초기 ${money(state.initial)})`, money(state.initial * sA.final), money(state.initial * sF.final), '', null);
-    row('MDD', mpct(sA.mdd), mpct(sF.mdd), Math.abs(dM) < 0.0005 ? '같음' : (dM > 0 ? '▲ ' : '▼ ') + `${Math.abs(dM * 100).toFixed(1)}%p ${dM > 0 ? '얕음' : '깊음'}`, Math.abs(dM) < 0.0005 ? null : dM > 0, mi(sA), mi(sF));
+    row('MDD (구간 안 최대 낙폭)', mpct(sA.mdd), mpct(sF.mdd), Math.abs(dM) < SAME ? '같음' : (dM > 0 ? '▲ ' : '▼ ') + `${Math.abs(dM * 100).toFixed(1)}%p ${dM > 0 ? '얕음' : '깊음'}`, Math.abs(dM) < SAME ? null : dM > 0, mi(sA), mi(sF));
     const uA = sA.uw.months, uF = sF.uw.months, dU = uA - uF;
     row('최장 회복 기간', uA ? dur(uA) + (sA.uw.ongoing ? '+' : '') : '없음', uF ? dur(uF) + (sF.uw.ongoing ? '+' : '') : '없음', dU ? (dU < 0 ? '▲ ' : '▼ ') + `${dur(Math.abs(dU))} ${dU < 0 ? '짧음' : '김'}` : '같음', dU ? dU < 0 : null);
     const dS = sA.stdev - sF.stdev;
-    row('표준편차 (연)', pctm(sA.stdev), pctm(sF.stdev), (dS <= 0 ? '▲ ' : '▼ ') + `${Math.abs(dS * 100).toFixed(1)}%p ${dS <= 0 ? '낮음' : '높음'}`, dS <= 0);
+    row('표준편차 (연)', pctm(sA.stdev), pctm(sF.stdev), Math.abs(dS) < SAME ? '같음' : (dS < 0 ? '▲ ' : '▼ ') + `${Math.abs(dS * 100).toFixed(1)}%p ${dS < 0 ? '낮음' : '높음'}`, Math.abs(dS) < SAME ? null : dS < 0);
     const dSh = (sA.sharpe != null && sF.sharpe != null) ? sA.sharpe - sF.sharpe : null;
-    row('샤프 비율', num(sA.sharpe), num(sF.sharpe), dSh == null ? '' : (dSh >= 0 ? '▲ +' : '▼ −') + Math.abs(dSh).toFixed(2), dSh == null ? null : dSh >= 0);
+    row('샤프 비율', num(sA.sharpe), num(sF.sharpe), dSh == null ? '' : Math.abs(dSh) < 0.005 ? '같음' : (dSh > 0 ? '▲ +' : '▼ −') + Math.abs(dSh).toFixed(2), dSh == null || Math.abs(dSh) < 0.005 ? null : dSh > 0);
     row('최악 연도', sA.worst ? `${spct(sA.worst.ret)} (${sA.worst.year})` : '–', sF.worst ? `${spct(sF.worst.ret)} (${sF.worst.year})` : '–', '', null);
     t.appendChild(tb); const wrap = el('div', 'tbl-wrap'); wrap.appendChild(t); host.appendChild(wrap);
   }
@@ -4454,7 +4644,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const nm = el('div', 'qr-name'); const k = el('span', 'key'); k.style.background = x.color; nm.append(k, el('span', null, x.name)); card.appendChild(nm);
       const kv = el('div', 'qr-kv');
       const cell = (lab, val, neg) => { const d = el('div'); d.append(el('span', null, lab), el('b', neg ? 'neg' : null, val)); kv.appendChild(d); };
-      cell('CAGR', pct(x.st.cagr, 1), x.st.cagr < 0); cell('MDD', mpct1(x.st.mdd), x.st.mdd < 0); cell('최종 금액', fmtMoneyShort(state.initial * x.st.final));
+      cell('CAGR', pct(x.st.cagr, 1), x.st.cagr < 0); cell('MDD (전체 기간)', mpct1(x.st.mdd), x.st.mdd < 0); cell('최종 금액', fmtMoneyShort(state.initial * x.st.final));
       card.appendChild(kv); host.appendChild(card);
     }
   }
