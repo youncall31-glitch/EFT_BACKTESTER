@@ -477,6 +477,44 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
   .sc-t .sdesc.r{text-align:left;max-width:none}
 }
 
+/* v6: 계산 검증 */
+.vf-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.vf-item{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--sheet-2)}
+.vf-item.fail{border-color:var(--seal)}
+.vf-ic{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12.5px;font-weight:700;line-height:1;flex:none;margin-top:1px}
+.vf-ic.pass{background:var(--good-wash);color:var(--good);box-shadow:inset 0 0 0 1.5px var(--good)}
+.vf-ic.fail{background:var(--seal-wash);color:var(--seal);box-shadow:inset 0 0 0 1.5px var(--seal)}
+.vf-ic.info{background:var(--accent-wash);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.vf-b{min-width:0}
+.vf-b h4{margin:1px 0 2px;font-size:14px;font-weight:700;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;text-wrap:balance}
+.vf-b p{margin:5px 0 0;font-size:13px;color:var(--ink-2);line-height:1.65}
+.vf-b p b{color:var(--ink);font-weight:600}
+.vf-pv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;margin:9px 0 2px;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet);font-size:12.5px;font-variant-numeric:tabular-nums}
+.vf-pv span{color:var(--ink-2);min-width:0}
+.vf-pv b{text-align:right;font-weight:600;white-space:nowrap;color:var(--ink)}
+.vf-pv .sum{border-top:1px solid var(--rule-2);padding-top:6px;margin-top:2px;color:var(--ink);font-weight:700}
+.vf-badge{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:4px 11px 4px 4px;border-radius:999px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid var(--rule);max-width:100%}
+.vf-badge span:last-child{min-width:0}
+.vf-badge.good{color:var(--good);background:var(--good-wash);border-color:color-mix(in srgb,var(--good) 35%,transparent)}
+.vf-badge.bad{color:var(--seal);background:var(--seal-wash);border-color:color-mix(in srgb,var(--seal) 35%,transparent)}
+.vf-badge .vf-ic{width:18px;height:18px;font-size:10.5px;margin:0;background:var(--sheet)}
+.vf-badge:hover span:last-child{text-decoration:underline}
+.vf-t td{vertical-align:top;white-space:normal;font-size:12.5px;line-height:1.6}
+.vf-t td.l:first-child{min-width:120px}
+.vf-t td:nth-child(2){color:var(--ink-2);min-width:240px}
+.vf-t td:nth-child(2) b{color:var(--ink);font-weight:600}
+.vf-t td:nth-child(3){white-space:normal;min-width:170px;max-width:260px;font-variant-numeric:tabular-nums}
+.vf-note{margin-top:8px;line-height:1.6}
+@media (max-width:600px){
+  .vf-item{padding:11px 12px;gap:9px}
+  .vf-t thead{display:none}
+  .vf-t,.vf-t tbody,.vf-t tr,.vf-t td{display:block;width:100%}
+  .vf-t tr{border-bottom:1px solid var(--rule);padding:9px 11px}
+  .vf-t tbody tr:last-child{border-bottom:0}
+  .vf-t td,.vf-t td.l,.vf-t td.l:first-child,.vf-t td:nth-child(2),.vf-t td:nth-child(3){border:0;padding:2px 0;text-align:left;min-width:0;max-width:none;white-space:normal}
+  .vf-t td:nth-child(3)::before{content:"계산기 값 ";color:var(--muted);font-weight:400}
+}
+
 </style>
 </head>
 <body>
@@ -612,6 +650,16 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
         <p class="desc"><span class="unit" id="planUnit">단위: 만원</span> · 세금은 국민연금·사적연금 소득세, 양도세, 퇴직소득세 등을 모두 더한 값입니다.</p>
         <div class="tbl-wrap plan-wrap"><table class="t" id="planTbl"></table></div>
         <div class="io" id="csvOut" hidden></div>
+      </section>
+
+      <section class="card" id="cardVerify">
+        <div class="card-h"><h2>계산 검증</h2><span class="unit">필요자금을 갖췄을 때 · 그 해 금액</span></div>
+        <p class="desc">이 계산이 맞는지 세 가지 방법으로 확인할 수 있어요. 자동 검산은 입력을 바꿀 때마다 다시 하고, 검산용 표를 내려받으면 엑셀에서 직접 다시 계산할 수 있어요. 세금·건강보험료·국민연금은 공식 계산기에 넣어 하나씩 맞춰 볼 수 있어요.</p>
+        <div class="vf-list" id="vfChecks"></div>
+        <div class="card-h sub"><h3>엑셀로 직접 다시 계산하기</h3></div>
+        <div id="vfExcel"></div>
+        <div class="card-h sub"><h3>공식 계산기로 하나씩 맞춰 보기</h3><span class="unit" id="vfYear"></span></div>
+        <div id="vfOfficial"></div>
       </section>
 
       <section class="card">
@@ -975,6 +1023,8 @@ function RetirementEngine() {
         acc.ri = Math.min(bal - acc.nd, Math.max(0, num(a.ri, 0) * MAN));
         const rr = (a.riRate === '' || a.riRate == null) ? null : num(a.riRate, NaN);
         if (acc.ri > 0) acc.riRate = Number.isFinite(rr) ? rr / 100 : retirementTax(acc.ri, num(a.serviceYears, 20)) / acc.ri;
+        acc.serviceYears = Math.max(1, Math.round(num(a.serviceYears, 20)));
+        acc.riRateUser = acc.ri > 0 && Number.isFinite(rr);
         acc.startYear = Math.max(birth[owner] + Math.round(num(a.startAge, 55)), cy);
         acc.startAgeIn = Math.round(num(a.startAge, 55));
       }
@@ -1263,8 +1313,9 @@ function RetirementEngine() {
       const age = [y - M.birth[0], M.P > 1 ? y - M.birth[1] : 0];
       // 연초 스냅샷
       const finBase = [0, 0];
+      let startBal = 0;
       for (const a of A) {
-        a.b0 = a.bal; a.basis0 = a.basis;
+        a.b0 = a.bal; a.basis0 = a.basis; startBal += a.bal;
         a.gf = (a.group === 'FOR' || a.group === 'KRE' || a.group === 'ISA') && a.bal > 0 ? Math.max(0, 1 - a.basis / a.bal) : 0;
         if (a.group === 'PEN') {
           if (y >= a.startYear) {
@@ -1385,14 +1436,15 @@ function RetirementEngine() {
           }
         }
       }
-      // 운용수익
+      // 운용수익 (검산용: 계좌 안에서 떼는 배당·이자세, 굴리지 않는 DB 잔액도 기록)
+      let divTax = 0, noGrow = 0;
       for (const a of A) {
         if (!(a.bal > 0)) continue;
         const g = a.group;
-        if (g === 'DC' && a.dbMode) continue;
-        if (g === 'FOR' || g === 'KRE') { const d = a.bal * a.div; a.bal = a.bal * (1 + a.cagr) - d * C.DIV_TAX; a.basis += d * (1 - C.DIV_TAX); }
-        else if (g === 'KRS') { const d = a.bal * a.div; a.bal = a.bal * (1 + a.cagr) - d * C.DIV_TAX; }
-        else if (g === 'DEP') { const ir = a.depRate != null ? a.depRate : a.cagr; a.bal = a.bal * (1 + a.cagr) - a.bal * Math.max(0, ir) * C.DIV_TAX; }
+        if (g === 'DC' && a.dbMode) { noGrow += a.bal; continue; }
+        if (g === 'FOR' || g === 'KRE') { const d = a.bal * a.div, t = d * C.DIV_TAX; divTax += t; a.bal = a.bal * (1 + a.cagr) - t; a.basis += d * (1 - C.DIV_TAX); }
+        else if (g === 'KRS') { const d = a.bal * a.div, t = d * C.DIV_TAX; divTax += t; a.bal = a.bal * (1 + a.cagr) - t; }
+        else if (g === 'DEP') { const ir = a.depRate != null ? a.depRate : a.cagr, t = a.bal * Math.max(0, ir) * C.DIV_TAX; divTax += t; a.bal = a.bal * (1 + a.cagr) - t; }
         else a.bal = a.bal * (1 + a.cagr);
         if (a.bal < 0) a.bal = 0;
       }
@@ -1448,7 +1500,8 @@ function RetirementEngine() {
           y, age0: age[0], age1: M.P > 1 ? age[1] : null, ret: isRet,
           exp: M.expTotal[i], pub0: M.pub[0][i], pub1: M.pub[1][i], other: M.other[i], work: M.work[0][i] + (M.P > 1 ? M.work[1][i] : 0),
           wd: {}, bal: {}, total: tot, short: isRet && short > 0.5 ? short : 0,
-          surplus, fill: fillAmt, moved, contrib: contribY, isaMoved, isaTax
+          surplus, fill: fillAmt, moved, contrib: contribY, isaMoved, isaTax,
+          start: startBal, divTax, noGrow
         };
         for (let j = 0; j < A.length; j++) {
           const a = A[j];
@@ -1495,6 +1548,35 @@ function RetirementEngine() {
       if (simulate(M, sid, mid, 0).ok) hi = mid; else lo = mid;
     }
     return { k: hi, required: hi * T0, T0 };
+  }
+
+  // 검산(은퇴 후 해마다): ① 들어온 돈 = 나간 돈, ② 연말 잔액 = (연초 − 인출 + 재투자) × (1 + 수익률) − 배당·이자세(+ 은퇴 후 납입),
+  // ③ 은퇴 첫해 연초 자산 = 순인출의 현재가치 + 배당·이자세 등의 현재가치 + 마지막 잔액의 현재가치 — 계획표 숫자와 수익률 하나로 다시 계산
+  function ledgerCheck(plan) {
+    const rows = plan.rows.filter(r => r.ret);
+    if (!rows.length) return null;
+    let flowMax = 0, flowYear = null;
+    rows.forEach(r => {
+      if (r.short > 0) return;
+      const d = Math.abs(r.pub0 + r.pub1 + r.other + (r.work || 0) + (r.W || 0) - (r.exp + (r.T || 0) + (r.H || 0) + (r.surplus || 0) + (r.fill || 0)));
+      if (d > flowMax) { flowMax = d; flowYear = r.y; }
+    });
+    const rate = plan.blendRate;
+    const out = { n: rows.length, y0: rows[0].y, y1: rows[rows.length - 1].y, flowMax, flowYear, shortYears: rows.filter(r => r.short > 0).length, rate: rate == null ? null : rate, start: rows[0].start };
+    if (rate == null) return out;
+    let balMax = 0, balYear = null, pvW = 0, pvAdj = 0, sumDiv = 0;
+    rows.forEach((r, t) => {
+      const S = (r.surplus || 0) + (r.fill || 0), X = r.noGrow || 0;
+      const exp = (r.start - r.W + S - X) * (1 + rate) + X - (r.divTax || 0) + (r.contrib || 0);
+      const d = Math.abs(exp - r.total);
+      if (d > balMax) { balMax = d; balYear = r.y; }
+      const f = Math.pow(1 + rate, t);
+      pvW += (r.W - S) / f;
+      pvAdj += ((r.divTax || 0) + rate * X - (r.contrib || 0)) / (f * (1 + rate));
+      sumDiv += r.divTax || 0;
+    });
+    const pvEnd = rows[rows.length - 1].total / Math.pow(1 + rate, rows.length);
+    return Object.assign(out, { balMax, balYear, pvW, pvAdj, pvEnd, pvSum: pvW + pvAdj + pvEnd, sumDiv, hasX: rows.some(r => (r.noGrow || 0) > 0.5), hasC: rows.some(r => (r.contrib || 0) > 0.5) });
   }
 
   function withReference(S) {
@@ -1574,13 +1656,21 @@ function RetirementEngine() {
     const atRet = {};
     const rr = planCur.rows.find(r => r.y === M.retYear - 1);
     planCur.accounts.forEach(a => { const src = M.accounts.find(x => x.id === a.id); atRet[a.id] = rr ? (rr.bal[a.id] || 0) : (src ? src.bal : 0); });
+    // 검산: 필요자금으로는 끝까지 버티고, 1% 적으면 모자라는지
+    let verify = { k: best.k, required: best.required, skip: true };
+    if (Number.isFinite(best.k) && best.k > 0 && Number.isFinite(best.required)) {
+      const lo = simulate(M, bestId, best.k * 0.99, 1);
+      verify = { k: best.k, required: best.required, skip: false, okAt: planReq.ok, finalAt: planReq.finalBal, finalAtPV: planReq.finalPV,
+        lowReq: best.required * 0.99, lowOk: lo.ok, lowFail: lo.failYear, lowShort: lo.firstShort, reserve: M.reserve };
+    }
+    verify.ledger = ledgerCheck(planReq);
     return {
-      ms: Date.now() - t0, usedRef, S, decisions: D.decisions, loans: M.loans,
+      ms: Date.now() - t0, usedRef, S, decisions: D.decisions, loans: M.loans, verify,
       meta: { cy: M.cy, by: M.by, infl: M.infl, retYear: M.retYear, endYear: M.endYear, endAge: M.endAge, birth: M.birth, P: M.P, ownRet: M.ownRet, npsInfo: M.npsInfo, kids: M.kids, years: M.years, reinvCagr: M.reinvCagr, preCagr: M.preCagr },
       exp: { items: M.expItems.map(it => ({ key: it.key, name: it.name, cat: it.cat, kind: it.kind || null, oneoff: it.oneoff, series: Array.from(it.series) })), total: Array.from(M.expTotal) },
       pub: [Array.from(M.pub[0]), Array.from(M.pub[1])], other: Array.from(M.other), work: [Array.from(M.work[0]), Array.from(M.work[1])],
       strategies, bestId, planCur, planReq, atRet,
-      accountsIn: M.accounts.map(a => ({ id: a.id, name: a.name, type: a.type, group: a.group, owner: a.owner, riRate: a.riRate, startYear: a.startYear, cagr: a.cagr, cagrPre: a.cagrPre, cagrPost: a.cagrPost, nd: a.nd, ri: a.ri, bal: a.bal, contrib: a.contrib, contribAvg: a.contribAvg || 0, listMode: !!a.sched, employer: a.employer, salMode: !!a.salMode, dbMode: !!a.dbMode, dbToDc: !!a.dbToDc, salary: a.salary || 0, wageG: a.wageG || 0, salCap: a.salCap || 0, peakYear: Number.isFinite(a.peakYear) ? a.peakYear : null, hireYear: a.hireYear, ownerRet: a.ownerRet, cStart: a.cStart, cEnd: a.cEnd }))
+      accountsIn: M.accounts.map(a => ({ id: a.id, name: a.name, type: a.type, group: a.group, owner: a.owner, riRate: a.riRate, startYear: a.startYear, cagr: a.cagr, cagrPre: a.cagrPre, cagrPost: a.cagrPost, nd: a.nd, ri: a.ri, bal: a.bal, contrib: a.contrib, contribAvg: a.contribAvg || 0, listMode: !!a.sched, employer: a.employer, salMode: !!a.salMode, dbMode: !!a.dbMode, dbToDc: !!a.dbToDc, salary: a.salary || 0, wageG: a.wageG || 0, salCap: a.salCap || 0, peakYear: Number.isFinite(a.peakYear) ? a.peakYear : null, hireYear: a.hireYear, ownerRet: a.ownerRet, cStart: a.cStart, cEnd: a.cEnd, serviceYears: a.serviceYears || null, riRateUser: !!a.riRateUser }))
     };
   }
   // 퇴직연금 미리보기: 연봉 경로, DC 적립 예상, DB 그대로 vs 임금피크 직전 DC 전환(은퇴 직전 해 말, 은퇴 전 수익률)
@@ -1646,7 +1736,7 @@ function RetirementEngine() {
     return R;
   }
 
-  return { runAll, runMain, decide, etfSwap, npsTimingOne, sensOne, workScenario, retireScenario, prepare, simulate, solve, salAt, dcInfo, retirementTax, progressiveTax, pensionDeduction, nationalTax, propPoints, npsStartAge, STRATS, C };
+  return { runAll, runMain, decide, etfSwap, ledgerCheck, npsTimingOne, sensOne, workScenario, retireScenario, prepare, simulate, solve, salAt, dcInfo, retirementTax, progressiveTax, pensionDeduction, nationalTax, propPoints, npsStartAge, STRATS, C };
 }
 
 
@@ -2610,7 +2700,9 @@ function RetirementEngine() {
         break;
       }
       case 'csv': exportCsv(); break;
+      case 'vfCsv': exportVerifyCsv(); break;
       case 'copyCsv': copyText($('#csvText')); break;
+      case 'copyOut': copyText($('#' + b.dataset.t)); break;
     }
   });
   document.addEventListener('input', e => {
@@ -2642,7 +2734,7 @@ function RetirementEngine() {
     rd.readAsText(f);
     el.value = '';
   }
-  async function exportText(filename, text, kind) {
+  async function exportText(filename, text, kind, outId) {
     if (!window.claude) {
       // 일반 웹사이트(GitHub Pages 등): 바로 내려받기
       try {
@@ -2659,7 +2751,12 @@ function RetirementEngine() {
       try { await dl.save({ filename, data: text }); return; } catch (err) { if (err && err.code === 'declined') return; }
     }
     if (kind === 'json') { const io = $('#jsonIO'); io.hidden = false; $('#jsonText').value = text; $('#secSave').open = true; const m = $('#jsonMsg'); if (m) m.textContent = '파일 저장을 쓸 수 없는 화면이라 텍스트로 보여 드려요. 복사해서 보관하세요.'; }
-    else { const o = $('#csvOut'); o.hidden = false; o.innerHTML = `<p class="hint">파일 저장을 쓸 수 없는 화면이라 텍스트로 보여 드려요. 복사해서 엑셀에 붙여 넣으세요.</p><textarea id="csvText" spellcheck="false"></textarea><div class="adds"><button class="btn" type="button" data-act="copyCsv">복사</button></div>`; $('#csvText').value = text; }
+    else {
+      const oid = outId || 'csvOut', o = $('#' + oid); if (!o) return;
+      o.hidden = false;
+      o.innerHTML = `<p class="hint">파일 저장을 쓸 수 없는 화면이라 텍스트로 보여 드려요. 복사해서 메모장에 붙여 .csv로 저장한 뒤 엑셀로 여세요.</p><textarea id="${oid}Text" spellcheck="false"></textarea><div class="adds"><button class="btn" type="button" data-act="copyOut" data-t="${oid}Text">복사</button></div>`;
+      $('#' + oid + 'Text').value = text;
+    }
   }
 
   // ───────── 계산 실행(웹 워커) ─────────
@@ -2906,15 +3003,204 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   }
   function setScYear(y, scroll) {
     view.scY = y;
-    if (lastMain) renderScenario(lastMain);
+    if (lastMain) { renderScenario(lastMain); renderVerifyOfficial(lastMain); }
     if (scroll) { const c = $('#cardScenario'); if (c) c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); }
   }
+
+  // ───────── 계산 검증: 자동 검산 · 엑셀 검산표 · 공식 계산기 ─────────
+  const OFFICIAL = {
+    nps: ['국민연금공단', 'https://www.nps.or.kr'],
+    nhis: ['국민건강보험공단', 'https://www.nhis.or.kr'],
+    hometax: ['홈택스', 'https://www.hometax.go.kr']
+  };
+  const offLink = k => `<a href="${OFFICIAL[k][1]}" target="_blank" rel="noopener">${OFFICIAL[k][0]}</a>`;
+  const wonExact = w => (w < 0 ? '−' : '') + Math.round(Math.abs(w)).toLocaleString('ko-KR') + '원';
+  const tinyWon = w => Math.abs(w) < 1 ? '1원 미만' : wonExact(w);
+  // [필요자금 최소 여부, 해마다 돈의 흐름, 잔액·현재가치] → 'pass' | 'fail' | 'info'
+  function verifyStatus(R) {
+    const v = R.verify || {}, L = v.ledger;
+    const a = !Number.isFinite(v.required) ? 'info' : v.skip ? 'pass' : (v.okAt && !v.lowOk ? 'pass' : 'fail');
+    const b = !L ? 'info' : L.flowMax < 1000 ? 'pass' : 'fail';
+    const c = !L || L.rate == null ? 'info' : (L.balMax < 1000 && Math.abs(L.pvSum - L.start) < 1000 ? 'pass' : 'fail');
+    return [a, b, c];
+  }
+  const vfIcon = s => `<span class="vf-ic ${s}" aria-hidden="true">${s === 'pass' ? '✓' : s === 'fail' ? '!' : 'i'}</span>`;
+  function verifyBadge(R) {
+    const st = verifyStatus(R), pass = st.filter(s => s === 'pass').length, fail = st.filter(s => s === 'fail').length;
+    const txt = fail ? `검산 ${fail}가지 확인 필요` : pass === st.length ? `검산 ${pass}가지 모두 맞음` : `검산 ${pass}가지 맞음`;
+    return `<a class="vf-badge ${fail ? 'bad' : 'good'}" href="#cardVerify">${vfIcon(fail ? 'fail' : 'pass')}<span>${txt} · 검증 방법 보기</span></a>`;
+  }
+  function renderVerify(R) {
+    const host = $('#vfChecks'); if (!host) return;
+    const v = R.verify || {}, L = v.ledger, m = R.meta;
+    const st = verifyStatus(R);
+    const basis = state.horizonBasis;
+    const endWho = m.P > 1 ? (basis === 'self' ? '본인' : basis === 'spouse' ? '배우자' : '부부 중 늦은 분') : '본인';
+    const pill = s => s === 'pass' ? '<span class="pill good">맞음</span>' : s === 'fail' ? '<span class="pill bad">확인 필요</span>' : '<span class="pill info">건너뜀</span>';
+    const item = (s, title, body) => `<div class="vf-item ${s}">${vfIcon(s)}<div class="vf-b"><h4>${title} ${pill(s)}</h4>${body}</div></div>`;
+    // ① 필요자금이 '끝까지 버티는 가장 적은 금액'인지: 그 금액으론 버티고 1% 적으면 모자라야 함
+    let a;
+    if (!Number.isFinite(v.required)) a = '<p>지출이 자산·연금에 비해 너무 커서 필요자금을 찾지 못해 이 검산은 건너뜁니다.</p>';
+    else if (v.skip) a = `<p>국민연금과 수입만으로 ${m.endYear}년까지 충분해서 은퇴 자산이 없어도 돼요.</p>`;
+    else {
+      const ages = y => m.P > 1 ? `본인 ${y - m.birth[0]}세·배우자 ${y - m.birth[1]}세` : `${y - m.birth[0]}세`;
+      a = `<p>필요자금 <b>${won(v.required)}</b>으로 시작하면 ${m.endYear}년(${endWho} ${m.endAge}세)까지 한 해도 모자라지 않고, 마지막 해 말에 <b>${won(v.finalAt, { tiny: true })}</b>(오늘 돈 ${won(v.finalAtPV, { tiny: true })})이 남아요.</p>` +
+        (v.lowOk
+          ? `<p>1% 적은 ${won(v.lowReq)}으로 시작해도 버텨요. 필요자금이 실제보다 크게 잡혔을 수 있어요.</p>`
+          : `<p>1% 적은 <b>${won(v.lowReq)}</b>으로 시작하면 ${v.lowFail}년(${ages(v.lowFail)})에 ${v.lowShort > 0.5 ? `<b>${won(v.lowShort, { tiny: true })}</b>이 모자라요` : '정해 둔 최소 잔액 아래로 내려가요'}. 그래서 이 금액이 끝까지 버티는 가장 적은 금액이에요.</p>`);
+    }
+    // ② 해마다 들어온 돈 = 나간 돈
+    const b = !L ? '<p>은퇴 후 연도가 계획 범위 안에 없어요.</p>'
+      : `<p>은퇴 후 ${L.n}년(${L.y0}~${L.y1}년) 모두 <b>국민연금 + 연금 외 수입 + 계좌에서 꺼낸 돈 = 지출 + 세금 + 건강보험료 + 남아서 다시 투자한 돈</b>이에요. 해마다 필요한 돈에 세금·건보료가 붙으면 그만큼 더 꺼내도록 반복 계산해서 맞춰요.</p><p>가장 큰 차이: ${tinyWon(L.flowMax)}${L.flowMax >= 1 && L.flowYear ? `(${L.flowYear}년)` : ''}</p>`;
+    // ③ 연말 잔액이 수익률 하나로 이어지고, 거꾸로 할인하면 은퇴 첫해 연초 자산이 되는지
+    let c;
+    if (!L) c = '';
+    else if (L.rate == null) c = '<p>리밸런싱을 꺼서 계좌마다 수익률이 달라요. 기본 가정의 세부 설정에서 리밸런싱을 켜면 이 검산을 할 수 있어요.</p>';
+    else {
+      const rp = pct(L.rate, 2);
+      c = `<p>해마다 <b>연말 잔액 = (연초 잔액 − 꺼낸 돈 + 다시 투자한 돈) × (1 + ${rp}) − 계좌 안에서 뗀 배당·이자세${L.hasC ? ' + 은퇴 후 납입' : ''}</b>${L.hasX ? '(DB 퇴직금은 퇴직 전까지 굴리지 않음)' : ''}로 이어져요. 가장 큰 차이: ${tinyWon(L.balMax)}</p>
+        <p>${rp}는 계좌별 은퇴 후 수익률을 은퇴 시점 잔액으로 평균 낸 값이에요(리밸런싱). 같은 수익률로 거꾸로 할인하면 은퇴 첫해 연초 자산이 그대로 나와요.</p>
+        <div class="vf-pv" role="group" aria-label="현재가치 검산">
+          <span>앞으로 꺼낼 돈(꺼낸 돈 − 다시 투자)의 현재가치</span><b>${wonExact(L.pvW)}</b>
+          ${Math.abs(L.pvAdj) >= 1 ? `<span>계좌 안에서 뗄 배당·이자세${L.hasC ? '(은퇴 후 납입은 뺌)' : ''}의 현재가치</span><b>${wonExact(L.pvAdj)}</b>` : ''}
+          <span>마지막 해 남은 돈의 현재가치</span><b>${wonExact(L.pvEnd)}</b>
+          <span class="sum">합계</span><b class="sum">${wonExact(L.pvSum)}</b>
+          <span>필요자금(은퇴 첫해 연초 자산)</span><b>${wonExact(L.start)}</b>
+          <span>차이</span><b>${tinyWon(L.pvSum - L.start)}</b>
+        </div>`;
+    }
+    host.innerHTML = item(st[0], '필요자금이 끝까지 버티는 가장 적은 금액인가', a) +
+      item(st[1], '해마다 들어온 돈과 나간 돈이 맞는가', b) +
+      item(st[2], '잔액이 수익률대로 이어지고, 현재가치로 되돌리면 필요자금이 되는가', c);
+    $('#vfExcel').innerHTML = !L ? '' : L.rate == null
+      ? '<p class="desc">리밸런싱을 켜면 수익률 하나로 다시 계산하는 검산용 표를 내려받을 수 있어요.</p>'
+      : `<p class="desc">검산용 표에는 은퇴 후 해마다 연초 잔액, 꺼낸 돈, 다시 투자한 돈, 배당·이자세, 연말 잔액이 들어 있어요. 위 식을 엑셀 수식으로 넣은 칸(다시 계산한 연말 잔액, 차이, 현재가치)도 함께 있어서, 엑셀이나 구글 시트로 열면 바로 계산돼요. ‘잔액 차이’와 ‘돈 흐름 차이’가 0(반올림 때문에 몇 원)이고 맨 아래 ‘합계’가 필요자금과 같으면 맞는 거예요.</p>
+        <div class="adds"><button class="btn" type="button" data-act="vfCsv">검산용 표 내려받기 (CSV)</button><span class="hint">원 단위 · 그 해 금액 · 필요자금을 갖췄을 때</span></div>
+        <div class="io" id="vfOut" hidden></div>`;
+    renderVerifyOfficial(R);
+  }
+  // 인출 시나리오에서 고른 해의 세금·건보료·국민연금을 공식 계산기에 넣는 값과 함께
+  function renderVerifyOfficial(R) {
+    const host = $('#vfOfficial'); if (!host) return;
+    const rows = scRows(R), m = R.meta, P = planOf(R);
+    if (!rows.length) { host.innerHTML = ''; $('#vfYear').textContent = ''; return; }
+    const r = rows.find(x => x.y === view.scY) || rows[0];
+    const d = r.det || { acc: [], per: [], hi: null };
+    $('#vfYear').textContent = `${r.y}년 · 인출 시나리오에서 고른 해 · 그 해 금액`;
+    const who = p => m.P > 1 ? (p ? '배우자' : '본인') : '';
+    const nm = p => who(p) ? ' · ' + who(p) : '';
+    const it = [];
+    // 국민연금
+    m.npsInfo.forEach((ni, p) => {
+      if (!(ni.monthlyBase > 0)) return;
+      const pub = p ? r.pub1 : r.pub0;
+      const parts = [`월 ${won(ni.monthlyBase * MAN)}`];
+      if (ni.factor !== 1) parts.push(`× ${ni.factor.toFixed(3)}(${ni.shift < 0 ? '조기' : '연기'} ${Math.abs(ni.shift)}년)`);
+      if (ni.contribFactor < 1) parts.push(`× ${ni.contribFactor.toFixed(3)}(60세 전 은퇴)`);
+      parts.push(`× ${Math.pow(1 + m.infl, r.y - m.by).toFixed(3)}(물가)`);
+      it.push([`국민연금${nm(p)}`,
+        `${offLink('nps')} 홈페이지나 ‘내 곁에 국민연금’ 앱의 <b>예상연금액 조회</b>에서 현재가치 기준 월액이 계산기에 넣은 월 ${won(ni.monthlyBase * MAN)}과 같은지 봐요. ${ni.startYear}년(${ni.age}세)부터 받아요.`,
+        pub > 0 ? `${parts.join(' ')}<br>= <b>월 ${wonExact(pub / 12)}</b>` : `${r.y}년엔 아직 안 받음`]);
+    });
+    // 건강보험료
+    const h = d.hi, HS = (R.S && R.S.health) || {};
+    if (h) {
+      if (h.mode === 'dependent') {
+        it.push(['건강보험료', `피부양자 요건(1인 연소득 2,000만원 이하, 재산 과세표준 5.4억원 이하 등)을 채우는지 ${offLink('nhis')}에서 확인해요. 판정 소득: ${h.depInc.map((x, p) => `${who(p) || '본인'} ${won(x)}`).join(', ')}`, '<b>0원</b>(피부양자)']);
+      } else if (h.mode === 'regional') {
+        const inc = [];
+        d.per.forEach(x => {
+          if (x.pub > 0) inc.push(`${who(x.p) || '본인'} 공적연금 연 ${won(x.pub)}(보험료엔 50%)`);
+          if (x.fin > 0) inc.push(`${who(x.p) || '본인'} 이자·배당 연 ${won(x.fin)}${x.fin > 1e7 ? '' : '(1,000만원 이하라 반영 안 됨)'}`);
+        });
+        if (h.otherHi > 0) inc.push(`연금 외 수입 반영분 연 ${won(h.otherHi)}`);
+        (h.work || []).forEach((w, p) => { if (w > 0 && !(h.working || [])[p]) inc.push(`${who(p) || '본인'} 근로소득 연 ${won(w)}(50% 반영)`); });
+        const pRaw = num(HS.propTaxBase, 0) * MAN * Math.pow(1 + num(HS.propGrowth, 2) / 100, r.y - m.cy), dRaw = num(HS.deposit, 0) * MAN;
+        if (pRaw > 0) inc.push(`재산세 과세표준 ${won(pRaw)}`);
+        if (h.propDed > 0) inc.push(`주택금융부채 공제 ${won(h.propDed)}`);
+        if (dRaw > 0) inc.push(`전월세 보증금 ${won(dRaw)}(30% 반영)`);
+        const tot = h.monthly * (1 + 0.9448 / 7.19);
+        it.push(['건강보험료', `${offLink('nhis')}의 <b>지역보험료 모의계산</b>에 넣을 값: ${inc.join(' · ') || '소득·재산 없음(최저 보험료)'}. 공단은 10원 미만을 버려서 몇 원 차이 날 수 있어요.`,
+          `월 <b>${wonExact(tot)}</b><br><span class="muted">건강 ${wonExact(h.monthly)}<br>+ 장기요양 ${wonExact(tot - h.monthly)}</span>`]);
+      } else {
+        it.push(['건강보험료', '일하는 사람은 직장 건강보험(급여 명세서)으로, 나머지 가족은 피부양자 요건으로 확인해요.', `연 <b>${wonExact(r.H)}</b>`]);
+      }
+    }
+    // 소득세: 사적연금 · 국민연금 · 해외 ETF 양도세
+    d.per.forEach(x => {
+      if (x.priv3 > 0) {
+        let how, res;
+        if (x.useB) { how = `과세분 ${won(x.priv3)}을 ${x.pub > 0 ? '국민연금과 합쳐 ' : ''}종합과세하는 쪽이 낮아요(분리과세면 ${won(x.sep)}). ${offLink('hometax')} <b>종합소득세 모의계산</b>에 연금소득 ${won(x.tot)}${x.finComp ? `, 금융소득 ${won(x.fin)}` : ''}을 넣어 확인해요.`; res = `소득세·지방세 <b>${wonExact(x.compB)}</b>${x.pub > 0 ? '<br><span class="muted">국민연금 몫 포함</span>' : ''}`; }
+        else if (x.overLim) { how = `1인 연 1,500만원을 넘어 전액 16.5% 분리과세예요(종합과세 ${won(Math.max(0, x.compB - x.compA))}보다 낮음). 손계산: ${won(x.priv3)} × 16.5%`; res = `<b>${wonExact(x.sep)}</b>`; }
+        else { how = `1인 연 1,500만원 이하라 ${x.age}세 세율 ${pctS(x.rate)} 분리과세예요. 손계산: ${won(x.priv3)} × ${pctS(x.rate)}`; res = `<b>${wonExact(x.sep)}</b>`; }
+        it.push([`사적연금 소득세${nm(x.p)}`, how, res]);
+      }
+      if (x.pub > 0 && !x.useB) it.push([`국민연금 소득세${nm(x.p)}`, `${offLink('hometax')} <b>종합소득세 모의계산</b>에 연금소득 ${won(x.pubT)}${x.finComp ? `, 금융소득 ${won(x.fin)}` : ''}을 넣어요. 연금소득공제 ${won(x.pd)}, 인적공제 ${won(x.ded)}, 표준세액공제 7만원이 들어가요.`, `소득세·지방세 <b>${wonExact(x.compA)}</b>`]);
+      if (x.cg > 0) it.push([`해외 ETF 양도소득세${nm(x.p)}`, `손계산: (양도차익 ${won(x.cg)} − 기본공제 250만원) × 22%`, `<b>${wonExact(x.tCG)}</b>`]);
+    });
+    // 계좌 안에서 떼는 세금
+    d.acc.forEach(e => {
+      const a = P.accounts.find(z => z.id === e.id); if (!a) return;
+      if (e.g === 'KRE' && e.tax > 0.5) it.push([`${accLabel(R, a)} 세금`, `손계산: 매매차익 ${won(e.gain)} × 15.4%`, `<b>${wonExact(e.tax)}</b>`]);
+      if (e.g === 'ISA' && e.tax > 0.5) it.push([`${accLabel(R, a)} 세금`, `손계산: (이익 ${won(e.gain)} − 비과세 ${won(e.exempt || 0)}) × 9.9%`, `<b>${wonExact(e.tax)}</b>`]);
+    });
+    // 퇴직소득세(연금계좌로 옮긴 퇴직금)
+    const riNote = '연금으로 받으면 해마다 꺼낸 퇴직금 × 실효세율의 70%(10년차까지)·60%·50%만 내요.';
+    P.accounts.forEach(a => {
+      if (!(a.converted && a.riAtConv > 0)) return;
+      const src = R.accountsIn.find(z => z.id === a.id);
+      const yrs = src ? Math.max(1, a.converted - src.hireYear) : null;
+      it.push([`퇴직소득세 · ${accLabel(R, a)}`, `${offLink('hometax')} <b>퇴직소득 세액계산</b>에 퇴직급여 ${won(a.riAtConv)}${yrs ? `, 근속연수 ${yrs}년` : ''}을 넣어요(결과에 지방소득세 10%를 더해 비교). ${riNote}`, `<b>${wonExact(a.riAtConv * a.riRate)}</b><br><span class="muted">지방세 포함 · 실효 ${pctS(a.riRate, 2)}</span>`]);
+    });
+    R.accountsIn.forEach(a => {
+      if (a.group !== 'PEN' || !(a.ri > 0) || a.riRateUser) return;
+      it.push([`퇴직소득세 · ${accLabel(R, a)}`, `${offLink('hometax')} <b>퇴직소득 세액계산</b>에 퇴직급여 ${won(a.ri)}, 근속연수 ${a.serviceYears}년을 넣어요(결과에 지방소득세 10%를 더해 비교). ${riNote}`, `<b>${wonExact(a.ri * a.riRate)}</b><br><span class="muted">지방세 포함 · 실효 ${pctS(a.riRate, 2)}</span>`]);
+    });
+    host.innerHTML = it.length
+      ? `<div class="tbl-wrap"><table class="t vf-t"><thead><tr><th class="l">항목</th><th class="l">이렇게 확인해요</th><th>계산기 값</th></tr></thead><tbody>${it.map(x => `<tr><td class="l"><b>${esc(x[0])}</b></td><td class="l">${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</tbody></table></div>
+        <p class="hint vf-note">이 계산기는 세율·공제·보험료율을 모든 해에 2026년 기준으로 써요. 공식 계산기도 올해 기준이라, 그 해 금액을 그대로 넣으면 결과가 같아야 해요. 메뉴 이름은 사이트 개편으로 바뀔 수 있으니 사이트 검색창에 이름을 넣어 찾으세요. 다른 해는 위 인출 시나리오에서 연도를 바꾸면 따라 바뀌어요.</p>`
+      : '<p class="desc">이 해에는 세금·건강보험료·국민연금이 없어 맞춰 볼 항목이 없어요. 위 인출 시나리오에서 다른 해를 골라 보세요.</p>';
+  }
+  // 검산용 표(CSV): 엑셀 수식이 들어 있어 열면 바로 다시 계산됨. 금액은 원, 필요자금을 갖췄을 때
+  function exportVerifyCsv() {
+    const R = lastMain; if (!R || !R.verify || !R.verify.ledger || R.verify.ledger.rate == null) return;
+    const L = R.verify.ledger, rows = R.planReq.rows.filter(r => r.ret);
+    const q = s => '"' + String(s).replace(/"/g, '""') + '"';
+    const n0 = x => Math.round(x || 0);
+    const lines = [
+      q(`120세 은퇴자금 계산기 검산표 · 금액은 원(그 해 금액) · 필요자금을 갖췄을 때 · 추천 전략 ${bestOf(R).name}`),
+      [q('은퇴 후 수익률(계좌 평균)'), L.rate].join(','),
+      [q('계산기 필요자금(은퇴 첫해 연초 자산)'), n0(L.start)].join(','),
+      q('읽는 법: 잔액 차이·돈 흐름 차이가 0(반올림 때문에 몇 원)이고 맨 아래 합계가 필요자금과 같으면 맞습니다. 다시 계산한 연말 잔액 = (연초 잔액 − 꺼낸 돈 + 다시 투자 − 굴리지 않는 잔액) × (1 + 수익률) + 굴리지 않는 잔액 − 배당·이자세 + 은퇴 후 납입'),
+      ['연도', '경과 연수', '연초 잔액', '국민연금', '연금 외 수입·근로', '계좌에서 꺼낸 돈', '지출', '세금', '건강보험료', '남아서 다시 투자', '계좌 안에서 뗀 배당·이자세', '은퇴 후 납입', '굴리지 않는 잔액(DB)', '계산기 연말 잔액', '다시 계산한 연말 잔액', '잔액 차이', '돈 흐름 차이', '순인출 현재가치', '배당·이자세 등 현재가치'].map(q).join(',')
+    ];
+    const F = 6, Lr = F + rows.length - 1;
+    rows.forEach((r, t) => {
+      const i = F + t;
+      lines.push([r.y, t, i === F ? '=$B$3' : `=N${i - 1}`, n0(r.pub0 + r.pub1), n0(r.other + (r.work || 0)), n0(r.W), n0(r.exp), n0(r.T), n0(r.H),
+        n0((r.surplus || 0) + (r.fill || 0)), n0(r.divTax), n0(r.contrib), n0(r.noGrow), n0(r.total),
+        `=(C${i}-F${i}+J${i}-M${i})*(1+$B$2)+M${i}-K${i}+L${i}`, `=O${i}-N${i}`, `=D${i}+E${i}+F${i}-G${i}-H${i}-I${i}-J${i}`,
+        `=(F${i}-J${i})/(1+$B$2)^B${i}`, `=(K${i}+$B$2*M${i}-L${i})/(1+$B$2)^(B${i}+1)`].join(','));
+    });
+    const s = Lr + 2;
+    lines.push('',
+      [q('순인출 현재가치 합계'), `=SUM(R${F}:R${Lr})`].join(','),
+      [q('배당·이자세 등 현재가치 합계'), `=SUM(S${F}:S${Lr})`].join(','),
+      [q('마지막 해 남은 돈의 현재가치'), `=N${Lr}/(1+$B$2)^(B${Lr}+1)`].join(','),
+      [q('합계(필요자금과 같아야 함)'), `=B${s}+B${s + 1}+B${s + 2}`].join(','),
+      [q('계산기 필요자금'), '=$B$3'].join(','),
+      [q('차이(반올림 때문에 몇 원)'), `=B${s + 3}-B${s + 4}`].join(','),
+      [q('잔액 차이 절댓값 합계'), `=SUMPRODUCT(ABS(P${F}:P${Lr}))`].join(','),
+      [q('돈 흐름 차이 절댓값 합계'), `=SUMPRODUCT(ABS(Q${F}:Q${Lr}))`].join(','));
+    exportText('은퇴자금-검산표.csv', '﻿' + lines.join('\n'), 'csv', 'vfOut');
+  }
+
   function renderResults() {
     const R = lastMain; if (!R) return;
     renderCover(R); renderMini(R);
     renderAssets(R); renderFlow(R); renderSpend(R); renderBench(R);
     renderStrat(R); renderScenario(R); renderFirst(R); renderPlace(R); renderTips();
-    renderExtra(); renderScen(); renderPlan(); renderAssume(R);
+    renderExtra(); renderScen(); renderPlan(); renderVerify(R); renderAssume(R);
   }
 
   function renderMini(R) {
@@ -2955,6 +3241,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
           <div class="hero-l">120세까지 바닥나지 않으려면 필요한 은퇴자금</div>
           <div class="hero">${hero}</div>
           <div class="hero-sub">${heroSub}</div>
+          ${Number.isFinite(req) ? verifyBadge(R) : ''}
         </div>
         <div class="cover-seal"><span class="seal">추천<br>${esc(b.short)}</span><small>생애 세금 ${won(b.reqTpv, { short: true })} · 건보료 ${won(b.reqHpv, { short: true })}<br>(오늘 돈 가치)</small></div>
       </div>
@@ -3566,7 +3853,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       <li><b>은퇴 후 일하기</b> — 입력한 세후 소득을 그해 생활비에 먼저 쓰고 모자란 만큼만 계좌에서 꺼냅니다. 직장 건강보험에 가입하면 그 사람은 급여의 3.595%(+장기요양)만 내고, 배우자는 피부양자 요건을 채우면 0원입니다. 가입하지 않으면 근로소득의 50%가 지역 건보료 소득에 들어갑니다. 연금계좌 인출 시작 나이를 정하면 그 전에는 다른 돈이 모자랄 때만 연금계좌를 씁니다.</li>
       <li><b>지출 비교 기준</b> — 국민연금연구원·가계금융복지조사·KB·한국보건사회연구원·가계동향조사·사교육비조사·대학 공시·결혼비용 조사 등에서 공개된 값이며 조사 연도와 대상(부부·가구·1인)이 서로 다릅니다. ≈ 표시는 공개된 평균·중위값이나 구간별 인원으로 계산한 추정치입니다.</li>
       <li><b>한계</b> — 세율·보험료율·공제 금액은 2026년 수준으로 고정했습니다(물가가 올라도 기준 금액은 그대로라 실제보다 보수적일 수 있음). 건보료는 같은 해 소득으로 계산(실제는 전년도 소득 기준), 기초연금·유족연금·배우자 사망 후 지출 변화, 종신형 연금 세율, 의료비·부양가족 공제는 넣지 않았습니다. 기타 수입은 세후 금액으로 보고 세금·건보료에 넣지 않습니다.</li>
-      <li><b>확인할 곳</b> — 국민연금 예상액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a> ‘내 연금 알아보기’, 지역 건보료는 <a href="https://www.nhis.or.kr" target="_blank" rel="noopener">국민건강보험공단</a> 모의계산, 연금계좌 재원별 금액(세액공제 안 받은 원금·이연퇴직소득)은 가입한 금융회사에서 확인할 수 있습니다.</li>
+      <li><b>검증</b> — 위 ‘계산 검증’에서 자동 검산 결과를 보고, 엑셀 수식이 들어 있는 검산용 표를 내려받거나, 국민연금 예상액(<a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>)·지역 건보료(<a href="https://www.nhis.or.kr" target="_blank" rel="noopener">국민건강보험공단</a> 모의계산)·소득세와 퇴직소득세(<a href="https://www.hometax.go.kr" target="_blank" rel="noopener">홈택스</a> 모의계산)에 넣을 값을 볼 수 있습니다. 연금계좌 재원별 금액(세액공제 안 받은 원금·이연퇴직소득)은 가입한 금융회사에서 확인하세요.</li>
     </ul>`;
   }
 
