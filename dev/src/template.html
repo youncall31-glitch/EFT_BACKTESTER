@@ -1,0 +1,1200 @@
+<title>ETF 포트폴리오 백테스터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: research desk — a sticky bar (sections + simple/full view), then five numbered groups in workflow order:
+   setup → results → checks → optimizer → reference. Panels sit inside each group; numbers set in mono. */
+:root {
+  --bg: #eff2f0;
+  --panel: #fbfcfb;
+  --panel-2: #f5f7f6;
+  --ink: #15201c;
+  --ink-2: #44524c;
+  --muted: #66736d;
+  --line: #dbe1de;
+  --line-2: #c6cfcb;
+  --focus: #1f5fc4;
+  --p1: #2a78d6;
+  --p2: #eb6834;
+  --p3: #1baf7a;
+  --bench: #8a948f;
+  --neg: #b23a3a;
+  --pos: #126b3a;
+  --warn: #985f00;
+  --band: rgba(235, 104, 52, 0.10);
+  --dot: rgba(68, 82, 76, 0.28);
+  --hm-pos: #2a78d6;      /* heat map: gains (diverging arm) */
+  --hm-neg: #e34948;      /* heat map: losses / drawdowns */
+  --hm-mid: #e9ecea;      /* heat map: around zero */
+  --top-bg: rgba(239, 242, 240, 0.9);
+  --font-sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+/* dark: near-black page, panels lifted one step with visible borders, brighter text; series steps validated on the dark panel */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0f0e; --panel: #141a18; --panel-2: #1b2320; --ink: #eef3f0; --ink-2: #c6d1cc; --muted: #9aa7a1;
+    --line: #2a3531; --line-2: #3d4a45; --focus: #8fb3ff; --p1: #3987e5; --p2: #d95926; --p3: #1baf7a; --bench: #9aa59f;
+    --neg: #ff8f87; --pos: #74e0a5; --warn: #e0a530; --band: rgba(217, 89, 38, 0.18); --dot: rgba(198, 209, 204, 0.30);
+    --hm-pos: #3987e5; --hm-neg: #e66767; --hm-mid: #252e2b; --top-bg: rgba(11, 15, 14, 0.88); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0f0e; --panel: #141a18; --panel-2: #1b2320; --ink: #eef3f0; --ink-2: #c6d1cc; --muted: #9aa7a1;
+  --line: #2a3531; --line-2: #3d4a45; --focus: #8fb3ff; --p1: #3987e5; --p2: #d95926; --p3: #1baf7a; --bench: #9aa59f;
+  --neg: #ff8f87; --pos: #74e0a5; --warn: #e0a530; --band: rgba(217, 89, 38, 0.18); --dot: rgba(198, 209, 204, 0.30);
+  --hm-pos: #3987e5; --hm-neg: #e66767; --hm-mid: #252e2b; --top-bg: rgba(11, 15, 14, 0.88); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 72px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-sans); font-size: 14px; line-height: 1.55; word-break: keep-all; overflow-wrap: break-word; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 22px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(26px, 3.4vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 14px; font-weight: 600; }
+p { margin: 0; }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+a { color: var(--focus); }
+.hdr { display: grid; gap: 10px; padding-block: 6px 4px; }
+.hdr .lede { color: var(--ink-2); max-width: 70ch; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.panel-head p { color: var(--muted); font-size: 12.5px; }
+section[aria-labelledby="h-ports"] > .panel-head { border-bottom: 0; padding-bottom: 0; }
+/* settings */
+.settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 18px; align-items: end; }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field > label, .field > .lbl { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+select, input[type="text"], input[type="number"] {
+  font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 7px;
+  padding: 6px 8px; min-height: 34px; min-width: 0;
+}
+input[type="number"] { font-family: var(--font-mono); }
+select:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: inherit; font-size: 12.5px; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2); border-radius: 999px; padding: 4px 11px; cursor: pointer; }
+.chip:hover { border-color: var(--ink-2); color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.btn { font: inherit; font-weight: 600; border-radius: 8px; border: 1px solid var(--ink); background: var(--ink); color: var(--panel); padding: 8px 14px; cursor: pointer; min-height: 36px; }
+.btn:hover { opacity: 0.9; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-2); font-weight: 500; }
+.btn.ghost:hover { border-color: var(--ink-2); }
+.btn.sm { padding: 4px 10px; min-height: 30px; font-size: 12.5px; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.toggle { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.toggle input { margin-top: 3px; accent-color: var(--ink); }
+.notice { font-size: 12.5px; color: var(--ink-2); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; }
+.notice.warn { border-color: color-mix(in srgb, var(--p2) 45%, var(--line)); }
+/* portfolios */
+.ports { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pcard { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: start; min-width: 0; }
+.pcard > * { min-width: 0; }
+.pcard-top .preset { flex: 0 1 auto; max-width: 46%; min-width: 0; font-size: 12.5px; }
+.pcard-top { display: flex; align-items: center; gap: 8px; }
+.key { width: 18px; height: 4px; border-radius: 2px; flex: none; }
+.pname { flex: 1 1 auto; width: 100%; font-weight: 600; border: 1px solid transparent; background: transparent; padding: 4px 6px; margin-left: -6px; border-radius: 6px; min-width: 0; font-size: 15px; }
+.pname:hover { border-color: var(--line-2); }
+.prow { display: grid; grid-template-columns: minmax(0, 1fr) 84px 30px; gap: 6px; align-items: start; }
+.prow .tk { font-family: var(--font-mono); text-transform: uppercase; width: 100%; }
+.prow .wt { width: 100%; text-align: right; }
+.prow .del { font: inherit; border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 6px; height: 34px; cursor: pointer; font-size: 18px; line-height: 1; }
+.prow .del:hover { color: var(--ink); border-color: var(--line-2); }
+.prow .sub { grid-column: 1 / -1; margin-top: -3px; font-size: 11.5px; color: var(--muted); }
+.prow .sub.err { color: var(--neg); }
+.pfoot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px dashed var(--line-2); padding-top: 10px; }
+.sum { font-family: var(--font-mono); font-size: 13px; }
+.sum.bad { color: var(--neg); }
+.sum.ok { color: var(--pos); }
+.pcols { display: grid; grid-template-columns: minmax(0, 1fr) 84px 30px; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.pcols span:nth-child(2) { text-align: right; }
+.pcard.off { opacity: 0.72; }
+/* tables */
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 11.5px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line-2); vertical-align: bottom; }
+tbody th { font-weight: 500; color: var(--ink-2); }
+td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.neg { color: var(--neg); }
+.serieshead { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; }
+.serieshead .key { width: 14px; }
+td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.hl td, .hl th { background: var(--panel-2); }
+/* trailing grid */
+.cellbar { display: grid; gap: 3px; justify-items: end; }
+.cellbar i { display: block; height: 3px; border-radius: 2px; }
+.na { color: var(--muted); font-family: var(--font-sans); font-size: 12px; }
+/* charts */
+.charts { display: grid; gap: 18px; }
+.charts > div { min-width: 0; }
+.chart-box { position: relative; min-width: 0; }
+.chart-box svg { display: block; width: 100%; overflow: visible; }
+.chart-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin-bottom: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 16px; height: 2px; border-radius: 1px; display: inline-block; }
+.legend i.dash { background: repeating-linear-gradient(90deg, var(--bench) 0 4px, transparent 4px 7px) !important; }
+.tip { position: absolute; pointer-events: none; z-index: 5; background: var(--panel); border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); min-width: 150px; }
+.tip .t { color: var(--muted); font-family: var(--font-mono); font-size: 11px; margin-bottom: 4px; }
+.tip .r { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.tip .r b { font-family: var(--font-mono); font-weight: 600; }
+.tip .r span { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip .r span i { width: 12px; height: 2px; display: inline-block; border-radius: 1px; }
+.axis text { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.grid line { stroke: var(--line); stroke-width: 1; }
+.scroll-x { overflow-x: auto; max-width: 100%; }
+.tbl-wrap th:first-child { position: sticky; left: 0; z-index: 1; background: var(--panel); }
+.tbl-wrap .hl th:first-child { background: var(--panel-2); }
+.legend i.sq { width: 10px; height: 10px; border-radius: 2px; }
+.seg-toggle { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
+.seg-toggle button { font: inherit; font-size: 12px; border: 0; background: transparent; color: var(--ink-2); padding: 4px 10px; cursor: pointer; }
+.seg-toggle button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.seg-toggle.big button { font-size: 13.5px; padding: 7px 14px; }
+.pos-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 22px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); }
+.pos-bar .lbl { font-weight: 600; font-size: 13px; }
+.eracmp th.grp .when { display: block; }
+/* optimizer */
+.opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 18px; align-items: end; }
+.progress { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; border: 1px solid var(--line); }
+.progress i { display: block; height: 100%; width: 0; background: var(--ink); transition: width 0.15s; }
+.picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pick { border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 10px; background: var(--panel); min-width: 0; align-content: start; }
+.pick-head { display: flex; align-items: center; gap: 10px; }
+.pick-mark { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--panel); box-shadow: 0 0 0 1px var(--line-2); flex: none; }
+.pick .crit { font-size: 12.5px; color: var(--ink-2); }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kpi { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.kpi .k { font-size: 11.5px; color: var(--muted); }
+.kpi .v { font-family: var(--font-mono); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.wbars { display: grid; gap: 5px; }
+.wbar { display: grid; grid-template-columns: 58px minmax(0, 1fr) 52px; gap: 8px; align-items: center; font-size: 12.5px; }
+.wbar .tk { font-family: var(--font-mono); font-weight: 600; }
+.wbar .track { height: 8px; background: var(--panel-2); border-radius: 4px; overflow: hidden; }
+.wbar .fill { height: 100%; border-radius: 4px; background: var(--ink-2); }
+.wbar .pct { font-family: var(--font-mono); text-align: right; }
+.apply { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kpi .s { font-size: 10.5px; color: var(--muted); font-family: var(--font-mono); margin-top: 1px; }
+.btn.attn { box-shadow: 0 0 0 3px color-mix(in srgb, var(--p2) 40%, transparent); }
+.pk-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+.tk-picker { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel-2); }
+.tk-group { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+.tk-group .gname { font: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2); background: none; border: 0; padding: 5px 0; text-align: left; cursor: pointer; }
+.tk-group .gname:hover { color: var(--ink); text-decoration: underline; }
+.tk-chips { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.tchip { font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; min-height: 28px; }
+.tchip:hover { border-color: var(--ink-2); color: var(--ink); }
+.tchip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.sub-sec { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 10px; min-width: 0; }
+.sub-sec > * { min-width: 0; }
+.sub-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; }
+.sub-head h3 { font-size: 15px; }
+.hz-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 4px; }
+.hz-col { display: grid; gap: 10px; align-content: start; min-width: 0; grid-row: span 3; grid-template-rows: subgrid; }
+.hz-col > .pick { display: flex; flex-direction: column; gap: 10px; }
+.hz-col > .pick > .apply { margin-top: auto; }
+.hz-head { display: grid; gap: 2px; }
+.hz-head h3 { font-size: 15px; }
+.hz-head .when { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.badge { display: inline-block; font-size: 11.5px; line-height: 1.4; border-radius: 6px; padding: 2px 8px; background: var(--panel-2); border: 1px solid var(--line-2); color: var(--ink-2); }
+.badge.warn { border-color: color-mix(in srgb, var(--p2) 50%, var(--line)); color: var(--ink); }
+.tag { font-family: var(--font-sans); font-size: 11px; font-weight: 600; border-radius: 5px; padding: 1px 6px; white-space: nowrap; }
+.tag.ok { color: var(--pos); background: color-mix(in srgb, var(--pos) 12%, transparent); }
+.tag.no { color: var(--neg); background: color-mix(in srgb, var(--neg) 12%, transparent); }
+.life { font-size: 12.5px; }
+.life th, .life td { vertical-align: top; white-space: normal; text-align: left; word-break: keep-all; overflow-wrap: anywhere; }
+.life thead th.grp { text-align: left; }
+.life thead .when { display: block; font-weight: 400; font-family: var(--font-mono); font-size: 10.5px; }
+.life th.stage { min-width: 170px; max-width: 230px; }
+.life th.stage b { display: block; font-size: 14px; color: var(--ink); }
+.life th.stage .role { display: block; font-size: 12px; color: var(--ink-2); font-weight: 600; }
+.life th.stage .desc { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 2px; line-height: 1.45; }
+.life td.crit-in { font-family: var(--font-sans); min-width: 150px; }
+.ci { display: grid; grid-template-columns: 62px 58px auto; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+.ci input { width: 58px; min-height: 28px; padding: 2px 6px; text-align: right; font-size: 12.5px; }
+.ci input[aria-invalid="true"] { border-color: var(--neg); }
+.ci .u { color: var(--muted); white-space: nowrap; }
+.stage-cell { font: inherit; color: inherit; background: transparent; display: grid; gap: 3px; cursor: pointer; border-radius: 8px; padding: 7px 9px; text-align: left; min-width: 170px; width: 100%; border: 1px solid var(--line); }
+.stage-cell:hover { border-color: var(--ink-2); }
+.stage-cell[aria-pressed="true"] { border-color: var(--ink); background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--ink); }
+.stage-cell .c { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stage-cell .cv { font-family: var(--font-mono); font-size: 16px; font-weight: 600; }
+.stage-cell .m { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+.stage-cell .w { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.life-detail { margin-top: 12px; }
+.pick-mark.diamond { border-radius: 2px; transform: rotate(45deg); width: 10px; height: 10px; background: var(--panel); border: 2px solid var(--ink); box-shadow: none; }
+#o-life tbody tr:last-child td, #o-life tbody tr:last-child th { border-bottom: 0; }
+/* saved portfolios */
+.sv-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; margin-top: 10px; }
+.sv-list > .empty { grid-column: 1 / -1; }
+.sv-card { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 6px; background: var(--panel); min-width: 0; }
+.sv-card > * { min-width: 0; }
+.sv-top { display: flex; align-items: center; gap: 8px; }
+.sv-name { flex: 1 1 auto; width: 100%; min-width: 0; font-weight: 600; border: 1px solid transparent; background: transparent; padding: 3px 6px; margin-left: -6px; }
+.sv-name:hover, .sv-name:focus { border-color: var(--line-2); }
+.sv-date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.sv-w { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+.sv-card .sv-m, .sv-card .sv-p { word-break: keep-all; overflow-wrap: anywhere; }
+.sv-m { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); }
+.sv-p { font-size: 11.5px; color: var(--muted); }
+.sv-p.neg { color: var(--neg); }
+.sv-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; }
+.sv-acts .sp { flex: 1 1 auto; }
+.sv-io { border: 1px solid var(--line-2); border-radius: var(--r); padding: 12px; display: grid; gap: 8px; background: var(--panel-2); margin-top: 10px; }
+.sv-io textarea { min-height: 84px; }
+.filebtn { position: relative; overflow: hidden; display: inline-flex; align-items: center; }
+.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+#sv-msg:empty, #w-sum:empty, #w-status:empty { display: none; }
+/* trend-kept */
+.trend-set { display: grid; gap: 8px; }
+.trend-set .row label { margin-left: 6px; }
+.trend th b { font-family: var(--font-mono); }
+.trend th .sub, .trend td .sub { display: block; font-size: 11px; color: var(--muted); font-weight: 400; font-family: var(--font-sans); }
+.trend tr.flag td, .trend tr.flag th { background: color-mix(in srgb, var(--p2) 7%, var(--panel)); }
+.tbl-wrap .trend tr.flag th:first-child { background: color-mix(in srgb, var(--p2) 7%, var(--panel)); }
+.tr-chk { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); font-size: 12px; color: var(--ink-2); cursor: pointer; }
+.tr-chk input { accent-color: var(--ink); width: 16px; height: 16px; }
+.trendcmp td { white-space: nowrap; }
+.trendcmp td .adjv { display: block; font-size: 12px; }
+.trendcmp td .adjv.neg { color: var(--neg); }
+.trendcmp th .sub { display: block; font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.adjcmp { font-size: 12.5px; }
+.adjcmp th, .adjcmp td { vertical-align: top; white-space: normal; text-align: left; }
+.adjcmp thead .when { display: block; font-weight: 400; font-family: var(--font-mono); font-size: 10.5px; }
+.adjcmp th.wname { min-width: 150px; max-width: 220px; font-weight: 600; color: var(--ink); }
+.adjcmp td { min-width: 250px; }
+.ac-l { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 8px; margin-bottom: 5px; }
+.ac-l .wk { font-size: 11px; color: var(--muted); padding-top: 1px; }
+.ac-l .wv { font-family: var(--font-mono); font-size: 12px; }
+.ac-l .ac-w { grid-column: 2; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.ac-l .badge { grid-column: 2; justify-self: start; margin-top: 2px; }
+.ac-w b.hot { color: var(--p2); font-weight: 600; }
+.tag.hot { color: var(--ink); background: color-mix(in srgb, var(--p2) 16%, transparent); }
+.hz-banner { grid-column: 1 / -1; }
+@media (max-width: 760px) {
+  .trend thead, .trendcmp thead { display: none; }
+  .trend, .trend tbody, .trendcmp, .trendcmp tbody { display: block; width: 100%; }
+  .trend tr, .trendcmp tr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .tbl-wrap .trend th:first-child, .tbl-wrap .trendcmp th:first-child, .trend th, .trendcmp th { grid-column: 1 / -1; position: static; background: transparent; border: 0; padding: 0 0 2px; }
+  .trend td, .trendcmp td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; }
+  .trend td::before, .trendcmp td::before { content: attr(data-label); display: block; font-size: 10.5px; color: var(--muted); font-family: var(--font-sans); }
+  .trend td.na, .trendcmp td.na { grid-column: 1 / -1; }
+  .trend tr.flag { background: color-mix(in srgb, var(--p2) 7%, var(--panel)); padding-inline: 8px; border-radius: 8px; }
+  .trend tr.flag td, .trend tr.flag th { background: transparent; }
+}
+@media (max-width: 860px) {
+  .adjcmp thead { display: none; }
+  .adjcmp, .adjcmp tbody, .adjcmp tr { display: block; width: 100%; }
+  .adjcmp tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .tbl-wrap .adjcmp th.wname, .adjcmp th.wname, .adjcmp td { display: block; position: static; border: 0; padding: 3px 0; max-width: none; min-width: 0; background: transparent; }
+  .adjcmp td::before { content: attr(data-label); display: block; font-size: 11px; color: var(--muted); margin: 4px 0 2px; }
+}
+/* walk-forward */
+.walk { font-size: 12.5px; }
+.walk th, .walk td { vertical-align: top; white-space: normal; text-align: left; }
+.walk thead .when { display: block; font-weight: 400; font-family: var(--font-mono); font-size: 10.5px; }
+.walk th.wname { min-width: 150px; max-width: 220px; font-weight: 600; color: var(--ink); }
+.walk tr.base th.wname { font-weight: 500; color: var(--ink-2); }
+.walk td { min-width: 260px; }
+.walk .wl { display: flex; gap: 8px; align-items: baseline; font-family: var(--font-mono); font-size: 12px; }
+.walk .wk { font-family: var(--font-sans); font-size: 11px; color: var(--muted); min-width: 40px; }
+.walk .wv.neg { color: var(--neg); font-weight: 600; }
+.walk td .row { margin-top: 4px; }
+.walk .ww { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+@media (max-width: 860px) {
+  .walk thead { display: none; }
+  .walk, .walk tbody, .walk tr { display: block; width: 100%; }
+  .walk tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .tbl-wrap .walk th.wname, .walk th.wname, .walk td { display: block; position: static; border: 0; padding: 3px 0; max-width: none; min-width: 0; background: transparent; }
+  .walk td::before { content: attr(data-label); display: block; font-size: 11px; color: var(--muted); margin: 4px 0 2px; }
+}
+@media (max-width: 860px) {
+  .life thead { display: none; }
+  .life, .life tbody { display: block; width: 100%; }
+  .life tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px; width: 100%; border-bottom: 1px solid var(--line); padding: 12px 0; }
+  .life th.stage, .life td.crit-in { grid-column: 1 / -1; }
+  .life tbody tr:last-child { border-bottom: 0; }
+  .tbl-wrap .life th.stage, .life th.stage, .life td { display: block; position: static; border: 0; padding: 4px 0; max-width: none; background: transparent; }
+  .life td.crit-in { display: flex; flex-wrap: wrap; gap: 2px 16px; }
+  .life td.stage-td::before { content: attr(data-label); display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 4px 0 3px; }
+  .stage-cell { min-width: 0; }
+}
+/* coverage */
+.cov { display: grid; gap: 10px; }
+.cov-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 12px; align-items: center; }
+.cov-row .nm { font-size: 12.5px; min-width: 0; }
+.cov-row .nm b { font-family: var(--font-mono); }
+.cov-row .nm span { display: block; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cov-row .divsrc { grid-column: 1 / -1; font-size: 11.5px; color: var(--muted); margin-top: -4px; }
+.choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 8px; }
+.choice .opt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; cursor: pointer; background: var(--panel); min-width: 0; }
+.choice .opt.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.choice .opt input { margin: 3px 0 0; accent-color: var(--ink); flex: none; }
+.choice .opt b { display: block; font-size: 14px; color: var(--ink); }
+.choice .opt small { display: block; font-size: 12.5px; color: var(--ink-2); margin-top: 2px; line-height: 1.45; }
+.divline { margin: 0; font-size: 12.5px; color: var(--ink-2); background: var(--panel-2); border: 1px solid var(--line); border-left: 3px solid var(--ink-2); border-radius: 6px; padding: 6px 10px; }
+.cov-bar { position: relative; height: 14px; background: var(--panel-2); border-radius: 4px; overflow: hidden; }
+.cov-bar i { position: absolute; top: 0; bottom: 0; }
+.cov-axis { position: relative; height: 14px; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); margin-left: 182px; }
+.cov-axis span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.cov-axis span:first-child { transform: none; }
+.cov-axis span:last-child { transform: translateX(-100%); }
+.cov-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--ink-2); }
+.cov-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cov-legend i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+.c-A { background: var(--ink); }
+.c-X { background: color-mix(in srgb, var(--ink) 70%, var(--panel)); }
+.c-B { background: color-mix(in srgb, var(--ink) 48%, var(--panel)); }
+.c-S { background: color-mix(in srgb, var(--ink) 30%, var(--panel)); }
+.c-U { background: var(--focus); }
+.c-P { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, var(--panel)) 0 3px, transparent 3px 6px); }
+.tick-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 18px; }
+.tick-groups div { font-size: 12.5px; }
+.tick-groups b { display: block; font-size: 12px; color: var(--ink-2); margin-bottom: 3px; }
+.tick-groups code { font-family: var(--font-mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; margin: 0 3px 3px 0; display: inline-block; }
+.method { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px 28px; }
+.method h3 { margin-bottom: 6px; }
+.method ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; display: grid; gap: 4px; }
+details summary { cursor: pointer; font-weight: 600; }
+.custom-box { display: grid; gap: 10px; }
+textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width: 100%; min-height: 110px; color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 8px; padding: 8px; }
+.empty { color: var(--muted); font-size: 13px; padding: 18px 0; text-align: center; }
+@media (max-width: 980px) {
+  .ports { grid-template-columns: 1fr; }
+  .picks { grid-template-columns: 1fr; }
+  .hz-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  /* 16px stops iOS Safari from zooming in when a field is focused */
+  select, input[type="text"], input[type="number"], textarea { font-size: 16px; }
+  .ci input, .pcard-top .preset { font-size: 16px; }
+  .tchip { min-height: 34px; padding: 4px 10px; }
+  .btn.sm { min-height: 34px; }
+  .wrap { padding-inline: 16px; }
+  .panel { padding: 14px; }
+  .cov-row { grid-template-columns: 1fr; gap: 4px; }
+  .cov-axis { margin-left: 0; }
+  .kpi .v { font-size: 16px; }
+  .tk-group { grid-template-columns: 1fr; gap: 2px; }
+  .life tr { grid-template-columns: minmax(0, 1fr); }
+}
+/* ---------- v7: sticky bar, update note, groups, simple view ---------- */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--top-bg); -webkit-backdrop-filter: saturate(1.3) blur(10px); backdrop-filter: saturate(1.3) blur(10px); border-bottom: 1px solid var(--line); }
+.tb-in { max-width: 1240px; margin: 0 auto; padding: 8px 20px; display: flex; align-items: center; gap: 8px 14px; }
+.tb-brand { font-weight: 700; font-size: 14px; color: var(--ink); text-decoration: none; white-space: nowrap; letter-spacing: -0.01em; }
+.tb-nav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1 1 auto; min-width: 0; }
+.tb-nav::-webkit-scrollbar { display: none; }
+.tb-nav a { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-size: 13px; white-space: nowrap; border: 1px solid transparent; }
+.tb-nav a:hover { color: var(--ink); border-color: var(--line-2); }
+.tb-nav a b { font-family: var(--font-mono); font-size: 11px; font-weight: 600; width: 19px; height: 19px; border-radius: 50%; display: inline-grid; place-items: center; border: 1px solid var(--line-2); color: var(--ink-2); background: var(--panel); }
+.tb-nav a.on { color: var(--ink); background: var(--panel); border-color: var(--line-2); }
+.tb-nav a.on b { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.tb-view { flex: none; }
+.tb-view button { font-weight: 600; }
+.upd { font-size: 12px; color: var(--muted); max-width: 820px; }
+.upd summary { cursor: pointer; list-style: none; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 500; }
+.upd summary::-webkit-details-marker { display: none; }
+.upd summary .more { color: var(--focus); text-decoration: underline; text-underline-offset: 2px; }
+.upd[open] summary .more::after { content: ' 접기'; }
+.upd:not([open]) summary .more::after { content: ' 내역 보기'; }
+.upd-v { font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--ink); color: var(--panel); }
+.upd-body { margin-top: 8px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); display: grid; gap: 10px; color: var(--ink-2); }
+.upd-body dl { margin: 0; display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 6px 12px; }
+.upd-body dt { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); font-weight: 600; }
+.upd-body dd { margin: 0; font-size: 12.5px; line-height: 1.5; }
+.upd-body dd ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; }
+@media (max-width: 560px) { .upd-body dl { grid-template-columns: 1fr; gap: 2px; } .upd-body dd { margin-bottom: 8px; } }
+.gsec { display: flex; align-items: center; gap: 12px; padding-top: 18px; margin-top: 12px; border-top: 2px solid var(--line-2); }
+.grp-n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
+.grp-tx { display: grid; gap: 1px; min-width: 0; }
+.grp-t { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+.grp-d { font-size: 12.5px; color: var(--muted); }
+:root.simple [data-detail] { display: none !important; }
+.simple-only { display: none; }
+:root.simple .simple-only { display: block; }
+.simple-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.simple-card p { color: var(--ink-2); font-size: 13px; max-width: 70ch; }
+.set-sum { font-size: 12.5px; color: var(--muted); }
+/* data source switch (actual / trend-kept) */
+.dm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.dm-note { font-size: 12.5px; color: var(--ink-2); min-width: 0; }
+.dm-note b { font-family: var(--font-mono); }
+.seg-toggle.big[data-adj="true"] button[aria-pressed="true"] { background: var(--warn); color: var(--panel); }
+.adj-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; border: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line)); background: color-mix(in srgb, var(--warn) 9%, var(--panel)); border-radius: var(--r); padding: 10px 14px; font-size: 13px; color: var(--ink); }
+.adj-banner .ttl { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.adj-mark { font-family: var(--font-sans); font-size: 11px; font-weight: 700; border-radius: 5px; padding: 1px 7px; white-space: nowrap; color: var(--panel); background: var(--warn); vertical-align: 2px; }
+/* status chips (icon + label, never color alone) */
+.st-ic { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; font-weight: 800; line-height: 1; color: var(--panel); flex: none; font-family: var(--font-sans); }
+.st-ic.good { background: var(--pos); } .st-ic.warn { background: var(--warn); } .st-ic.bad { background: var(--neg); } .st-ic.na { background: var(--muted); }
+/* period check */
+.pc-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 14px; }
+.pc-pick .lbl { font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.chip .key { width: 12px; height: 3px; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.verdict { display: grid; gap: 12px; }
+.vd-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.vd-badge { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; padding: 8px 14px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--ink); }
+.vd-badge .st-ic { width: 22px; height: 22px; font-size: 13px; }
+.vd-badge.good { border-color: color-mix(in srgb, var(--pos) 50%, var(--line)); background: color-mix(in srgb, var(--pos) 9%, var(--panel)); }
+.vd-badge.warn { border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); background: color-mix(in srgb, var(--warn) 10%, var(--panel)); }
+.vd-badge.bad { border-color: color-mix(in srgb, var(--neg) 55%, var(--line)); background: color-mix(in srgb, var(--neg) 9%, var(--panel)); }
+.vd-sub { font-size: 12.5px; color: var(--muted); }
+.vd-rows { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--panel); }
+.vd-row { display: grid; grid-template-columns: 150px 104px minmax(0, 1fr); gap: 4px 14px; padding: 11px 14px; border-top: 1px solid var(--line); align-items: start; }
+.vd-row:first-child { border-top: 0; }
+.vd-row .dim { font-weight: 600; font-size: 13px; color: var(--ink); }
+.vd-row .dim small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.vd-row .st { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.vd-row .why { font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+.vd-row .why b { font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+.vd-crit { font-size: 12px; color: var(--muted); }
+.vd-crit summary { font-weight: 500; color: var(--ink-2); }
+.vd-crit ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 3px; }
+@media (max-width: 640px) { .vd-row { grid-template-columns: minmax(0, 1fr) auto; } .vd-row .why { grid-column: 1 / -1; } }
+.pctbl { font-size: 12.5px; }
+.pctbl th, .pctbl td { vertical-align: middle; }
+.pctbl tbody tr.sep th { text-align: left; font-size: 11.5px; letter-spacing: 0.04em; color: var(--ink-2); background: var(--panel-2); font-weight: 700; border-bottom: 1px solid var(--line-2); padding-top: 9px; }
+.tbl-wrap .pctbl tr.sep th:first-child { background: var(--panel-2); }
+.pctbl tr.full th, .pctbl tr.full td { font-weight: 600; }
+.pctbl tr.pair-end td, .pctbl tr.pair-end th { border-bottom: 1px solid var(--line-2); }
+.pctbl .when { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight: 400; }
+.pctbl td.dlt { font-size: 12px; }
+.pctbl td.dlt .up { color: var(--pos); } .pctbl td.dlt .dn { color: var(--neg); }
+.mval { display: grid; grid-template-columns: auto 88px; align-items: center; gap: 10px; justify-content: end; }
+.mbar { position: relative; height: 8px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); }
+.mbar i { position: absolute; top: -1px; bottom: -1px; border-radius: 3px; }
+.mbar s { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.mbar u { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--line-2); }
+.pc-key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.pc-key span { display: inline-flex; align-items: center; gap: 6px; }
+.pc-key s { display: inline-block; width: 2px; height: 12px; background: var(--ink); }
+@media (max-width: 760px) {
+  .pctbl thead { display: none; }
+  .pctbl, .pctbl tbody { display: block; width: 100%; }
+  .pctbl tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .pctbl tr.sep { display: block; padding: 0; border: 0; }
+  .tbl-wrap .pctbl th:first-child, .pctbl th { grid-column: 1 / -1; position: static; background: transparent; border: 0; padding: 0; white-space: normal; }
+  .pctbl tr.sep th { display: block; padding: 8px 10px; border-radius: 6px; margin-top: 6px; }
+  .pctbl td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; }
+  .pctbl td::before { content: attr(data-label); display: block; font-size: 10.5px; color: var(--muted); font-family: var(--font-sans); }
+  .mval { justify-content: start; grid-template-columns: auto minmax(60px, 1fr); }
+}
+.heat-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 18px; align-items: start; }
+.heat-side { display: grid; gap: 12px; align-content: start; }
+.heat-legend { display: grid; gap: 4px; font-size: 12px; color: var(--ink-2); }
+.heat-legend .ttl { font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.hl-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; }
+.hl-row i { width: 16px; height: 12px; border-radius: 3px; display: block; border: 1px solid var(--line); }
+.heat-note { font-size: 12px; color: var(--muted); }
+#pc-heat svg { width: auto; max-width: 100%; height: auto; }
+#pc-heat svg text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+#pc-heat .ax-t { fill: var(--ink-2); font-family: var(--font-sans); font-size: 11px; }
+@media (max-width: 860px) { .heat-wrap { grid-template-columns: 1fr; } .heat-legend { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } .heat-legend .ttl { grid-column: 1 / -1; } }
+.pc-range { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--ink-2); }
+.pccmp { font-size: 12.5px; max-width: 720px; }
+.pccmp td .sub { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.pccmp td.dlt .up { color: var(--pos); } .pccmp td.dlt .dn { color: var(--neg); }
+.pc-title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.pc-title .mono { font-weight: 500; color: var(--ink-2); }
+@media (max-width: 560px) {
+  .tbl-wrap th:first-child { white-space: normal; min-width: 92px; max-width: 36vw; }
+  .tb-in { padding: 6px 16px; }
+  .tb-brand { display: none; }
+  .grp-t { font-size: 19px; }
+  .vd-badge { font-size: 15px; }
+}
+/* v7.1: return & risk beyond the single worst drop */
+.risk th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
+.risk tbody tr.sep th { text-align: left; font-size: 11.5px; letter-spacing: 0.03em; color: var(--ink-2); background: var(--panel-2); font-weight: 700; border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; }
+.tbl-wrap .risk tr.sep th:first-child { background: var(--panel-2); }
+.risk td.best { font-weight: 700; color: var(--ink); }
+.risk td .tagrow { display: block; margin-top: 3px; }
+.risk-key { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+.ddtbl td, .ddtbl th { vertical-align: middle; }
+.ddtbl td.neg { color: var(--neg); }
+.dd-share { display: grid; grid-template-columns: 38px 90px; align-items: center; gap: 8px; justify-content: end; }
+.dd-share .mbar i { background: var(--hm-neg); }
+/* v7.2: tabs (default) or one page (v7.1 layout) */
+.pane { display: grid; gap: 22px; min-width: 0; }
+.pane > * { min-width: 0; }
+:root.tabs .pane:not(.on) { display: none; }
+:root.tabs:not([data-tab="g-setup"]) .hdr { display: none; }
+:root.tabs .gsec { border-top: 0; margin-top: 0; padding-top: 4px; }
+.tabs-only { display: none; }
+:root.tabs .tabs-only { display: block; }
+:root.tabs nav.pane-nav.tabs-only { display: flex; }
+.pane-nav { justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--line); }
+.pane-nav .btn { min-height: 44px; padding: 10px 18px; }
+:root.tabs .tb-nav a { font-weight: 600; font-size: 13.5px; padding: 6px 13px 6px 7px; }
+:root.tabs .tb-nav a.on { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+:root.tabs .tb-nav a.on b { background: var(--panel); color: var(--ink); border-color: var(--panel); }
+.layout-sw { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.layout-sw .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+.howto { margin: 0; padding: 12px 16px 12px 34px; border: 1px dashed var(--line-2); border-radius: var(--r); background: var(--panel); display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
+.howto b { color: var(--ink); }
+.qr-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 10px; }
+.qr-item { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; background: var(--panel-2); min-width: 0; }
+.qr-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; min-width: 0; }
+.qr-name span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qr-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.qr-kv div { display: grid; gap: 1px; min-width: 0; }
+.qr-kv span { font-size: 11px; color: var(--muted); }
+.qr-kv b { font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.qr-kv b.neg { color: var(--neg); }
+.bnav { display: none; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 10px; font-size: 13px; max-width: min(92vw, 520px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
+@media (max-width: 640px) {
+  :root.tabs .tb-nav { display: none; }
+  :root.tabs .tb-brand { display: inline; }
+  :root.tabs .tb-in { justify-content: space-between; }
+  :root.tabs .bnav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--top-bg); -webkit-backdrop-filter: saturate(1.3) blur(10px); backdrop-filter: saturate(1.3) blur(10px); border-top: 1px solid var(--line-2); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  :root.tabs .bnav a { display: grid; justify-items: center; gap: 3px; padding: 5px 2px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: 12px; font-weight: 600; min-width: 0; }
+  :root.tabs .bnav a b { font-family: var(--font-mono); font-size: 11px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2); }
+  :root.tabs .bnav a.on { color: var(--ink); background: var(--panel-2); }
+  :root.tabs .bnav a.on b { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  :root.tabs .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  :root.tabs .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .layout-sw .seg-toggle button { padding: 6px 10px; }
+}
+/* ---------- v7.3: every table says which period (and which MDD) a number belongs to ---------- */
+/* trailing grid: each period's CAGR·MDD pair sits in its own band under its own heading */
+.trail th.grp { text-align: center; vertical-align: bottom; border-bottom: 1px solid var(--line-2); padding-block: 8px 6px; white-space: nowrap; }
+.trail th.grp .gname { display: block; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+.trail th.grp .when { display: block; font-weight: 400; color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
+.trail .gs { border-left: 1px solid var(--line-2); }
+.trail .gb { background: color-mix(in srgb, var(--ink) 4%, var(--panel)); }
+.trail thead th .yy { display: block; font-size: 10.5px; font-weight: 500; color: var(--muted); }
+.trail-narrow { display: none; }
+@media (max-width: 900px) { .trail-wide { display: none; } .trail-narrow { display: block; } }
+.trail td, .trail thead th:not(:first-child) { padding-inline: 7px; }
+.trail tbody th { white-space: normal; min-width: 104px; }
+.mtbl td .sub, .trail td .sub { white-space: normal; }
+@media (max-width: 900px) { .mtbl th, .mtbl td { padding-inline: 7px; } }
+/* period heading rows (phone trailing table, rolling table) */
+.trail-m tr.ph th, #t-roll tr.ph th { background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; vertical-align: bottom; }
+.tbl-wrap .trail-m tr.ph th:first-child, .tbl-wrap #t-roll tr.ph th:first-child { background: var(--panel-2); text-align: left; }
+.trail-m tr.ph .gname, #t-roll tr.ph .gname { font-size: 14px; font-weight: 700; color: var(--ink); margin-right: 8px; letter-spacing: -0.01em; }
+.trail-m tr.ph .when, #t-roll tr.ph .when { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted); }
+.trail-m tr.ph .when { display: block; }
+.trail-m tbody tr:not(.ph) th { padding-left: 12px; }
+.hzc { display: inline-block; margin-left: 7px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 0 5px; line-height: 1.5; vertical-align: 1px; }
+#t-roll tbody tr:not(.ph) th { font-weight: 500; }
+/* metric tables: row hints, and cards on a phone so each value carries its portfolio's name */
+.mtbl th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
+.mddtbl tbody th { white-space: normal; min-width: 180px; }
+.mdd-note { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; padding: 9px 12px; border-left: 3px solid var(--line-2); background: var(--panel-2); border-radius: 0 8px 8px 0; }
+.mdd-note:empty { display: none; }
+.mdd-note b { color: var(--ink); }
+@media (max-width: 760px) {
+  .mtbl thead { display: none; }
+  .mtbl, .mtbl tbody { display: block; width: 100%; }
+  .mtbl tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .mtbl tr.sep { display: block; padding: 0; border: 0; }
+  .tbl-wrap .mtbl th:first-child, .mtbl th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; color: var(--ink); font-weight: 600; font-size: 13px; }
+  .tbl-wrap .mtbl tr.sep th:first-child, .mtbl tr.sep th { display: block; padding: 8px 10px; border-radius: 6px; margin-top: 8px; background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; }
+  .mtbl td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  .mtbl td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 11px; font-weight: 500; color: var(--ink-2); border-left: 3px solid var(--k, var(--line-2)); padding-left: 6px; margin-bottom: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mtbl tr.hl { background: var(--panel-2); border-radius: 8px; padding-inline: 10px; border-bottom-color: transparent; margin-bottom: 1px; }
+  .tbl-wrap .mtbl .hl th:first-child, .mtbl .hl td, .mtbl .hl th { background: transparent; }
+  .mtbl td .sub { white-space: normal; }
+  .mddtbl tbody th { min-width: 0; }
+  /* rolling table: one card per portfolio under its holding-period heading */
+  #t-roll thead { display: none; }
+  #t-roll, #t-roll tbody { display: block; width: 100%; }
+  #t-roll tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  #t-roll tr.ph { display: block; padding: 0; border: 0; }
+  .tbl-wrap #t-roll th:first-child, #t-roll th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; }
+  .tbl-wrap #t-roll tr.ph th:first-child { display: block; padding: 8px 10px; border-radius: 6px; margin-top: 10px; background: var(--panel-2); border: 0; }
+  #t-roll tr.ph .when { display: block; margin-top: 1px; }
+  #t-roll td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  #t-roll td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 10.5px; color: var(--muted); }
+  /* drawdown list and the chosen-window comparison as cards */
+  .ddtbl thead, .pccmp thead { display: none; }
+  .ddtbl, .ddtbl tbody, .pccmp, .pccmp tbody { display: block; width: 100%; }
+  .ddtbl tr, .pccmp tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .tbl-wrap .ddtbl th:first-child, .ddtbl th, .tbl-wrap .pccmp th:first-child, .pccmp th { grid-column: 1 / -1; position: static; max-width: none; min-width: 0; background: transparent; border: 0; padding: 0; white-space: normal; text-align: left; color: var(--ink); font-weight: 600; }
+  .ddtbl td, .pccmp td { display: block; border: 0; padding: 0; text-align: left; white-space: normal; min-width: 0; }
+  .ddtbl td.when-c { grid-column: 1 / -1; }
+  .ddtbl td::before, .pccmp td::before { content: attr(data-label); display: block; font-family: var(--font-sans); font-size: 10.5px; color: var(--muted); }
+  .dd-share { justify-content: start; grid-template-columns: 34px minmax(40px, 1fr); }
+  /* card tables: a row heading may use the full width */
+  .tbl-wrap .pctbl th:first-child, .pctbl th, .tbl-wrap .trend th:first-child, .tbl-wrap .trendcmp th:first-child, .trend th, .trendcmp th { max-width: none; min-width: 0; }
+}
+/* optimizer tables: the period of each cell, written above it once the table becomes a list */
+.cell-cap { display: none; }
+@media (max-width: 860px) {
+  .adjcmp td::before, .walk td::before { content: none; }
+  .adjcmp .cell-cap, .walk .cell-cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 10px 0 6px; padding: 5px 9px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); }
+  .cell-cap b { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .cell-cap span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .life td.stage-td::before { font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--ink-2); margin: 8px 0 4px; }
+}
+.pc-range .pr-g { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; margin-right: 10px; }
+/* column-group headings (10·20·30년, 점검 구간) stand out from the column names under them */
+thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
+.life thead th.grp, .adjcmp thead th.grp, .walk thead th.grp { border-left: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+</style>
+
+<div class="topbar" id="topbar">
+  <div class="tb-in">
+    <a class="tb-brand" href="#top">ETF 백테스터</a>
+    <nav class="tb-nav" id="tb-nav" aria-label="섹션 바로가기">
+      <a href="#g-setup" data-g="g-setup"><b>1</b>입력</a>
+      <a href="#g-results" data-g="g-results"><b>2</b>결과</a>
+      <a href="#g-checks" data-g="g-checks"><b>3</b>점검</a>
+      <a href="#g-opt" data-g="g-opt"><b>4</b>최적화</a>
+      <a href="#g-ref" data-g="g-ref" data-detail><b>5</b>도움말</a>
+    </nav>
+    <div class="seg-toggle tb-view" role="group" aria-label="보기 방식"><button type="button" id="v-simple" aria-pressed="false">간단히</button><button type="button" id="v-full" aria-pressed="true">자세히</button></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="hdr" id="top">
+    <details class="upd" id="upd">
+      <summary><span class="upd-v">v7.3</span><span class="mono">2026.10.10</span><span>업데이트 · MDD 구분 표, 표마다 10·20·30년 기간 표시, 휴대폰에서 표를 카드로, 오류 수정</span><span class="more"></span></summary>
+      <div class="upd-body">
+        <dl>
+          <dt>v7.3 · 2026.10.10</dt>
+          <dd><ul>
+            <li>결과 › MDD 구분: 전체 기간 MDD, 최근 10·20년 MDD, 10년 보유 시 최악 MDD, 보통의 10년 MDD, 평균 낙폭을 한 표에서 비교 (간단히 보기에서도 표시)</li>
+            <li>‘기간별 CAGR · MDD’와 최적화 표(생애 주기, 가장 과거 vs 최근, 실제 vs 추세 보정, 과최적화 점검)에서 10·15·20·25·30년 머리글이 한 칸에 몰려 기간을 알 수 없던 문제 수정</li>
+            <li>열 이름마다 기간 표시(예: ‘10년 MDD’), 롤링 표는 보유 기간별로 묶음</li>
+            <li>휴대폰: 성과 요약·MDD 구분·수익과 위험·하락 목록·롤링·직접 고른 구간 표를 카드로 바꿔, 옆으로 밀지 않아도 포트폴리오 이름과 기간이 값 옆에 보임. 기간별 표는 기간마다 묶어 표시</li>
+            <li>오류 수정: 최적화 계산 중 ‘점검 실행’을 누르면 반응이 없던 문제(이제 계산이 끝나면 바로 점검), 차이가 0인데 ‘CAGR −0.0%p’처럼 부호가 붙던 표시, ‘보통의 10년 CAGR’과 롤링 표 중앙값이 0.1%p 다르게 나오던 문제, 음수 기호가 섞여 있던 문제</li>
+          </ul></dd>
+          <dt>v7.2 · 2026.10.10</dt>
+          <dd><ul>
+            <li>1 입력 · 2 결과 · 3 점검 · 4 최적화 · 5 도움말 탭으로 나눔 (휴대폰은 아래쪽 탭 막대). 맨 위 ‘화면 배치’에서 이전 한 페이지 방식으로 바꿀 수 있고 기기마다 기억</li>
+            <li>입력 탭에 사용 순서와 결과 미리보기(CAGR·MDD·최종 금액), 탭마다 이전·다음 단계 버튼</li>
+            <li>최적화: 계산 중에 바꾼 기준이 끝난 뒤 반영되지 않던 문제와, MDD 상한·최대 비중 칸의 0이 100으로 바뀌던 문제 수정</li>
+            <li>최적화는 4 최적화 탭을 처음 열 때 계산해 첫 화면이 더 빨리 떠요</li>
+          </ul></dd>
+          <dt>v7.1 · 2026.10.10</dt>
+          <dd><ul>
+            <li>결과 › 수익과 위험: 한 번의 폭락에 덜 휘둘리는 지표 — 보통의 10년 CAGR·MDD, 평균 낙폭, 울서 지수, 마틴 비율, 10% 넘는 하락 횟수, 두 번째로 큰 하락, 가장 큰 하락의 비중</li>
+            <li>주요 하락 목록(큰 하락 5개의 고점·저점·회복 시점과 기간)</li>
+          </ul></dd>
+          <dt>v7 · 2026.10.10</dt>
+          <dd><ul>
+            <li>내 포트폴리오도 추세 보정 데이터로 백테스트 (설정 › 결과 데이터)</li>
+            <li>구간별 점검: 판정, 가장 과거 vs 최근·연대별 표, 시작 연도 × 끝 연도 지도, 직접 고른 구간</li>
+            <li>번호가 붙은 다섯 묶음(설정·결과·점검·최적화·참고)과 위쪽 바로가기 막대</li>
+            <li>간단히 / 자세히 보기 전환 (기기마다 기억)</li>
+            <li>어두운 화면에서 글자·선·구분선을 더 또렷하게</li>
+          </ul></dd>
+          <dt>v6 · 2026.10.08</dt>
+          <dd>최적화를 최근 10·20·30년과 가장 과거 10·20·30년으로 나눠 비교, 휴대폰·태블릿용 설치형 앱과 파일 하나 버전</dd>
+          <dt>v5 · 2026.10.08</dt>
+          <dd>배당금 재투자 / 현금으로 받기 선택</dd>
+          <dt>v4 · 2026.10.07</dt>
+          <dd>추세 유지 보정 (최근 급등 종목을 과거 추세로 바꿔 다시 계산)</dd>
+          <dt>v1–v3 · 2026.10.07</dt>
+          <dd>백테스트(CAGR·MDD·회복 기간), 기간별 비교, 비중 최적화·생애 주기 추천, 과최적화 점검, 포트폴리오 저장</dd>
+        </dl>
+      </div>
+    </details>
+
+    <div class="layout-sw" role="group" aria-labelledby="lay-lbl"><span class="lbl" id="lay-lbl">화면 배치</span><div class="seg-toggle"><button type="button" id="lay-tabs" aria-pressed="true">탭으로 보기</button><button type="button" id="lay-page" aria-pressed="false">한 페이지로 보기 (이전 방식)</button></div></div>
+    <span class="eyebrow">미국 상장 ETF · 월간 총수익률 · <span id="span-range">1972.01 – 2026.09</span></span>
+    <h1>ETF 포트폴리오 백테스터</h1>
+    <p class="lede">티커와 비중을 넣고 리밸런싱 주기와 기간을 고르면, Portfolio Visualizer와 같은 방식(월말 잔고, 배당 재투자 또는 현금 수령)으로 CAGR, MDD, 회복 기간을 계산하고 10·15·20·25·30년 성과를 나란히 비교합니다. 최근에 급등한 종목을 과거 추세로 보정한 데이터로도 계산하고, 같은 비중이 시기마다 얼마나 달랐는지 구간별로 점검하며, 고른 자산으로 최적 비중과 생애 주기별 추천을 찾아요. 위쪽 막대에서 ‘간단히’를 고르면 핵심 결과만 보여요. 아래 세 포트폴리오는 예시로 채워 두었습니다.</p>
+  </header>
+
+  <div class="pane" data-g="g-setup" id="pane-setup">
+  <div class="gsec" id="g-setup"><span class="grp-n" aria-hidden="true">1</span><div class="grp-tx"><h2 class="grp-t">입력</h2><p class="grp-d">기간·리밸런싱·결과 데이터를 정하고, 포트폴리오 세 개까지 티커와 비중을 넣어요.</p></div></div>
+
+  <ol class="howto" aria-label="사용 순서">
+    <li><b>기간과 규칙</b>을 정해요. 처음이면 그대로 둬도 돼요.</li>
+    <li><b>포트폴리오</b> 카드에 티커와 비중을 넣어요. 비중 합계가 100%가 되면 바로 계산해요.</li>
+    <li><b>2 결과</b>에서 성과를, <b>3 점검</b>에서 시기가 바뀌어도 믿을 만한지 확인해요.</li>
+  </ol>
+
+  <section class="panel" aria-labelledby="h-set">
+    <div class="panel-head"><h2 id="h-set">기간과 규칙</h2><p id="avail-note">선택한 자산의 공통 데이터 구간 안에서 계산합니다.</p></div>
+    <div class="settings">
+      <div class="field">
+        <span class="lbl">시작</span>
+        <div class="row"><select id="s-y" aria-label="시작 연도"></select><select id="s-m" aria-label="시작 월"></select></div>
+      </div>
+      <div class="field">
+        <span class="lbl">종료</span>
+        <div class="row"><select id="e-y" aria-label="종료 연도"></select><select id="e-m" aria-label="종료 월"></select></div>
+      </div>
+      <div class="field" style="grid-column: 1 / -1; min-width: 0;">
+        <span class="lbl">빠른 기간 선택 (종료 시점 기준)</span>
+        <div class="chips" id="quick"></div>
+      </div>
+      <div class="field">
+        <label for="rebal">리밸런싱</label>
+        <select id="rebal">
+          <option value="A">매년 (12월 말)</option>
+          <option value="S">반기 (6·12월 말)</option>
+          <option value="Q">분기 (3·6·9·12월 말)</option>
+          <option value="M">매월</option>
+          <option value="B">밴드 (5%p 또는 상대 25% 이탈 시)</option>
+          <option value="N">안 함 (매수 후 보유)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="init">초기 금액 ($)</label>
+        <input id="init" type="number" min="1" step="1000" value="10000">
+      </div>
+      <div class="field">
+        <label for="bench">벤치마크</label>
+        <select id="bench"></select>
+      </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <span class="lbl" id="dm-lbl">결과 데이터 <span class="muted" style="font-weight:400">· 내 포트폴리오를 어떤 데이터로 백테스트할지</span></span>
+        <div class="dm-row">
+          <div class="seg-toggle big" id="dm" role="group" aria-labelledby="dm-lbl"><button type="button" data-v="act" aria-pressed="true">실제 데이터</button><button type="button" data-v="adj" aria-pressed="false">추세 보정 데이터</button></div>
+          <span class="dm-note" id="dm-note"></span>
+        </div>
+      </div>
+      <p class="set-sum simple-only" id="set-sum" style="grid-column: 1 / -1;"></p>
+      <div class="field" style="grid-column: 1 / -1;" data-detail>
+        <span class="lbl">데이터 범위</span>
+        <label class="toggle" for="ext"><input id="ext" type="checkbox" checked><span>상장 이전 구간을 대용 지수·시뮬레이션으로 확장 (Portfolio Visualizer의 자산군 백테스트처럼 장기 분석)</span></label>
+      </div>
+      <div class="field" style="grid-column: 1 / -1;" data-detail>
+        <span class="lbl">수익률 기준</span>
+        <label class="toggle" for="real"><input id="real" type="checkbox"><span>물가 반영 (실질 수익률) — 미국 소비자물가(CPI-U)를 빼서 지금 돈의 가치로 계산합니다. 은퇴 자금처럼 구매력이 중요한 계획에는 켜 두는 편이 안전해요.</span></label>
+      </div>
+      <div class="field" style="grid-column: 1 / -1;" data-detail>
+        <span class="lbl" id="div-lbl">배당금 처리</span>
+        <div class="choice" role="radiogroup" aria-labelledby="div-lbl">
+          <label class="opt on"><input type="radio" name="divm" value="re" checked><span><b>재투자</b><small>받은 분배금(배당·이자)으로 같은 ETF를 다시 사는 총수익 기준이에요. Portfolio Visualizer 기본값과 같아요.</small></span></label>
+          <label class="opt"><input type="radio" name="divm" value="cash"><span><b>현금으로 받기 (재투자 안 함)</b><small>분배금은 꺼내서 따로 모아요(이자 없음). 평가액·CAGR·MDD는 가격만 반영하고, 받은 배당금은 따로 보여줘요.</small></span></label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-ports" style="display:grid; gap:12px;">
+    <div class="panel-head" style="margin:0"><h2 id="h-ports">포트폴리오</h2><p>비중 합계가 100%인 포트폴리오만 계산합니다. 자산이 없는 카드는 건너뜁니다.</p></div>
+    <div class="ports" id="ports"></div>
+    <datalist id="tickers"></datalist>
+  </section>
+
+  <section class="panel tabs-only" aria-labelledby="h-qr" id="sec-qr">
+    <div class="panel-head"><h2 id="h-qr">결과 미리보기</h2><p id="qr-when"></p></div>
+    <div class="qr-list" id="qr-body"></div>
+    <div class="row" style="margin-top:12px"><button class="btn" type="button" data-go="g-results">2 결과에서 자세히 보기 →</button><span class="small muted">CAGR = 연평균 수익률, MDD = 고점 대비 가장 크게 떨어진 폭</span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-saved">
+    <div class="panel-head"><h2 id="h-saved">저장한 포트폴리오 <span class="muted small" id="sv-count"></span></h2>
+      <div class="row"><button class="btn ghost sm" type="button" id="sv-export">내보내기</button><button class="btn ghost sm" type="button" id="sv-import">가져오기</button></div></div>
+    <p class="small muted" id="sv-where"></p>
+    <div class="row" id="sv-extra" style="margin-top:8px"></div>
+    <p class="small" id="sv-msg" role="status" aria-live="polite"></p>
+    <div class="sv-io" id="sv-io" hidden>
+      <div class="sub-head"><h3 id="io-title"></h3><button class="btn ghost sm" type="button" id="io-close">닫기</button></div>
+      <p class="small muted" id="io-help"></p>
+      <textarea id="io-text" spellcheck="false" aria-label="공유 코드"></textarea>
+      <div class="row">
+        <button class="btn sm" type="button" id="io-copy">복사</button>
+        <button class="btn ghost sm" type="button" id="io-file-save">파일로 저장</button>
+        <label class="btn ghost sm filebtn">파일 열기<input id="io-file" type="file" accept=".json,.txt,application/json,text/plain"></label>
+        <button class="btn sm" type="button" id="io-add">추가</button>
+        <span class="small" id="io-msg" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+    <div class="sv-list" id="sv-list"></div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><span></span><button class="btn" type="button" data-go="g-results">2 결과 보기 →</button></nav>
+  </div>
+
+  <div class="pane" data-g="g-results" id="pane-results">
+  <div class="gsec" id="g-results"><span class="grp-n" aria-hidden="true">2</span><div class="grp-tx"><h2 class="grp-t">결과</h2><p class="grp-d">성과 요약, MDD 구분, 수익과 위험, 차트, 기간별·롤링 수익률.</p></div></div>
+
+  <div class="adj-banner" id="dm-banner" hidden><span class="ttl"><span class="adj-mark">보정</span>추세 보정 데이터로 계산한 결과예요</span><span class="small" id="dm-banner-txt"></span><button class="btn ghost sm" type="button" id="dm-off">실제 데이터로 보기</button></div>
+  <div id="msg" class="notice" hidden></div>
+
+  <section class="panel" aria-labelledby="h-sum">
+    <div class="panel-head"><h2 id="h-sum">성과 요약</h2><p id="sum-note"></p></div>
+    <div class="tbl-wrap"><table id="t-summary" class="mtbl"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-mdd" id="sec-mdd">
+    <div class="panel-head"><h2 id="h-mdd">MDD 구분 — 어느 구간의 MDD인가요?</h2><p>MDD(최대 낙폭)는 고점에서 가장 크게 떨어진 폭이에요. 같은 포트폴리오라도 어느 구간에서 재느냐에 따라 값이 달라서, 이 앱의 표에 나오는 MDD를 한곳에 모았어요.</p></div>
+    <div class="tbl-wrap"><table id="t-mdd" class="mtbl mddtbl"></table></div>
+    <p class="mdd-note" id="mdd-note"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-risk" id="sec-risk">
+    <div class="panel-head"><h2 id="h-risk">수익과 위험 — 한 번의 폭락에 덜 휘둘리는 지표</h2><p>MDD·칼마 비율은 가장 큰 하락 한 번으로 정해져요. 여기서는 모든 하락의 깊이·기간·횟수와 10년 구간의 보통 성적으로 수익과 위험을 봅니다.</p></div>
+    <div class="tbl-wrap"><table id="t-risk" class="risk mtbl"></table></div>
+    <p class="risk-key">굵은 값이 그 줄에서 가장 좋은 값이에요. 10년 구간은 1개월 간격으로 잡은 모든 10년이에요.</p>
+    <details class="vd-crit" style="margin-top:8px">
+      <summary>지표 읽는 법</summary>
+      <ul>
+        <li><b>보통의 10년</b>: 모든 10년 구간의 중앙값이에요. 분석을 언제 시작하고 끝냈는지, 큰 폭락이 기간의 어디에 있었는지에 덜 좌우돼요.</li>
+        <li><b>평균 낙폭</b>: 매달 직전 고점보다 몇 % 아래에 있었는지를 전체 기간 평균한 값이에요(Pain Index). 한 번의 폭락보다 ‘평소에 얼마나 빠져 있었나’를 봐요.</li>
+        <li><b>울서 지수</b>: 매달 고점 대비 낙폭을 제곱해 평균한 뒤 제곱근을 씌운 값이에요(Ulcer Index). 깊게 빠질수록, 오래 회복하지 못할수록 커져요.</li>
+        <li><b>마틴 비율</b>: (CAGR − 같은 기간 단기국채 수익률) ÷ 울서 지수예요(Ulcer Performance Index). 샤프 비율이 오르내림(변동성)을 위험으로 본다면, 마틴 비율은 실제로 손실 상태였던 깊이와 기간을 위험으로 봐요. 1986~2026년 기준 60/40은 약 1.1, S&amp;P 500은 약 0.6이에요.</li>
+        <li><b>가장 큰 하락의 비중</b>: 가장 큰 하락 한 번이 울서 지수(제곱한 낙폭의 합)에서 차지하는 몫이에요. 70%가 넘으면 위험 지표의 대부분이 그 한 번에서 나온 것이라, 그 폭락이 다시 오느냐에 따라 평가가 크게 바뀌어요.</li>
+        <li>한 번의 하락은 고점에서 떨어지기 시작해 그 고점을 되찾을 때까지예요. 회복하기 전에 더 떨어지면 같은 하락으로 봐요.</li>
+      </ul>
+    </details>
+    <div class="sub-sec" data-detail>
+      <div class="sub-head"><h3>주요 하락 목록 — 큰 하락 5개</h3><div class="chips" id="dd-port" role="group" aria-label="하락 목록을 볼 포트폴리오"></div></div>
+      <p class="small muted" id="dd-note"></p>
+      <div class="tbl-wrap"><table id="t-dd" class="ddtbl"></table></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-charts">
+    <div class="panel-head"><h2 id="h-charts">차트</h2><p>차트 위에 마우스를 올리면 해당 시점 값이 보입니다.</p></div>
+    <div class="charts">
+      <div>
+        <div class="chart-title"><h3>자산 성장 <span class="muted small" id="growth-sub"></span></h3>
+          <div class="row"><div class="legend" id="lg-growth"></div><div class="seg-toggle" role="group" aria-label="세로축"><button type="button" id="ax-log" aria-pressed="true">로그</button><button type="button" id="ax-lin" aria-pressed="false">일반</button></div></div>
+        </div>
+        <div class="chart-box" id="c-growth"></div>
+      </div>
+      <div>
+        <div class="chart-title"><h3>최고점 대비 낙폭 (Drawdown)</h3><div class="legend" id="lg-dd"></div></div>
+        <div class="chart-box" id="c-dd"></div>
+      </div>
+      <div data-detail>
+        <div class="chart-title"><h3 id="ann-title">연도별 수익률</h3><div class="legend" id="lg-ann"></div></div>
+        <div class="scroll-x"><div class="chart-box" id="c-ann"></div></div>
+      </div>
+      <div id="inc-chart" hidden data-detail>
+        <div class="chart-title"><h3>연도별 받은 배당금 <span class="muted small" id="inc-sub"></span></h3><div class="legend" id="lg-inc"></div></div>
+        <div class="scroll-x"><div class="chart-box" id="c-inc"></div></div>
+        <p class="small muted" style="margin-top:6px">막대에 마우스를 올리면 금액과 그해 시작 평가액 대비 배당률이 보여요. *는 일부 기간만 포함된 해예요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-trail">
+    <div class="panel-head"><h2 id="h-trail">기간별 CAGR · MDD — 최근 10·15·20·25·30년</h2><p>종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작해 계산합니다. 그래서 ‘최근 10년 MDD’는 그 10년 안에서 가장 크게 떨어진 폭이에요. MDD 아래 작은 글씨는 그 구간의 최장 회복 기간이고, +는 구간 끝까지 아직 회복하지 못했다는 뜻입니다.</p></div>
+    <p class="small muted" id="trail-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 CAGR·MDD는 평가액(가격) 기준이에요. CAGR 아래 작은 글씨는 그 구간에 받은 배당금을 평가액에 견준 연평균 배당률입니다.</p>
+    <div class="tbl-wrap trail-wide"><table id="t-trail" class="trail"></table></div>
+    <div class="tbl-wrap trail-narrow"><table id="t-trail-m" class="trail-m"></table></div>
+  </section>
+
+  <section data-detail class="panel" aria-labelledby="h-roll">
+    <div class="panel-head"><h2 id="h-roll">롤링 CAGR — N년 보유하면 어땠나</h2><p>분석 기간 안의 모든 N년 구간(1개월 간격)에서 연복리 수익률의 최저·중앙·최고값과, 각 구간 안에서 가장 크게 떨어진 폭(MDD) 중 최악값입니다. 보유 기간(10·15·20·25·30년)마다 묶어 보여줘요.</p></div>
+    <p class="small muted" id="roll-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 평가액(가격) 기준 연복리입니다. 받은 배당금은 포함하지 않아요.</p>
+    <div class="tbl-wrap"><table id="t-roll"></table></div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-setup">← 1 입력</button><button class="btn" type="button" data-go="g-checks">3 점검 보기 →</button></nav>
+  </div>
+
+  <div class="pane" data-g="g-checks" id="pane-checks">
+  <div class="gsec" id="g-checks"><span class="grp-n" aria-hidden="true">3</span><div class="grp-tx"><h2 class="grp-t">점검</h2><p class="grp-d">같은 비중이 시기마다 얼마나 달랐는지, 최근 급등에 기대고 있지 않은지 확인해요.</p></div></div>
+
+  <section class="panel" aria-labelledby="h-period" id="sec-period">
+    <div class="panel-head"><h2 id="h-period">구간별 점검 — 시기가 바뀌어도 비슷했을까?</h2><p>같은 비중을 분석 기간 안의 여러 시기에 새로 시작해 따로 계산하고, CAGR·MDD가 얼마나 달라지는지 봅니다.</p></div>
+    <div class="pc-pick"><span class="lbl" id="pc-port-lbl">점검할 포트폴리오</span><div class="chips" id="pc-port" role="group" aria-labelledby="pc-port-lbl"></div><span class="small muted" id="pc-data"></span></div>
+    <div id="pc-verdict" class="verdict" aria-live="polite"></div>
+    <div class="sub-sec">
+      <div class="sub-head"><h3>가장 과거 vs 최근 · 연대별</h3><span class="small muted" id="pc-tbl-note"></span></div>
+      <div class="tbl-wrap"><table id="pc-table" class="pctbl"></table></div>
+      <div class="pc-key" id="pc-key"></div>
+    </div>
+    <div class="sub-sec" data-detail>
+      <div class="sub-head"><h3>모든 구간 한눈에 — 시작 연도 × 끝 연도</h3><div class="seg-toggle" id="pc-metric" role="group" aria-label="지도에 표시할 지표"><button type="button" data-m="cagr" aria-pressed="true">CAGR</button><button type="button" data-m="mdd" aria-pressed="false">MDD</button></div></div>
+      <div class="heat-wrap">
+        <div class="chart-box" id="pc-heat"></div>
+        <div class="heat-side"><div class="heat-legend" id="pc-legend"></div><p class="heat-note" id="pc-heat-note"></p></div>
+      </div>
+    </div>
+    <div class="sub-sec" data-detail id="pc-custom-sec">
+      <div class="sub-head"><h3>직접 고른 구간</h3><div class="row" id="pc-quick"></div></div>
+      <div class="pc-range"><span class="pr-g"><span>시작</span><select id="pc-sy" aria-label="구간 시작 연도"></select><select id="pc-sm" aria-label="구간 시작 월"></select></span><span class="pr-g"><span>종료</span><select id="pc-ey" aria-label="구간 종료 연도"></select><select id="pc-em" aria-label="구간 종료 월"></select></span></div>
+      <div id="pc-custom"></div>
+    </div>
+  </section>
+
+  <section data-detail class="panel" aria-labelledby="h-trend">
+    <div class="panel-head"><h2 id="h-trend">추세 유지 보정 — 최근에 튀어 오른 종목을 과거 추세로</h2><p>최근 급등이 결과를 부풀리지 않았는지 보려고, 급등한 종목의 최근 구간을 그 종목의 과거 추세 속도로 바꾼 데이터로 한 번 더 계산합니다.</p></div>
+    <div class="trend-set">
+      <label class="toggle" for="tr-on"><input id="tr-on" type="checkbox" checked><span>급등 종목을 보정한 결과도 함께 보기 (월별 오르내림은 그대로 두고 오르는 속도만 과거 추세로 낮춤)</span></label>
+      <div class="row">
+        <label for="tr-r" class="small muted">최근 구간</label><select id="tr-r"><option value="24">2년</option><option value="36" selected>3년</option><option value="60">5년</option></select>
+        <label for="tr-l" class="small muted">과거 추세</label><select id="tr-l"><option value="60">직전 5년</option><option value="120" selected>직전 10년</option><option value="240">직전 20년</option></select>
+        <label for="tr-thr" class="small muted">급등 기준</label><select id="tr-thr"><option value="10">추세보다 연 10%p 이상</option><option value="15" selected>추세보다 연 15%p 이상</option><option value="20">추세보다 연 20%p 이상</option><option value="30">추세보다 연 30%p 이상</option></select>
+      </div>
+    </div>
+    <p class="small muted" id="tr-note" style="margin-top:10px"></p>
+    <div class="tbl-wrap" style="margin-top:8px"><table id="t-trend-list" class="trend"></table></div>
+    <button class="btn ghost sm" type="button" id="tr-more" hidden style="margin-top:8px"></button>
+    <div id="tr-cmp-wrap" class="sub-sec">
+      <div class="sub-head"><h3>포트폴리오 결과: 실제 → 추세 보정</h3></div>
+      <p class="small muted">빨간 값은 보정 후 나빠진 값이에요. 차이가 클수록 그 포트폴리오의 성과가 최근 급등에 기대고 있다는 뜻입니다.</p>
+      <div class="tbl-wrap"><table id="t-trend-cmp" class="trendcmp"></table></div>
+    </div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-results">← 2 결과</button><button class="btn" type="button" data-go="g-opt">4 최적화 보기 →</button></nav>
+  </div>
+
+  <div class="pane" data-g="g-opt" id="pane-opt">
+  <div class="gsec" id="g-opt"><span class="grp-n" aria-hidden="true">4</span><div class="grp-tx"><h2 class="grp-t">최적화</h2><p class="grp-d">고른 자산으로 구간별 최적 비중과 생애 주기별 추천을 찾아요.</p></div></div>
+
+  <div class="panel simple-only" id="simple-opt"><div class="simple-card"><p>비중 최적화, 생애 주기별 추천, 과최적화 점검은 ‘자세히’ 보기에서 볼 수 있어요. 고른 자산으로 최근·가장 과거 10·20·30년의 최적 비중을 찾아 줍니다.</p><button class="btn sm" type="button" id="to-full">자세히 보기로 바꾸기</button></div></div>
+
+  <section data-detail class="panel" aria-labelledby="h-opt">
+    <div class="panel-head"><h2 id="h-opt">비중 최적화</h2><p>분석 기간(<span id="o-end" class="mono">–</span>)의 최근 10·20·30년과 가장 과거 10·20·30년 구간마다, 고른 자산으로 만들 수 있는 비중 조합을 같은 리밸런싱 규칙으로 백테스트해 최적 비중을 찾습니다.</p></div>
+    <div class="field">
+      <div class="pk-top">
+        <span class="lbl">대상 자산 <span class="muted" id="o-count" style="font-weight:400"></span></span>
+        <div class="row">
+          <button class="btn ghost sm" type="button" id="o-all">전체 선택</button>
+          <button class="btn ghost sm" type="button" id="o-none">선택 해제</button>
+        </div>
+      </div>
+      <div class="chips" id="o-src"></div>
+      <div class="tk-picker" id="o-picker" role="group" aria-label="최적화 대상 자산"></div>
+      <p class="small muted" id="o-elig"></p>
+    </div>
+    <div class="opt-grid" style="margin-top:16px">
+      <div class="field">
+        <label for="o-step">비중 단위</label>
+        <select id="o-step"><option value="0.05">5%</option><option value="0.1">10%</option><option value="0.025">2.5%</option></select>
+      </div>
+      <div class="field">
+        <label for="o-max">자산별 최대 비중 (%)</label>
+        <input id="o-max" type="number" min="10" max="100" step="5" value="100">
+      </div>
+      <div class="field">
+        <span class="lbl">내 기준: MDD 범위 (%)</span>
+        <div class="row"><input id="o-lo" type="number" min="0" max="95" step="1" value="20" aria-label="MDD 하한" style="width:62px"><span class="muted">이상 ~</span><input id="o-hi" type="number" min="1" max="100" step="1" value="30" aria-label="MDD 상한" style="width:62px"><span class="muted">미만</span></div>
+      </div>
+      <div class="field">
+        <label for="o-uw">회복 기간 한도 (AI·내 기준)</label>
+        <select id="o-uw">
+          <option value="0">제한 없음</option><option value="12">1년 이내</option><option value="24">2년 이내</option><option value="36">3년 이내</option>
+          <option value="48">4년 이내</option><option value="60">5년 이내</option><option value="84">7년 이내</option><option value="120">10년 이내</option>
+        </select>
+      </div>
+      <div class="field">
+        <button class="btn" id="o-run" type="button">최적 비중 찾기</button>
+      </div>
+    </div>
+    <div style="display:grid; gap:8px; margin-top:14px;">
+      <div class="progress" aria-hidden="true"><i id="o-prog"></i></div>
+      <p class="small muted" id="o-status" aria-live="polite">대상 자산과 기준을 정한 뒤 실행하세요.</p>
+    </div>
+
+    <div class="sub-sec" id="o-era-sec">
+      <div class="sub-head"><h3>가장 과거 vs 최근 — 시대가 바뀌어도 같은 비중일까?</h3></div>
+      <p class="small muted" id="o-era-note" aria-live="polite"></p>
+      <div id="o-era"></div>
+    </div>
+
+    <div class="pos-bar" role="group" aria-labelledby="o-pos-lbl">
+      <span class="lbl" id="o-pos-lbl">아래 결과의 구간</span>
+      <div class="seg-toggle big" id="o-pos">
+        <button type="button" data-p="recent" aria-pressed="true">최근 10·20·30년</button>
+        <button type="button" data-p="old" aria-pressed="false">가장 과거 10·20·30년</button>
+      </div>
+      <span class="small muted" id="o-pos-note"></span>
+    </div>
+
+    <div class="sub-sec" id="o-adj-sec">
+      <div class="sub-head"><h3>실제 데이터 vs 추세 보정 — 최적 비중 비교</h3><button class="btn ghost sm" type="button" id="o-adj-rerun" hidden>보정 결과 다시 계산</button></div>
+      <p class="small muted" id="o-adj-note" aria-live="polite"></p>
+      <div id="o-adj-cmp"></div>
+      <div class="row" id="o-view" hidden><span class="small muted">아래 결과를 어떤 데이터로 볼까요?</span><div class="seg-toggle" role="group" aria-label="결과 데이터"><button type="button" data-v="actual" aria-pressed="true">실제 데이터</button><button type="button" data-v="adj" aria-pressed="false">추세 보정 데이터</button></div></div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-head"><h3>기간별 최적 비중</h3><span class="small muted">과거 데이터에 맞춘 결과라 미래 성과를 보장하지 않고, 짧은 구간일수록 최근 강세 자산에 쏠립니다.</span></div>
+      <p class="small muted" id="o-crit"></p>
+      <p class="small muted" id="o-div-note" hidden>배당금 처리를 ‘현금으로 받기’로 골라도 최적 비중은 배당 재투자(총수익) 기준으로 찾아요. 배당을 꺼내 쓰면 평가액이 얼마나 자라는지는 비중보다 배당률에 크게 좌우되기 때문이에요. 대신 결과마다 배당을 현금으로 받을 때의 평가액 CAGR·MDD와 배당률을 함께 보여줍니다.</p>
+      <div class="hz-grid" id="o-hz"></div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-head"><h3>생애 주기별 추천 CAGR · MDD</h3><button class="btn ghost sm" type="button" id="life-reset">기준 초기화</button></div>
+      <p class="small muted">단계마다 감당할 수 있는 MDD와 회복 기간 한도, 목표 CAGR을 두고, 한도 안에서 CAGR이 가장 높은 조합을 구간별로 찾습니다. 기준 숫자는 바꿀 수 있고 바꾸면 바로 다시 고릅니다. 칸을 누르면 비중과 적용 버튼이 나옵니다. 일반적인 가이드라인이며 개인별 투자 조언이 아닙니다.</p>
+      <div class="tbl-wrap"><table id="o-life" class="life"></table></div>
+      <div id="life-pick"></div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="sub-head"><h3>과최적화 점검 — 그 비중이 다음 구간에도 통했을까?</h3><button class="btn ghost sm" type="button" id="w-run">점검 실행</button></div>
+      <p class="small muted">위 결과는 이미 지나간 구간에 맞춘 비중이라 앞으로도 같은 성과를 낸다는 보장이 없어요. 같은 자산·기준으로 <b>직전 10·20년</b>에서 비중을 고른 뒤, 그 비중을 <b>최근 10·20년</b>에 그대로 들고 갔을 때 결과가 어떻게 달라졌는지 보여줍니다. 빨간 값은 고를 때 정한 한도를 넘었다는 뜻이에요.</p>
+      <p class="small muted" id="w-status"></p>
+      <p class="small" id="w-sum"></p>
+      <div class="tbl-wrap"><table id="w-table" class="walk"></table></div>
+    </div>
+
+    <div class="sub-sec">
+      <div class="chart-title"><h3>모든 조합의 CAGR과 MDD</h3><div class="seg-toggle" id="o-ftabs" role="group" aria-label="구간 선택"></div></div>
+      <div class="legend" id="lg-front"></div>
+      <div class="chart-box" id="c-front"></div>
+      <p class="small muted" id="front-note">점 하나가 비중 조합 하나입니다(최대 6,000개 표시). 점을 누르면 그 조합을 포트폴리오에 적용할 수 있어요. 네모는 위 포트폴리오를 같은 구간으로 계산한 위치입니다.</p>
+      <div id="front-pick"></div>
+    </div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-checks">← 3 점검</button><button class="btn" type="button" data-go="g-ref" data-detail>5 도움말 보기 →</button></nav>
+  </div>
+
+  <div class="pane" data-g="g-ref" id="pane-ref" data-detail>
+  <div class="gsec" id="g-ref" data-detail><span class="grp-n" aria-hidden="true">5</span><div class="grp-tx"><h2 class="grp-t">도움말</h2><p class="grp-d">사용한 데이터, 지원 티커, 계산 방식과 데이터 출처.</p></div></div>
+
+  <section data-detail class="panel" aria-labelledby="h-cov">
+    <div class="panel-head"><h2 id="h-cov">사용한 데이터</h2><p>포트폴리오에 들어간 티커별로 어떤 데이터가 쓰였는지 보여줍니다.</p></div>
+    <div class="cov-legend" id="cov-legend"></div>
+    <div class="cov" id="cov" style="margin-top:12px;"></div>
+  </section>
+
+  <section data-detail class="panel" aria-labelledby="h-list">
+    <div class="panel-head"><h2 id="h-list">지원 티커</h2><p>목록에 없는 티커는 아래에서 직접 월간 데이터를 붙여 넣어 추가할 수 있습니다.</p></div>
+    <div class="tick-groups" id="tick-groups"></div>
+    <details style="margin-top:16px;">
+      <summary>내 데이터로 티커 추가 (CSV 붙여넣기)</summary>
+      <div class="custom-box" style="margin-top:10px;">
+        <p class="small muted">Yahoo Finance 등에서 받은 CSV를 붙여 넣으세요. 첫 열은 날짜, 가격 열은 <span class="mono">Adj Close</span>(배당 반영 종가)를 우선 사용합니다. 일간·월간 모두 가능하며 월말 값으로 바꿔 계산합니다. 열이 날짜와 숫자 두 개뿐이면 가격으로, 헤더가 <span class="mono">return</span>이면 수익률로 읽어요(일간이면 월별로 복리 합산). 수익률이 0.025 같은 소수면 단위를 ‘소수’로 고르세요. 추가한 뒤 나오는 첫 달 수익률로 제대로 읽혔는지 확인하세요. 추가한 티커는 이 화면을 닫으면 사라집니다.</p>
+        <div class="row"><input id="cu-tk" type="text" class="mono" placeholder="티커 (예: VBR)" style="width:140px" autocomplete="off"><label class="small muted" for="cu-unit">수익률 열 단위</label><select id="cu-unit"><option value="pct">% (2.5 = 2.5%)</option><option value="dec">소수 (0.025 = 2.5%)</option></select><input id="cu-file" type="file" accept=".csv,text/csv,text/plain" aria-label="CSV 파일"></div>
+        <textarea id="cu-text" spellcheck="false" placeholder="Date,Open,High,Low,Close,Adj Close,Volume&#10;2015-01-01,...&#10;..."></textarea>
+        <div class="row"><button class="btn sm" id="cu-add" type="button">티커 추가</button><span class="small" id="cu-msg"></span></div>
+      </div>
+    </details>
+  </section>
+
+  <section data-detail class="panel" aria-labelledby="h-method">
+    <div class="panel-head"><h2 id="h-method">계산 방식과 데이터 출처</h2><p>지표 정의는 <a href="https://www.portfoliovisualizer.com/backtest-portfolio" target="_blank" rel="noopener">Portfolio Visualizer</a> 백테스트를 따릅니다.</p></div>
+    <div class="method">
+      <div>
+        <h3>지표</h3>
+        <ul>
+          <li>모든 계산은 월말 잔고 기준이고 ETF 보수는 수익률에 이미 반영돼 있습니다. 기본은 분배금(배당·이자)을 재투자하는 총수익이고, ‘현금으로 받기’를 고르면 아래 ‘배당금 처리’ 방식으로 계산합니다.</li>
+          <li>CAGR = (최종 잔고 ÷ 초기 잔고)<sup>12/개월 수</sup> − 1</li>
+          <li>MDD는 월말 잔고의 직전 최고점 대비 최대 하락률입니다. 월중 하락은 잡히지 않아 일간 기준보다 작게 나올 수 있습니다.</li>
+          <li>표준편차는 월간 수익률 표준편차 × √12, 샤프·소르티노는 미국 단기국채(무위험) 대비 월간 초과수익으로 계산해 연율화했습니다.</li>
+          <li>칼마 비율 = CAGR ÷ |MDD|. 최고·최악 연도는 1월~12월이 모두 포함된 해만 비교합니다.</li>
+          <li>MDD는 월말 잔고로 재기 때문에 한 달 안에서 떨어졌다 회복한 낙폭은 빠집니다. S&amp;P 500의 2020년 코로나 하락은 일간 기준 −34%였지만 월말 기준 −19%, 2008년 금융위기는 −55% 대 −51%, 3배 레버리지는 2020년에 −76% 대 −59%였어요. 실제로 겪는 낙폭은 표의 MDD보다 깊을 수 있습니다.</li>
+          <li><b>물가 반영</b>을 켜면 모든 수익률에서 미국 소비자물가(CPI-U, 미국 노동통계국)를 빼 실질 수익률로 계산합니다(Portfolio Visualizer의 Inflation Adjusted와 같은 방식). 지난 30년 물가는 연 2.55%, 1972년 이후는 연 3.91%였어요. 2025년 10월 물가(미발표)는 앞뒤 달 사이 값으로, 2026년 9월 물가(발표 전)는 최근 12개월 평균으로 넣었습니다.</li>
+          <li><b>MDD 구분</b>: 전체 기간 MDD는 분석 기간 전체에서 가장 크게 떨어진 한 번이고, 최근 N년 MDD는 그 N년만 목표 비중으로 새로 시작해 계산한 값입니다. N년 보유 시 최악 MDD는 모든 N년 구간(1개월 간격)의 MDD 중 가장 깊은 값, 보통의 10년 MDD는 모든 10년 구간 MDD의 중앙값, 평균 낙폭은 매달 직전 고점 대비 낙폭의 평균이에요. 구간이 짧으면 큰 폭락이 빠질 수 있어 MDD가 얕게 나옵니다.</li>
+          <li><b>MDD 회복 기간</b>은 MDD 저점에서 직전 고점을 다시 넘은 달까지, <b>최장 회복 기간</b>은 어느 하락이든 고점에서 떨어진 뒤 그 고점을 되찾기까지 걸린 기간 중 가장 긴 값입니다(Portfolio Visualizer의 Recovery Time·Underwater Period). 구간 끝까지 회복하지 못했으면 그때까지의 기간에 +를 붙입니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>배당금 처리</h3>
+        <ul>
+          <li><b>재투자(기본)</b>: 분배금을 받은 달에 같은 ETF를 다시 사는 총수익 기준입니다. Portfolio Visualizer의 기본값(Reinvest Dividends)과 같습니다.</li>
+          <li><b>현금으로 받기</b>: 매달 ETF별 분배금(배당·이자·자본이득 분배)을 꺼내 현금으로 따로 모읍니다. 보유한 ETF는 가격 수익률(총수익률 − 분배율)로만 움직이고, 리밸런싱도 이 평가액으로 합니다. 모은 현금에는 이자를 붙이지 않습니다. CAGR·MDD·회복 기간·차트·롤링은 평가액 기준이고, 받은 배당금 합계·최근 1년 배당금·평균 배당률·‘평가액 + 받은 배당’ CAGR은 따로 보여줍니다(Portfolio Visualizer에서 배당 재투자를 끈 것과 같은 방식).</li>
+          <li>최근 1년 배당률은 마지막 12개월 동안 받은 배당금 ÷ 지금 평가액, 평균 배당률은 기간 전체 배당금 ÷ 매달 평가액 합계 × 12입니다.</li>
+          <li>물가 반영을 켜면 배당금도 받은 달 물가로 나눠 지금 돈의 가치로 셉니다. 추세 보정 데이터에서는 배당은 그대로 두고 가격이 오르는 속도만 낮춥니다.</li>
+          <li>비중 최적화와 과최적화 점검은 재투자(총수익) 기준입니다. ‘현금으로 받기’일 때는 결과마다 배당을 현금으로 받을 때의 평가액 CAGR·MDD와 배당률을 함께 보여줍니다.</li>
+          <li>BIL·SGOV 같은 현금성 ETF는 수익 전부가 분배금이라, 현금으로 받으면 평가액은 거의 그대로이고 수익은 모두 배당금으로 잡혀요. JEPI·JEPQ 같은 커버드콜 ETF는 배당률이 연 8~12%로 높아 평가액 CAGR이 총수익보다 크게 낮아요.</li>
+          <li>배당금은 세전 금액입니다(한국 거주자 원천징수 15% 미반영).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>리밸런싱과 기간</h3>
+        <ul>
+          <li>정기 리밸런싱은 달력 기준입니다. 매년은 12월 말, 반기는 6·12월 말, 분기는 3·6·9·12월 말에 목표 비중으로 되돌립니다.</li>
+          <li>밴드는 매월 말 확인해 어느 자산이든 목표 대비 5%p(큰 비중) 또는 상대 25%(작은 비중) 넘게 벗어나면 전체를 되돌립니다.</li>
+          <li>기간별 성과(10~30년)는 종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작한 독립 백테스트입니다.</li>
+          <li>여러 포트폴리오는 모두 같은 기간으로 계산합니다. 자산의 데이터가 늦게 시작하면 시작 시점이 자동으로 뒤로 밀립니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>최적화 기준</h3>
+        <ul>
+          <li>분석 종료 시점에서 거꾸로 10·20·30년(최근 구간)과 분석 시작 시점부터 10·20·30년(가장 과거 구간)을 각각 따로 최적화합니다. 두 구간의 결과는 ‘가장 과거 vs 최근’ 표에서 나란히 비교하고, 겹치는 비중은 두 조합에 공통으로 들어간 비중의 합(같은 지수 ETF는 하나로 봄)입니다. 각 구간 전체의 데이터가 있는 자산만 쓰고, VOO·IVV·SPLG처럼 같은 지수를 따르는 ETF는 보수가 가장 낮은 하나로 합쳐 계산합니다.</li>
+          <li><b>AI 추천</b>: 구간 전체와 앞 절반·뒤 절반 각각의 샤프 비율 중 가장 낮은 값이 최대인 비중입니다. 한 시기에만 잘 맞은 조합보다 앞뒤 어느 쪽에서도 위험 대비 성과가 고른 조합을 고릅니다. 초과수익이 마이너스인 구간은 변동성이 작을수록 낫게 보정합니다(Israelsen 방식). BIL·SGOV 같은 현금성 자산은 샤프 비율의 기준(무위험 수익)이라 비중을 바꿔도 비율이 거의 같아 제외합니다(현금성 자산만 고르면 그대로 씀). 샤프 비율 최대화는 Portfolio Visualizer 최적화 도구의 기본 목표이기도 합니다.</li>
+          <li><b>내 기준</b>: MDD가 지정한 범위(기본 20% 이상 30% 미만)에 드는 조합 중 CAGR이 가장 높은 비중입니다. 회복 기간 한도를 고르면 AI 추천과 내 기준 모두 최장 회복 기간이 그 안인 조합만 고릅니다.</li>
+          <li>조합이 12만 개 이하면 전부 계산합니다. 넘으면 모든 단일 자산과 10% 간격의 두 자산 조합, 무작위 표본 약 4만 개를 계산한 뒤, 기준마다 상위 조합 주변에서 비중을 조금씩 옮겨 가며 더 나은 조합을 찾습니다.</li>
+          <li>조건을 모두 만족하는 조합이 없으면 조건에 가장 가까운 조합을 보여주고 표시합니다.</li>
+          <li>조합이 12만 개를 넘을 때 쓰는 탐색(굵은 간격 전수 또는 표본 + 주변 탐색)은 자산 7~10개로 전수 계산과 비교한 108개 기준 중 104개가 같았고, 나머지도 CAGR 차이가 0.1%p 이하였어요(조건을 만족하는 조합이 아예 없을 때 보여주는 ‘가장 가까운 조합’은 다를 수 있음). 자산을 아주 많이 고르면(예: 전체 선택) 표본 탐색이라 더 나은 조합이 남아 있을 수 있어요. 기준을 바꾸면 바뀐 기준으로 주변 조합을 다시 찾습니다.</li>
+          <li><b>추세 유지 보정</b>: 분석 종료 시점 기준 최근 3년(바꿀 수 있음) 연평균 수익률이 그 직전 10년 추세보다 연 15%p 이상 높은 종목을 ‘급등’으로 잡습니다. 그 종목은 최근 구간의 매달 수익률에서 같은 크기의 상승분(로그 기준)을 덜어 내, 월별 오르내림의 모양과 변동성은 그대로 두고 최근 구간 전체의 상승 속도만 직전 추세와 같게 만든 데이터를 따로 만들어 백테스트와 최적화를 한 번 더 합니다. 3배 레버리지 ETF는 기초 지수가 보정될 때 덜어 낸 상승분의 3배를 덜어 내는데, 변동성 비용은 그대로라 보정 후 수익률이 크게 낮아질 수 있어요. 급등이 일시적인 과열인지 실제 변화인지는 알 수 없으니, 두 결과를 함께 보고 판단하는 ‘만약’ 계산으로 쓰세요. 내 포트폴리오도 ‘기간과 규칙 › 결과 데이터’에서 추세 보정 데이터를 고르면 성과 요약·차트·기간별 표·롤링·구간별 점검을 모두 보정 데이터로 계산합니다.</li>
+          <li><b>과최적화 점검</b>은 같은 방법으로 직전 10·20년에서 고른 비중을 최근 10·20년에 그대로 적용한 결과입니다. 기본 6개 자산으로 해 보면 2006–2016년에 MDD 15% 이하로 고른 은퇴용 비중이 2016–2026년에는 MDD −32%였어요(2022년 주식·채권 동반 하락). 최적화 결과의 MDD·회복 기간은 ‘과거에 그랬다’이지 ‘앞으로 그렇다’가 아닙니다.</li>
+          <li>과거 최적 비중은 미래 최적 비중을 보장하지 않습니다. 특히 최근 10년처럼 짧은 구간이나 레버리지·섹터 ETF를 넣으면 지나간 강세 자산에 쏠리기 쉽습니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>수익과 위험 지표</h3>
+        <ul>
+          <li>모두 월말 잔고로 계산합니다. 배당을 현금으로 받으면 평가액, 물가 반영이면 실질, 추세 보정 데이터를 고르면 보정 데이터 기준이에요.</li>
+          <li><b>보통의 10년 CAGR·MDD</b>: 분석 기간 안의 모든 10년 구간(1개월 간격)에서 CAGR과 구간 내 최대 낙폭의 중앙값. <b>나쁜 10년 CAGR</b>은 하위 10% 값입니다. 분석 기간이 10년보다 짧으면 비워 둡니다.</li>
+          <li><b>평균 낙폭</b>(Pain Index) = 매달 직전 고점 대비 낙폭의 평균. <b>울서 지수</b>(Ulcer Index, Peter Martin 1987) = √(매달 낙폭² 의 평균). <b>마틴 비율</b>(Ulcer Performance Index) = (CAGR − 같은 기간 미국 단기국채 연수익률) ÷ 울서 지수.</li>
+          <li><b>하락</b>은 고점에서 떨어지기 시작해 그 고점을 다시 넘을 때까지(회복 전이면 마지막 달까지)를 하나로 셉니다. ‘10% 넘는 하락’은 이런 하락 중 깊이가 −10%를 넘은 횟수, ‘큰 하락 5개 평균’은 −5%를 넘은 하락 가운데 깊은 순서로 5개(5개 미만이면 있는 만큼)의 평균입니다.</li>
+          <li><b>가장 큰 하락의 비중</b> = 가장 큰 하락 기간의 낙폭² 합 ÷ 전체 기간 낙폭² 합. 70% 이상이면 ‘한 번에 집중’, 40% 미만이면 ‘여러 번에 나뉨’으로 표시합니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>구간별 점검</h3>
+        <ul>
+          <li>점검할 포트폴리오를 분석 기간 안의 여러 구간에서 목표 비중으로 새로 시작해 따로 계산합니다. 리밸런싱·배당 처리·물가 반영·결과 데이터(실제/추세 보정)는 위 설정을 그대로 씁니다.</li>
+          <li><b>가장 과거 vs 최근</b>: 분석 시작부터 10·20·30년과 분석 종료까지 10·20·30년. <b>연대별</b>: 1990년대·2000년대처럼 달력 10년 단위이고, 분석 기간 안에 3년 미만만 걸치는 연대는 뺍니다.</li>
+          <li><b>판정</b>은 네 가지를 봅니다. ① 수익 일관성: 모든 10년 구간(1개월 간격) CAGR의 하위 10%와 상위 10% 차이가 5%p 이하면 안정, 10%p 이하면 보통, 넘으면 큼(손실 난 10년이 있으면 최소 보통). ② 위험 일관성: 10년 구간 MDD의 하위·상위 10% 차이가 15%p 이하면 안정, 30%p 이하면 보통, 넘으면 큼. ③ 가장 과거 vs 최근: 20년 구간 CAGR 차이가 2%p 이하면 안정, 5%p 이하면 보통(분석 기간이 20년보다 짧으면 10년 구간으로 3%p·6%p). ④ 최근 급등 의존: 추세 보정 데이터로 바꿨을 때 최근 10년 CAGR 변화가 1%p 미만이면 낮음, 3%p 이하면 보통, 넘으면 높음(보정 종목이 없으면 해당 없음).</li>
+          <li>종합: ‘큼·높음’이 하나라도 있으면 ‘시기에 따라 크게 달라요’, ‘보통’이 둘 이상이면 ‘시기에 따라 차이가 있어요’, 그 밖에는 ‘비교적 일관돼요’입니다. 기준값은 판단을 돕는 눈금이지 합격선이 아니고, MDD 수준 자체를 감당할 수 있는지는 따로 봐야 해요.</li>
+          <li><b>시작 연도 × 끝 연도 지도</b>: 칸마다 그해 1월(분석 시작 해는 시작 달)에 시작해 끝 연도 12월(마지막 해는 종료 달)까지 보유한 결과입니다. 12개월이 안 되는 구간은 비워 둡니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>생애 주기 기준</h3>
+        <ul>
+          <li>단계가 올라갈수록 남은 투자 기간이 짧아지고 인출이 가까워져 감당할 수 있는 낙폭과 회복 기간을 줄였습니다.</li>
+          <li>기본값은 지난 30년(1996.10–2026.09) 미국 주식(SPY)·중기 국채(IEF) 혼합의 실제 성과에 맞춰 잡았습니다. 주식 80%: CAGR 9.4%, MDD −39.1%, 최장 회복 5년 3개월 → 30대 MDD 40%·회복 7년·목표 9%. 주식 60%: 8.4%, −26.4%, 3년 5개월 → 40대 30%·5년·8%. 주식 50%: 7.8%, −19.8%, 3년 2개월 → 50대 20%·4년·7%. 은퇴 이후는 인출 중 손실을 줄이도록 주식 30%(6.5%, −18.1%)보다 낮은 MDD 15%·회복 3년·목표 5%로 잡았습니다.</li>
+          <li>각 단계 추천은 MDD와 최장 회복 기간이 한도 안인 조합 중 CAGR이 가장 높은 비중이고, 목표 CAGR은 달성 여부만 표시합니다.</li>
+          <li>나이만으로 정한 일반적인 가이드라인입니다. 소득 안정성, 다른 자산, 인출 계획에 따라 맞는 수준이 다르니 숫자를 바꿔 보세요. 개인별 투자 조언이 아닙니다.</li>
+          <li>물가 반영을 켜면 목표 CAGR도 물가를 뺀 값(지난 30년 기준 약 2.5%p 낮게)으로 바꿔 보세요.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>계산하지 않는 것 (은퇴 계획에 쓸 때)</h3>
+        <ul>
+          <li><b>세금</b>: 미국 ETF 분배금의 원천징수(한국 거주자 15%), 해외 주식 양도소득세(연 250만 원 초과분 22%), 리밸런싱 때 생기는 세금은 빠져 있어요. 채권처럼 분배금이 큰 자산일수록 실제 수익률이 더 낮아집니다. ‘현금으로 받기’의 배당금도 세전 금액이에요.</li>
+          <li><b>환율</b>: 모든 수익률은 달러 기준이에요. 원화로 투자하면 원/달러 환율 변화가 더해지고, 위기 때 달러가 오르는 경우가 많아 원화 기준 MDD는 달러 기준과 다를 수 있어요.</li>
+          <li><b>적립과 인출</b>: 한 번에 넣고 그대로 두는 계산이에요. 매달 넣거나 은퇴 후 매달 빼 쓰면 같은 CAGR이라도 하락 시점에 따라 결과가 크게 달라집니다(수익률 순서 위험).</li>
+          <li><b>거래 비용·호가 차이</b>와 연금저축·IRP 계좌에서 사는 국내 상장 ETF(미국 지수 추종)의 보수·세금 차이도 반영하지 않습니다.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>데이터 (기준일 2026-10-07)</h3>
+        <ul>
+          <li><b>2017.01 ~ 2026.09</b>: 각 ETF의 실제 월간 총수익률 (<a href="https://chartrow.com" target="_blank" rel="noopener">ChartRow</a>), 2017~2025년은 연간 총수익률에 맞춰 반올림 오차를 보정.</li>
+          <li><b>상장 ~ 2016</b>: ETF의 실제 연간 총수익률(<a href="https://totalrealreturns.com" target="_blank" rel="noopener">TotalRealReturns</a>)과 일치하도록 보정한 월간 경로. 월별 모양은 기초지수·선물 데이터에서 가져왔습니다.</li>
+          <li><b>상장 이전 (확장)</b>: S&amp;P 500 총수익 지수, 나스닥100 지수, 미 국채·금·은·원자재 선물 + 단기국채 수익률, 레버리지 ETF는 일간 배수 시뮬레이션. 출처: SteelCerberus us-market-data, pysystemtrade, yieldchaser etf-data (GitHub).</li>
+          <li>VOO·IVV·SPLG·QQQM·IAU·GLDM·SGOV는 같은 지수를 추종하는 ETF(SPY·QQQ·GLD·BIL) 데이터에 보수 차이를 반영했습니다.</li>
+          <li>데이터 원천이 Portfolio Visualizer와 달라 결과가 소수점 단위로 다를 수 있습니다.</li>
+          <li>상장 이전 확장 데이터를 실제 ETF 연수익률과 겹치는 해에 비교하면 연평균 0~−2.7%p로 약간 보수적이었어요(SPY −0.1, QQQ −0.5, TLT −0.6, GLD −0.9, UPRO −1.3, TQQQ −2.7%p). 하이일드 채권(HYG) 2000–2007년 대용은 해마다 오차가 커서 참고만 하세요.</li>
+          <li>JEPQ는 2022년 5월 상장이지만 데이터가 2023년 1월부터라 2022년 하락이 빠져 있고, DBC도 상장 후 10개월(2006.02–12)이 빠져 있어요.</li>
+          <li><b>분배금(배당) 데이터</b> (2026-10-08 수집): 2022년 이후(SCHD·VYM·VUG·VTV는 2024년 이후)는 ETF별 실제 분배금 내역(<a href="https://stockanalysis.com" target="_blank" rel="noopener">stockanalysis.com</a>, SCHD·VYM·VUG는 <a href="https://chartrow.com" target="_blank" rel="noopener">ChartRow</a>, VTV는 stockscan.io, 모두 분할 조정)을 각 ETF의 총수익률로 되짚은 그 시점 가격으로 나눠 월별 분배율로 바꿨어요. 그 이전은 ETF별 연도별 실제 분배율(<a href="https://www.lazyportfolioetf.com" target="_blank" rel="noopener">lazyportfolioetf.com</a>, 그해 첫 가격 대비)을 그해 열두 달에 고르게 나눴고, SPY·VOO·IVV·SPLG는 S&amp;P 500 실제 배당(SteelCerberus)을 썼습니다. SPY로 맞춰 보면 1994–2023년 연간 배당률이 두 출처 사이 0.04%p 안에서 같았어요(lazyportfolioetf의 2024·2025년 값은 10~20% 낮게 나와 쓰지 않았습니다).</li>
+          <li>분배금 추정 구간: 상장 이전 미국 주식은 S&amp;P 500 배당률(DIA는 1998–2021년 S&amp;P 500의 1.25배), 나스닥100은 연 0.5%, 국채·종합채권·하이일드는 미 10년물·단기국채 금리에 각 ETF의 실제 분배율로 맞춘 차이를 더했고, 해외는 EFA·EEM 분배율, VXUS·VT의 2021년 이전은 구성 ETF 분배율을 섞었어요. SOXX·SMH의 2021년 이전은 XLK 분배율, JEPI의 2021년 9월 이전은 연 약 7%, 3배 레버리지(UPRO·TQQQ·SOXL)는 2022년 이후 실제 분배금만 넣고 그 전은 0입니다. 금·은 ETF는 분배가 없어요. ETF별 출처와 구간은 ‘현금으로 받기’를 고르면 ‘사용한 데이터’에 나와요.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-opt">← 4 최적화</button></nav>
+  </div>
+</div>
+<nav class="bnav" id="bnav" aria-label="탭">
+  <a href="#g-setup" data-g="g-setup"><b>1</b><span>입력</span></a>
+  <a href="#g-results" data-g="g-results"><b>2</b><span>결과</span></a>
+  <a href="#g-checks" data-g="g-checks"><b>3</b><span>점검</span></a>
+  <a href="#g-opt" data-g="g-opt"><b>4</b><span>최적화</span></a>
+  <a href="#g-ref" data-g="g-ref" data-detail><b>5</b><span>도움말</span></a>
+</nav>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="application/json" id="etf-data">__DATA__</script>
+<script>
+__ENGINE__
+</script>
+<script>
+__APP__
+</script>
