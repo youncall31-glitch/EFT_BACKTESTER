@@ -11,11 +11,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v7.3-2026-10-10">
+<meta name="app-version" content="v8-2026-10-16">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <title>ETF 포트폴리오 백테스터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
@@ -75,7 +76,6 @@ h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
 h3 { font-size: 14px; font-weight: 600; }
 p { margin: 0; }
 .mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .muted { color: var(--muted); }
 .small { font-size: 12.5px; }
 a { color: var(--focus); }
@@ -412,11 +412,7 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .tb-nav::-webkit-scrollbar { display: none; }
 .tb-nav a { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 999px; color: var(--ink-2); text-decoration: none; font-size: 13px; white-space: nowrap; border: 1px solid transparent; }
 .tb-nav a:hover { color: var(--ink); border-color: var(--line-2); }
-.tb-nav a b { font-family: var(--font-mono); font-size: 11px; font-weight: 600; width: 19px; height: 19px; border-radius: 50%; display: inline-grid; place-items: center; border: 1px solid var(--line-2); color: var(--ink-2); background: var(--panel); }
 .tb-nav a.on { color: var(--ink); background: var(--panel); border-color: var(--line-2); }
-.tb-nav a.on b { background: var(--ink); border-color: var(--ink); color: var(--panel); }
-.tb-view { flex: none; }
-.tb-view button { font-weight: 600; }
 .upd { font-size: 12px; color: var(--muted); max-width: 820px; }
 .upd summary { cursor: pointer; list-style: none; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-weight: 500; }
 .upd summary::-webkit-details-marker { display: none; }
@@ -431,16 +427,9 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .upd-body dd ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; }
 @media (max-width: 560px) { .upd-body dl { grid-template-columns: 1fr; gap: 2px; } .upd-body dd { margin-bottom: 8px; } }
 .gsec { display: flex; align-items: center; gap: 12px; padding-top: 18px; margin-top: 12px; border-top: 2px solid var(--line-2); }
-.grp-n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 15px; }
 .grp-tx { display: grid; gap: 1px; min-width: 0; }
 .grp-t { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
 .grp-d { font-size: 12.5px; color: var(--muted); }
-:root.simple [data-detail] { display: none !important; }
-.simple-only { display: none; }
-:root.simple .simple-only { display: block; }
-.simple-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
-.simple-card p { color: var(--ink-2); font-size: 13px; max-width: 70ch; }
-.set-sum { font-size: 12.5px; color: var(--muted); }
 /* data source switch (actual / trend-kept) */
 .dm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .dm-note { font-size: 12.5px; color: var(--ink-2); min-width: 0; }
@@ -550,37 +539,8 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 :root.tabs nav.pane-nav.tabs-only { display: flex; }
 .pane-nav { justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--line); }
 .pane-nav .btn { min-height: 44px; padding: 10px 18px; }
-:root.tabs .tb-nav a { font-weight: 600; font-size: 13.5px; padding: 6px 13px 6px 7px; }
-:root.tabs .tb-nav a.on { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-:root.tabs .tb-nav a.on b { background: var(--panel); color: var(--ink); border-color: var(--panel); }
-.layout-sw { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.layout-sw .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
-.howto { margin: 0; padding: 12px 16px 12px 34px; border: 1px dashed var(--line-2); border-radius: var(--r); background: var(--panel); display: grid; gap: 4px; font-size: 13px; color: var(--ink-2); }
-.howto b { color: var(--ink); }
-.qr-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 10px; }
-.qr-item { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 8px; background: var(--panel-2); min-width: 0; }
-.qr-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; min-width: 0; }
-.qr-name span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qr-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.qr-kv div { display: grid; gap: 1px; min-width: 0; }
-.qr-kv span { font-size: 11px; color: var(--muted); }
-.qr-kv b { font-family: var(--font-mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.qr-kv b.neg { color: var(--neg); }
 .bnav { display: none; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 10px; font-size: 13px; max-width: min(92vw, 520px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
-@media (max-width: 640px) {
-  :root.tabs .tb-nav { display: none; }
-  :root.tabs .tb-brand { display: inline; }
-  :root.tabs .tb-in { justify-content: space-between; }
-  :root.tabs .bnav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--top-bg); -webkit-backdrop-filter: saturate(1.3) blur(10px); backdrop-filter: saturate(1.3) blur(10px); border-top: 1px solid var(--line-2); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
-  :root.tabs .bnav a { display: grid; justify-items: center; gap: 3px; padding: 5px 2px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: 12px; font-weight: 600; min-width: 0; }
-  :root.tabs .bnav a b { font-family: var(--font-mono); font-size: 11px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2); }
-  :root.tabs .bnav a.on { color: var(--ink); background: var(--panel-2); }
-  :root.tabs .bnav a.on b { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-  :root.tabs .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-  :root.tabs .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
-  .layout-sw .seg-toggle button { padding: 6px 10px; }
-}
 /* ---------- v7.3: every table says which period (and which MDD) a number belongs to ---------- */
 /* trailing grid: each period's CAGR·MDD pair sits in its own band under its own heading */
 .trail th.grp { text-align: center; vertical-align: bottom; border-bottom: 1px solid var(--line-2); padding-block: 8px 6px; white-space: nowrap; }
@@ -596,17 +556,14 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 .mtbl td .sub, .trail td .sub { white-space: normal; }
 @media (max-width: 900px) { .mtbl th, .mtbl td { padding-inline: 7px; } }
 /* period heading rows (phone trailing table, rolling table) */
-.trail-m tr.ph th, #t-roll tr.ph th { background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; vertical-align: bottom; }
-.tbl-wrap .trail-m tr.ph th:first-child, .tbl-wrap #t-roll tr.ph th:first-child { background: var(--panel-2); text-align: left; }
-.trail-m tr.ph .gname, #t-roll tr.ph .gname { font-size: 14px; font-weight: 700; color: var(--ink); margin-right: 8px; letter-spacing: -0.01em; }
-.trail-m tr.ph .when, #t-roll tr.ph .when { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted); }
-.trail-m tr.ph .when { display: block; }
-.trail-m tbody tr:not(.ph) th { padding-left: 12px; }
+#t-roll tr.ph th { background: var(--panel-2); color: var(--ink-2); font-size: 11.5px; font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); padding-top: 9px; white-space: normal; vertical-align: bottom; }
+.tbl-wrap #t-roll tr.ph th:first-child { background: var(--panel-2); text-align: left; }
+#t-roll tr.ph .gname { font-size: 14px; font-weight: 700; color: var(--ink); margin-right: 8px; letter-spacing: -0.01em; }
+#t-roll tr.ph .when { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted); }
 .hzc { display: inline-block; margin-left: 7px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 0 5px; line-height: 1.5; vertical-align: 1px; }
 #t-roll tbody tr:not(.ph) th { font-weight: 500; }
 /* metric tables: row hints, and cards on a phone so each value carries its portfolio's name */
 .mtbl th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
-.mddtbl tbody th { white-space: normal; min-width: 180px; }
 .mdd-note { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; padding: 9px 12px; border-left: 3px solid var(--line-2); background: var(--panel-2); border-radius: 0 8px 8px 0; }
 .mdd-note:empty { display: none; }
 .mdd-note b { color: var(--ink); }
@@ -622,7 +579,6 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
   .mtbl tr.hl { background: var(--panel-2); border-radius: 8px; padding-inline: 10px; border-bottom-color: transparent; margin-bottom: 1px; }
   .tbl-wrap .mtbl .hl th:first-child, .mtbl .hl td, .mtbl .hl th { background: transparent; }
   .mtbl td .sub { white-space: normal; }
-  .mddtbl tbody th { min-width: 0; }
   /* rolling table: one card per portfolio under its holding-period heading */
   #t-roll thead { display: none; }
   #t-roll, #t-roll tbody { display: block; width: 100%; }
@@ -658,32 +614,284 @@ textarea { font: inherit; font-family: var(--font-mono); font-size: 12px; width:
 /* column-group headings (10·20·30년, 점검 구간) stand out from the column names under them */
 thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
 .life thead th.grp, .adjcmp thead th.grp, .walk thead th.grp { border-left: 1px solid var(--line); }
+/* ---------- v8: phone first, beginner first ----------
+   Each tab opens with the answer to its question in plain words; anything that needs expertise folds away under
+   '고급' (remembered per device). On a phone the topbar gives way to an icon tab bar, sections run edge to edge as
+   bands, one portfolio card is edited at a time, and tables are laid out to fit 360px without sideways scrolling. */
+body { font-size: 15px; line-height: 1.6; }
+.wrap { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-block: 22px 64px; gap: 18px; }
+.tb-in { padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.help { font-size: 13px; color: var(--muted); line-height: 1.5; }
+a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.panel { border-radius: 12px; padding: 18px 20px; }
+.panel-head { display: grid; gap: 3px; margin-bottom: 14px; padding-bottom: 0; border-bottom: 0; }
+.panel-head h2 { font-size: 17px; }
+.panel-head p { font-size: 13px; color: var(--muted); max-width: 72ch; }
+/* header (input tab only, when using tabs) */
+.hdr { gap: 8px; padding-block: 0 4px; }
+.hdr h1 { font-size: clamp(24px, 3.2vw, 32px); }
+.hdr .lede { font-size: 14.5px; color: var(--ink-2); max-width: 64ch; line-height: 1.65; }
+.upd { font-size: 12.5px; }
+.upd summary { color: var(--ink-2); gap: 4px 8px; min-height: 28px; }
+.upd-d { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+/* tab headings */
+.gsec { gap: 12px; padding-top: 10px; margin-top: 4px; border-top: 0; }
+.gsec-ic { width: 40px; height: 40px; padding: 9px; border-radius: 12px; background: var(--ink); color: var(--panel); stroke-width: 2; }
+.grp-t { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.grp-d { font-size: 13px; }
+:root:not(.tabs) .gsec { border-top: 2px solid var(--line-2); padding-top: 22px; margin-top: 18px; }
+:root.tabs .pane[data-g="g-setup"] > .gsec { display: none; }
+/* desktop / tablet tab bar */
+.tb-nav a { gap: 6px; padding: 6px 12px 6px 9px; }
+.tb-nav a .ic { width: 18px; height: 18px; }
+:root.tabs .tb-nav a { font-weight: 600; font-size: 13.5px; padding: 6px 13px 6px 10px; }
+:root.tabs .tb-nav a.on { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+/* folds: a tappable heading with a one-line description; '고급' marks the ones meant for experienced users */
+details.fold > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) 22px; align-items: center; gap: 3px 12px; min-height: 46px; border-radius: 8px; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: ''; grid-column: 2; grid-row: 1 / span 2; justify-self: center; width: 9px; height: 9px; border-right: 2px solid var(--ink-2); border-bottom: 2px solid var(--ink-2); transform: translateY(-3px) rotate(45deg); transition: transform 0.15s ease; }
+details.fold[open] > summary::after { transform: translateY(2px) rotate(225deg); }
+.fold-h { grid-column: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.fold-t { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.fold-d { grid-column: 1; font-size: 13px; color: var(--muted); line-height: 1.45; }
+details.fold > summary:hover .fold-t { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); }
+details.fold[open] > summary { padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--line); border-radius: 0; }
+.fold-body { display: grid; gap: 12px; min-width: 0; }
+.fold-body > * { min-width: 0; }
+.fold-body.settings { gap: 18px 20px; }
+.adv-b { display: inline-block; font-size: 11px; font-weight: 600; line-height: 18px; padding: 0 7px; border-radius: 999px; color: var(--ink-2); border: 1px solid var(--line-2); background: var(--panel-2); letter-spacing: 0.02em; white-space: nowrap; }
+.grp-t .adv-b { font-size: 12px; line-height: 20px; padding: 0 8px; }
+.cnt { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+details.fold.sub { border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); padding: 6px 14px; margin-bottom: 16px; }
+details.fold.sub[open] { padding-bottom: 14px; }
+details.fold.sub > summary { min-height: 44px; }
+details.fold.sub[open] > summary { margin-bottom: 12px; }
+.fold.sub .fold-t { font-size: 14.5px; }
+.adv-lead { font-size: 13px; color: var(--muted); padding: 6px 2px 0; }
+/* input tab */
+.settings { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 18px 20px; align-items: start; }
+.field { gap: 6px; }
+.field.wide { grid-column: 1 / -1; }
+.field > label, .field > .lbl { font-size: 14px; color: var(--ink); font-weight: 600; }
+.field > .help { margin-top: -2px; }
+.period-row { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 4px; }
+.pr-g { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.pr-l { font-size: 13px; color: var(--ink-2); }
+select, input[type="text"], input[type="number"] { min-height: 40px; border-radius: 8px; padding: 7px 10px; }
+.chip { font-size: 13.5px; padding: 5px 13px; min-height: 36px; }
+.chip[aria-pressed="true"] { font-weight: 600; }
+.chip:disabled { opacity: 0.4; cursor: default; }
+.w-num { width: 70px; }
+.toggle { font-size: 13.5px; line-height: 1.5; }
+.toggle input { width: 18px; height: 18px; margin-top: 2px; }
+.pcard { gap: 10px; }
+.pname { font-size: 16px; }
+.prow { grid-template-columns: minmax(0, 1fr) 88px 36px; }
+.pcols { grid-template-columns: minmax(0, 1fr) 88px 36px; font-size: 12px; }
+.prow .del { height: 40px; }
+.prow .sub { font-size: 12px; }
+.port-tabs { display: none; }
+.pcard-top .preset { max-width: 50%; }
+.qr-t { font-size: 13.5px; }
+.qr-t th, .qr-t td { padding: 9px 8px; }
+.qr-t thead th { font-size: 12px; }
+.qr-t tbody th { white-space: normal; }
+.qr-t td.neg { color: var(--neg); }
+.qr-list .tbl-wrap { max-width: 780px; }
+.qr-go { margin-top: 14px; display: flex; }
+.qr-go .btn { min-height: 46px; padding-inline: 22px; }
+/* results: at a glance */
+.hero-head { display: grid; gap: 6px; margin-bottom: 14px; }
+.hero-head h2 { font-size: 19px; }
+.hero-when { font-size: 13px; color: var(--ink-2); }
+.hero-q { margin-top: 2px; }
+.hero-head .notice { font-size: 12.5px; padding: 7px 11px; margin-top: 2px; }
+.hero-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 12px; }
+.hc { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 12px; background: var(--panel); display: grid; gap: 10px; min-width: 0; align-content: start; }
+.hc-top { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; color: var(--ink); min-width: 0; }
+.hc-top .key { width: 18px; height: 4px; }
+.hc-top .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-top .bt { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.hc-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 42%); align-items: center; gap: 12px; }
+.hc-amt { font-family: var(--font-mono); font-size: 27px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink); overflow-wrap: anywhere; }
+.hc-from { font-size: 12.5px; color: var(--muted); margin-top: -4px; }
+.hc-from b { font-family: var(--font-mono); font-weight: 600; color: var(--ink-2); }
+.hc-spark { min-width: 0; }
+.hc-spark svg { display: block; width: 100%; height: 46px; overflow: visible; }
+.hc-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.hc-kv > div { display: grid; gap: 1px; min-width: 0; align-content: start; }
+.hc-kv span { font-size: 12px; color: var(--muted); line-height: 1.35; }
+.hc-kv b { font-family: var(--font-mono); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.hc-kv b.neg { color: var(--neg); }
+.hc-kv i { font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--muted); line-height: 1.35; }
+.hc-note { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+.hc-note b { font-family: var(--font-mono); font-weight: 600; color: var(--ink); }
+.hc.bench { background: var(--panel-2); border-style: dashed; }
+.hc.bench .hc-amt { font-size: 22px; }
+.terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px 20px; margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--line-2); font-size: 12.5px; line-height: 1.45; }
+.terms div { min-width: 0; }
+.terms dt { font-weight: 600; color: var(--ink-2); }
+.terms dd { margin: 0; color: var(--muted); }
+.charts { gap: 24px; }
+.charts .help, .fold-body .chart-title + .legend { margin-bottom: 4px; }
+.legend { margin-bottom: 6px; }
+/* recent N years on narrow screens: pick a period, see every portfolio for it */
+.trail-pick { margin-bottom: 8px; }
+.trail-when { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-2); margin: 0 0 2px; }
+.trail-m { font-size: 13px; }
+.trail-m th, .trail-m td { padding: 9px 6px; }
+.trail-m thead th { font-size: 12px; white-space: normal; }
+.trail-m tbody th { white-space: normal; }
+.trail-m td .sub { display: block; }
+#sec-trail > p.small:last-child { margin-top: 10px; }
+/* MDD comparison: a matrix that fits a phone */
+.mddtbl th .ml { display: block; font-weight: 600; color: var(--ink); }
+.mddtbl th .mw { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; }
+.mddtbl th .hint { display: block; font-size: 11px; color: var(--muted); font-weight: 400; white-space: normal; margin-top: 2px; }
+.mddtbl tbody th { white-space: normal; min-width: 190px; }
+.mddtbl .hl th, .mddtbl .hl td { background: var(--panel-2); }
+/* help tab */
+.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px 28px; margin: 0; }
+.gloss div { min-width: 0; }
+.gloss dt { font-weight: 700; font-size: 14px; color: var(--ink); }
+.gloss dd { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+.view-set { display: grid; gap: 18px; }
+.vs-row { display: grid; gap: 6px; justify-items: start; }
+.vs-row .lbl { font-weight: 600; font-size: 14px; }
+.faq { display: grid; border-top: 1px solid var(--line); }
+.faq-i { border-bottom: 1px solid var(--line); }
+.faq-i > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 6px 2px; font-weight: 600; font-size: 14.5px; color: var(--ink); }
+.faq-i > summary::-webkit-details-marker { display: none; }
+.faq-i > summary::after { content: ''; flex: none; width: 8px; height: 8px; margin-right: 6px; border-right: 2px solid var(--ink-2); border-bottom: 2px solid var(--ink-2); transform: translateY(-2px) rotate(45deg); transition: transform 0.15s ease; }
+.faq-i[open] > summary::after { transform: translateY(2px) rotate(225deg); }
+.faq-i > ul { margin: 0 0 14px; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; display: grid; gap: 6px; }
+.csv-add { margin-top: 4px; }
+.csv-add > summary { min-height: 40px; display: flex; align-items: center; }
+.csv-add .custom-box { margin-top: 10px; }
+#cu-tk { width: 150px; }
+/* optimizer */
+.opt-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); align-items: start; gap: 16px 20px; }
+.run-row { display: flex; }
+.run-row .btn { min-height: 46px; padding-inline: 26px; }
+.opt-prog { display: grid; gap: 8px; margin-top: 14px; }
+.pos-bar { margin: 0 0 14px; }
+.pk-top { align-items: flex-start; }
+/* tablet and up: the three portfolio cards side by side */
+@media (min-width: 761px) { .pcard { box-shadow: none; } }
+@media (max-width: 980px) {
+  /* one portfolio card at a time, chosen from the switcher (wherever the cards would stack) */
+  .port-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 14px; }
+  .pt { font: inherit; display: grid; gap: 1px; justify-items: start; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2); min-width: 0; cursor: pointer; }
+  .pt-n { display: flex; align-items: center; gap: 6px; max-width: 100%; font-size: 13px; font-weight: 600; color: var(--ink); min-width: 0; }
+  .pt-n .key { width: 12px; height: 3px; }
+  .pt-n { align-items: flex-start; }
+  .pt-n .key { margin-top: 8px; }
+  .pt-n span:last-child { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; line-height: 1.3; overflow-wrap: anywhere; }
+  .pt-s { font-size: 11.5px; }
+  .pt-s.ok { color: var(--pos); } .pt-s.bad { color: var(--neg); }
+  .pt[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: var(--panel-2); }
+  .ports .pcard:not(.cur) { display: none; }
+  .ports .pcard { border: 0; padding: 0; background: transparent; border-radius: 0; }
+  .pcard.off { opacity: 1; }
+}
+@media (max-width: 760px) {
+  /* MDD matrix */
+  .mddtbl { font-size: 12.5px; }
+  .mddtbl th, .mddtbl td { padding: 8px 5px; }
+  .mddtbl thead th { white-space: normal; font-size: 11.5px; vertical-align: bottom; }
+  .mddtbl thead .serieshead { display: grid; gap: 3px; font-size: 11.5px; line-height: 1.3; }
+  .mddtbl tbody th { min-width: 0; width: 31%; }
+  .mddtbl th .hint, .mddtbl td .sub { display: none; }
+  .hc-kv b { font-size: 16px; }
+}
+@media (max-width: 640px) {
+  .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-top: 14px; gap: 12px; }
+  .tb-in { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .pane { gap: 10px; }
+  /* sections become edge-to-edge bands; their text keeps the gutter */
+  .panel { border-radius: 0; border-left: 0; border-right: 0; margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+  details.fold.panel { padding-block: 10px; }
+  details.fold.panel[open] { padding-bottom: 16px; }
+  .gsec { padding-top: 6px; }
+  .gsec-ic { width: 36px; height: 36px; padding: 8px; border-radius: 10px; }
+  .grp-t { font-size: 20px; }
+  .hero-head h2 { font-size: 18px; }
+  .hc { padding: 12px 14px 10px; }
+  .hc-amt { font-size: 25px; }
+  .qr-go .btn, .run-row .btn { flex: 1 1 auto; }
+  .pane-nav { border-top: 0; padding-top: 4px; }
+  /* tabs: the bar at the top gives way to an icon tab bar at the bottom */
+  :root.tabs .topbar { display: none; }
+  :root.tabs { scroll-padding-top: 12px; }
+  :root.tabs .wrap { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  :root.tabs .bnav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--top-bg); -webkit-backdrop-filter: saturate(1.3) blur(10px); backdrop-filter: saturate(1.3) blur(10px); border-top: 1px solid var(--line-2); padding: 4px max(6px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)); }
+  :root.tabs .bnav a { display: grid; justify-items: center; gap: 2px; padding: 5px 0 4px; color: var(--muted); text-decoration: none; font-size: 11.5px; font-weight: 600; min-width: 0; -webkit-tap-highlight-color: transparent; }
+  :root.tabs .bnav a .ic { width: 54px; height: 30px; padding: 4px 16px; border-radius: 999px; }
+  :root.tabs .bnav a.on { color: var(--ink); }
+  :root.tabs .bnav a.on .ic { background: color-mix(in srgb, var(--ink) 11%, transparent); stroke-width: 2.1; }
+  :root.tabs .toast { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+}
+/* tables between phone and desktop: let long row labels and date notes wrap instead of pushing the table wider */
+.mtbl tbody th { white-space: normal; }
+.mddtbl td .sub { white-space: normal; }
+@media (max-width: 1000px) { .mddtbl tbody th { min-width: 140px; } .mddtbl th, .mddtbl td { padding-inline: 7px; } }
+@media (max-width: 560px) {
+  .tb-nav a .ic { display: none; }
+  .tb-nav a, :root.tabs .tb-nav a { padding: 6px 11px; }
+}
+@media (max-width: 400px) {
+  .mddtbl th, .mddtbl td { padding: 7px 3px; }
+  .mddtbl thead th, .mddtbl thead .serieshead { font-size: 11px; }
+  .mddtbl td { font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .hc-kv b { font-size: 15px; }
+  .hc-main { grid-template-columns: minmax(0, 1fr) minmax(80px, 38%); }
+  .hc-amt { font-size: 23px; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
 </style>
 </head>
 <body>
 
 
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false">
+  <symbol id="i-setup" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+  <symbol id="i-results" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M5 16l4.5-4.5 3.5 3 6-7"/><path d="M15 7.5h4v4"/></symbol>
+  <symbol id="i-checks" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/><path d="M7.6 10.8l2 2 3.6-4"/></symbol>
+  <symbol id="i-opt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5V12h8.5"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9v.4"/><path d="M12 17.2v.1"/></symbol>
+</svg>
+
 <div class="topbar" id="topbar">
   <div class="tb-in">
     <a class="tb-brand" href="#top">ETF 백테스터</a>
     <nav class="tb-nav" id="tb-nav" aria-label="섹션 바로가기">
-      <a href="#g-setup" data-g="g-setup"><b>1</b>입력</a>
-      <a href="#g-results" data-g="g-results"><b>2</b>결과</a>
-      <a href="#g-checks" data-g="g-checks"><b>3</b>점검</a>
-      <a href="#g-opt" data-g="g-opt"><b>4</b>최적화</a>
-      <a href="#g-ref" data-g="g-ref" data-detail><b>5</b>도움말</a>
+      <a href="#g-setup" data-g="g-setup"><svg class="ic" aria-hidden="true"><use href="#i-setup"/></svg><span>입력</span></a>
+      <a href="#g-results" data-g="g-results"><svg class="ic" aria-hidden="true"><use href="#i-results"/></svg><span>결과</span></a>
+      <a href="#g-checks" data-g="g-checks"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span>점검</span></a>
+      <a href="#g-opt" data-g="g-opt"><svg class="ic" aria-hidden="true"><use href="#i-opt"/></svg><span>최적화</span></a>
+      <a href="#g-ref" data-g="g-ref"><svg class="ic" aria-hidden="true"><use href="#i-help"/></svg><span>도움말</span></a>
     </nav>
-    <div class="seg-toggle tb-view" role="group" aria-label="보기 방식"><button type="button" id="v-simple" aria-pressed="false">간단히</button><button type="button" id="v-full" aria-pressed="true">자세히</button></div>
   </div>
 </div>
 
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v7.3</span><span class="mono">2026.10.10</span><span>업데이트 · MDD 구분 표, 표마다 10·20·30년 기간 표시, 휴대폰에서 표를 카드로, 오류 수정</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v8</span><span class="upd-d">2026.10.16</span><span class="upd-t">휴대폰에서 한눈에 보이게 화면을 새로 정리했어요</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v8 · 2026.10.16</dt>
+          <dd><ul>
+            <li>결과 맨 위에 ‘한눈에 보기’: 포트폴리오마다 최종 금액, 연 수익률, 최대 낙폭, 최장 회복 기간과 자산 곡선(가장 크게 떨어진 구간은 빨간색). 결과 탭에서 바로 기간(최대·30·20·10·5년)을 바꿀 수 있어요</li>
+            <li>자세한 지표·수익과 위험·연도별 수익률·롤링, 점검의 표·지도·직접 고른 구간·추세 보정, 최적화의 세부 결과를 ‘고급’으로 접어 둠. 펼친 항목은 기기마다 기억하고, 도움말 › 화면 설정에서 한 번에 펼치거나 접어요 (간단히/자세히 버튼 대신)</li>
+            <li>항목마다 한 줄 설명, 도움말에 용어 풀이</li>
+            <li>휴대폰: 아래 탭 막대를 아이콘으로, 포트폴리오는 하나씩 골라 편집, 최근 N년 표는 기간을 골라 보기, MDD 구분 표가 한 화면에 들어오게, 글자를 조금 크게</li>
+            <li>입력 탭 순서: 포트폴리오 → 결과 미리보기 → 기간과 금액 → 고급 설정. 화면 배치(탭/한 페이지)는 도움말 › 화면 설정으로 옮김</li>
+          </ul></dd>
           <dt>v7.3 · 2026.10.10</dt>
           <dd><ul>
             <li>결과 › MDD 구분: 전체 기간 MDD, 최근 10·20년 MDD, 10년 보유 시 최악 MDD, 보통의 10년 MDD, 평균 낙폭을 한 표에서 비교 (간단히 보기에서도 표시)</li>
@@ -723,36 +931,39 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
         </dl>
       </div>
     </details>
-
-    <div class="layout-sw" role="group" aria-labelledby="lay-lbl"><span class="lbl" id="lay-lbl">화면 배치</span><div class="seg-toggle"><button type="button" id="lay-tabs" aria-pressed="true">탭으로 보기</button><button type="button" id="lay-page" aria-pressed="false">한 페이지로 보기 (이전 방식)</button></div></div>
-    <span class="eyebrow">미국 상장 ETF · 월간 총수익률 · <span id="span-range">1972.01 – 2026.09</span></span>
     <h1>ETF 포트폴리오 백테스터</h1>
-    <p class="lede">티커와 비중을 넣고 리밸런싱 주기와 기간을 고르면, Portfolio Visualizer와 같은 방식(월말 잔고, 배당 재투자 또는 현금 수령)으로 CAGR, MDD, 회복 기간을 계산하고 10·15·20·25·30년 성과를 나란히 비교합니다. 최근에 급등한 종목을 과거 추세로 보정한 데이터로도 계산하고, 같은 비중이 시기마다 얼마나 달랐는지 구간별로 점검하며, 고른 자산으로 최적 비중과 생애 주기별 추천을 찾아요. 위쪽 막대에서 ‘간단히’를 고르면 핵심 결과만 보여요. 아래 세 포트폴리오는 예시로 채워 두었습니다.</p>
+    <p class="lede">ETF와 비중을 넣으면 과거에 돈이 얼마나 불었고, 가장 크게 얼마나 떨어졌는지 보여줘요. 미국 상장 ETF <span id="n-assets">50</span>개의 월간 데이터(<span id="span-range">1972.01 – 2026.09</span>)로 계산하고, 예시 포트폴리오 세 개를 채워 두었어요. 과거 데이터로 본 결과라 앞으로의 수익을 보장하지 않아요.</p>
   </header>
 
   <div class="pane" data-g="g-setup" id="pane-setup">
-  <div class="gsec" id="g-setup"><span class="grp-n" aria-hidden="true">1</span><div class="grp-tx"><h2 class="grp-t">입력</h2><p class="grp-d">기간·리밸런싱·결과 데이터를 정하고, 포트폴리오 세 개까지 티커와 비중을 넣어요.</p></div></div>
+  <div class="gsec" id="g-setup"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-setup"/></svg><div class="grp-tx"><h2 class="grp-t">입력</h2><p class="grp-d">투자할 ETF와 비중, 기간을 정해요.</p></div></div>
 
-  <ol class="howto" aria-label="사용 순서">
-    <li><b>기간과 규칙</b>을 정해요. 처음이면 그대로 둬도 돼요.</li>
-    <li><b>포트폴리오</b> 카드에 티커와 비중을 넣어요. 비중 합계가 100%가 되면 바로 계산해요.</li>
-    <li><b>2 결과</b>에서 성과를, <b>3 점검</b>에서 시기가 바뀌어도 믿을 만한지 확인해요.</li>
-  </ol>
+  <section class="panel" aria-labelledby="h-ports" id="sec-ports">
+    <div class="panel-head"><h2 id="h-ports">포트폴리오</h2><p class="help">ETF 티커(예: SPY)와 비중(%)을 넣어요. 비중 합계가 100%가 되면 바로 계산하고, 세 개까지 나란히 비교해요.</p></div>
+    <div class="port-tabs" id="port-tabs" role="group" aria-label="편집할 포트폴리오"></div>
+    <div class="ports" id="ports"></div>
+    <datalist id="tickers"></datalist>
+  </section>
 
-  <section class="panel" aria-labelledby="h-set">
-    <div class="panel-head"><h2 id="h-set">기간과 규칙</h2><p id="avail-note">선택한 자산의 공통 데이터 구간 안에서 계산합니다.</p></div>
+  <section class="panel tabs-only" aria-labelledby="h-qr" id="sec-qr">
+    <div class="panel-head"><h2 id="h-qr">결과 미리보기</h2><p id="qr-when"></p></div>
+    <div class="qr-list" id="qr-body"></div>
+    <div class="qr-go"><button class="btn" type="button" data-go="g-results">결과 자세히 보기</button></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-set" id="sec-set">
+    <div class="panel-head"><h2 id="h-set">기간과 금액</h2><p id="avail-note">선택한 자산의 공통 데이터 구간 안에서 계산해요.</p></div>
     <div class="settings">
-      <div class="field">
-        <span class="lbl">시작</span>
-        <div class="row"><select id="s-y" aria-label="시작 연도"></select><select id="s-m" aria-label="시작 월"></select></div>
+      <div class="field wide">
+        <span class="lbl" id="per-lbl">기간</span>
+        <p class="help">언제부터 언제까지 투자했다고 볼지 정해요. ‘10년’ 같은 버튼은 마지막 달부터 거꾸로 그만큼을 골라요.</p>
+        <div class="chips" id="quick" role="group" aria-labelledby="per-lbl"></div>
+        <div class="period-row"><span class="pr-g"><span class="pr-l">시작</span><select id="s-y" aria-label="시작 연도"></select><select id="s-m" aria-label="시작 월"></select></span><span class="pr-g"><span class="pr-l">종료</span><select id="e-y" aria-label="종료 연도"></select><select id="e-m" aria-label="종료 월"></select></span></div>
       </div>
       <div class="field">
-        <span class="lbl">종료</span>
-        <div class="row"><select id="e-y" aria-label="종료 연도"></select><select id="e-m" aria-label="종료 월"></select></div>
-      </div>
-      <div class="field" style="grid-column: 1 / -1; min-width: 0;">
-        <span class="lbl">빠른 기간 선택 (종료 시점 기준)</span>
-        <div class="chips" id="quick"></div>
+        <label for="init">처음 넣는 돈 ($)</label>
+        <input id="init" type="number" min="1" step="1000" value="10000" inputmode="numeric">
+        <p class="help">결과 금액만 달라지고 수익률은 같아요.</p>
       </div>
       <div class="field">
         <label for="rebal">리밸런싱</label>
@@ -764,260 +975,317 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <option value="B">밴드 (5%p 또는 상대 25% 이탈 시)</option>
           <option value="N">안 함 (매수 후 보유)</option>
         </select>
+        <p class="help">정해진 때마다 처음 비중으로 되돌려요. 잘 모르면 ‘매년’.</p>
       </div>
-      <div class="field">
-        <label for="init">초기 금액 ($)</label>
-        <input id="init" type="number" min="1" step="1000" value="10000">
-      </div>
+    </div>
+  </section>
+
+  <details class="panel fold adv" data-fold="s-adv" id="fold-set">
+    <summary><span class="fold-h"><span class="fold-t" id="h-adv-set">고급 설정</span><span class="adv-b">고급</span></span><span class="fold-d" id="adv-sum">벤치마크 · 결과 데이터 · 데이터 범위 · 물가 · 배당</span></summary>
+    <div class="fold-body settings">
+      <p class="help field wide">처음이라면 그대로 두어도 돼요. 여기서 바꾼 설정은 모든 결과에 적용돼요.</p>
       <div class="field">
         <label for="bench">벤치마크</label>
         <select id="bench"></select>
+        <p class="help">비교 기준으로 함께 보여줄 ETF예요. 보통 SPY(S&amp;P 500).</p>
       </div>
-      <div class="field" style="grid-column: 1 / -1;">
-        <span class="lbl" id="dm-lbl">결과 데이터 <span class="muted" style="font-weight:400">· 내 포트폴리오를 어떤 데이터로 백테스트할지</span></span>
+      <div class="field wide">
+        <span class="lbl" id="dm-lbl">결과 데이터</span>
+        <p class="help">최근에 급등한 종목이 결과를 부풀리지 않았는지 보고 싶으면 ‘추세 보정 데이터’를 골라요.</p>
         <div class="dm-row">
           <div class="seg-toggle big" id="dm" role="group" aria-labelledby="dm-lbl"><button type="button" data-v="act" aria-pressed="true">실제 데이터</button><button type="button" data-v="adj" aria-pressed="false">추세 보정 데이터</button></div>
           <span class="dm-note" id="dm-note"></span>
         </div>
       </div>
-      <p class="set-sum simple-only" id="set-sum" style="grid-column: 1 / -1;"></p>
-      <div class="field" style="grid-column: 1 / -1;" data-detail>
+      <div class="field wide">
         <span class="lbl">데이터 범위</span>
-        <label class="toggle" for="ext"><input id="ext" type="checkbox" checked><span>상장 이전 구간을 대용 지수·시뮬레이션으로 확장 (Portfolio Visualizer의 자산군 백테스트처럼 장기 분석)</span></label>
+        <label class="toggle" for="ext"><input id="ext" type="checkbox" checked><span>상장 전 기간을 지수·시뮬레이션 데이터로 늘려 더 긴 기간을 봐요 (Portfolio Visualizer의 자산군 백테스트처럼)</span></label>
       </div>
-      <div class="field" style="grid-column: 1 / -1;" data-detail>
-        <span class="lbl">수익률 기준</span>
-        <label class="toggle" for="real"><input id="real" type="checkbox"><span>물가 반영 (실질 수익률) — 미국 소비자물가(CPI-U)를 빼서 지금 돈의 가치로 계산합니다. 은퇴 자금처럼 구매력이 중요한 계획에는 켜 두는 편이 안전해요.</span></label>
+      <div class="field wide">
+        <span class="lbl">물가 반영</span>
+        <label class="toggle" for="real"><input id="real" type="checkbox"><span>미국 소비자물가(CPI-U)를 빼고 ‘지금 돈의 가치’로 계산해요. 은퇴 자금처럼 구매력이 중요하면 켜 두는 편이 안전해요.</span></label>
       </div>
-      <div class="field" style="grid-column: 1 / -1;" data-detail>
+      <div class="field wide">
         <span class="lbl" id="div-lbl">배당금 처리</span>
         <div class="choice" role="radiogroup" aria-labelledby="div-lbl">
-          <label class="opt on"><input type="radio" name="divm" value="re" checked><span><b>재투자</b><small>받은 분배금(배당·이자)으로 같은 ETF를 다시 사는 총수익 기준이에요. Portfolio Visualizer 기본값과 같아요.</small></span></label>
-          <label class="opt"><input type="radio" name="divm" value="cash"><span><b>현금으로 받기 (재투자 안 함)</b><small>분배금은 꺼내서 따로 모아요(이자 없음). 평가액·CAGR·MDD는 가격만 반영하고, 받은 배당금은 따로 보여줘요.</small></span></label>
+          <label class="opt on"><input type="radio" name="divm" value="re" checked><span><b>재투자</b><small>받은 분배금(배당·이자)으로 같은 ETF를 다시 사요. 총수익 기준이고 Portfolio Visualizer 기본값과 같아요.</small></span></label>
+          <label class="opt"><input type="radio" name="divm" value="cash"><span><b>현금으로 받기 (재투자 안 함)</b><small>분배금을 꺼내 따로 모아요(이자 없음). 평가액·CAGR·MDD는 가격만 반영하고, 받은 배당금은 따로 보여줘요.</small></span></label>
         </div>
       </div>
     </div>
-  </section>
+  </details>
 
-  <section aria-labelledby="h-ports" style="display:grid; gap:12px;">
-    <div class="panel-head" style="margin:0"><h2 id="h-ports">포트폴리오</h2><p>비중 합계가 100%인 포트폴리오만 계산합니다. 자산이 없는 카드는 건너뜁니다.</p></div>
-    <div class="ports" id="ports"></div>
-    <datalist id="tickers"></datalist>
-  </section>
-
-  <section class="panel tabs-only" aria-labelledby="h-qr" id="sec-qr">
-    <div class="panel-head"><h2 id="h-qr">결과 미리보기</h2><p id="qr-when"></p></div>
-    <div class="qr-list" id="qr-body"></div>
-    <div class="row" style="margin-top:12px"><button class="btn" type="button" data-go="g-results">2 결과에서 자세히 보기 →</button><span class="small muted">CAGR = 연평균 수익률, MDD = 고점 대비 가장 크게 떨어진 폭</span></div>
-  </section>
-
-  <section class="panel" aria-labelledby="h-saved">
-    <div class="panel-head"><h2 id="h-saved">저장한 포트폴리오 <span class="muted small" id="sv-count"></span></h2>
-      <div class="row"><button class="btn ghost sm" type="button" id="sv-export">내보내기</button><button class="btn ghost sm" type="button" id="sv-import">가져오기</button></div></div>
-    <p class="small muted" id="sv-where"></p>
-    <div class="row" id="sv-extra" style="margin-top:8px"></div>
-    <p class="small" id="sv-msg" role="status" aria-live="polite"></p>
-    <div class="sv-io" id="sv-io" hidden>
-      <div class="sub-head"><h3 id="io-title"></h3><button class="btn ghost sm" type="button" id="io-close">닫기</button></div>
-      <p class="small muted" id="io-help"></p>
-      <textarea id="io-text" spellcheck="false" aria-label="공유 코드"></textarea>
-      <div class="row">
-        <button class="btn sm" type="button" id="io-copy">복사</button>
-        <button class="btn ghost sm" type="button" id="io-file-save">파일로 저장</button>
-        <label class="btn ghost sm filebtn">파일 열기<input id="io-file" type="file" accept=".json,.txt,application/json,text/plain"></label>
-        <button class="btn sm" type="button" id="io-add">추가</button>
-        <span class="small" id="io-msg" role="status" aria-live="polite"></span>
+  <details class="panel fold" data-fold="s-saved" id="fold-saved">
+    <summary><span class="fold-h"><span class="fold-t" id="h-saved">저장한 포트폴리오</span><span class="cnt" id="sv-count"></span></span><span class="fold-d">저장해 둔 비중을 다시 불러오거나, 코드로 다른 기기·사람에게 옮겨요.</span></summary>
+    <div class="fold-body">
+      <div class="row"><button class="btn ghost sm" type="button" id="sv-export">내보내기</button><button class="btn ghost sm" type="button" id="sv-import">가져오기</button></div>
+      <p class="small muted" id="sv-where"></p>
+      <div class="row" id="sv-extra"></div>
+      <p class="small" id="sv-msg" role="status" aria-live="polite"></p>
+      <div class="sv-io" id="sv-io" hidden>
+        <div class="sub-head"><h3 id="io-title"></h3><button class="btn ghost sm" type="button" id="io-close">닫기</button></div>
+        <p class="small muted" id="io-help"></p>
+        <textarea id="io-text" spellcheck="false" aria-label="공유 코드"></textarea>
+        <div class="row">
+          <button class="btn sm" type="button" id="io-copy">복사</button>
+          <button class="btn ghost sm" type="button" id="io-file-save">파일로 저장</button>
+          <label class="btn ghost sm filebtn">파일 열기<input id="io-file" type="file" accept=".json,.txt,application/json,text/plain"></label>
+          <button class="btn sm" type="button" id="io-add">추가</button>
+          <span class="small" id="io-msg" role="status" aria-live="polite"></span>
+        </div>
       </div>
+      <div class="sv-list" id="sv-list"></div>
     </div>
-    <div class="sv-list" id="sv-list"></div>
-  </section>
+  </details>
 
-  <nav class="pane-nav tabs-only" aria-label="단계 이동"><span></span><button class="btn" type="button" data-go="g-results">2 결과 보기 →</button></nav>
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><span></span><button class="btn" type="button" data-go="g-results">결과 보기 →</button></nav>
   </div>
 
   <div class="pane" data-g="g-results" id="pane-results">
-  <div class="gsec" id="g-results"><span class="grp-n" aria-hidden="true">2</span><div class="grp-tx"><h2 class="grp-t">결과</h2><p class="grp-d">성과 요약, MDD 구분, 수익과 위험, 차트, 기간별·롤링 수익률.</p></div></div>
+  <div class="gsec" id="g-results"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-results"/></svg><div class="grp-tx"><h2 class="grp-t">결과</h2><p class="grp-d">얼마나 불었고, 얼마나 떨어졌는지부터 봐요.</p></div></div>
 
   <div class="adj-banner" id="dm-banner" hidden><span class="ttl"><span class="adj-mark">보정</span>추세 보정 데이터로 계산한 결과예요</span><span class="small" id="dm-banner-txt"></span><button class="btn ghost sm" type="button" id="dm-off">실제 데이터로 보기</button></div>
-  <div id="msg" class="notice" hidden></div>
-
-  <section class="panel" aria-labelledby="h-sum">
-    <div class="panel-head"><h2 id="h-sum">성과 요약</h2><p id="sum-note"></p></div>
-    <div class="tbl-wrap"><table id="t-summary" class="mtbl"></table></div>
-  </section>
-
-  <section class="panel" aria-labelledby="h-mdd" id="sec-mdd">
-    <div class="panel-head"><h2 id="h-mdd">MDD 구분 — 어느 구간의 MDD인가요?</h2><p>MDD(최대 낙폭)는 고점에서 가장 크게 떨어진 폭이에요. 같은 포트폴리오라도 어느 구간에서 재느냐에 따라 값이 달라서, 이 앱의 표에 나오는 MDD를 한곳에 모았어요.</p></div>
-    <div class="tbl-wrap"><table id="t-mdd" class="mtbl mddtbl"></table></div>
-    <p class="mdd-note" id="mdd-note"></p>
-  </section>
-
-  <section class="panel" aria-labelledby="h-risk" id="sec-risk">
-    <div class="panel-head"><h2 id="h-risk">수익과 위험 — 한 번의 폭락에 덜 휘둘리는 지표</h2><p>MDD·칼마 비율은 가장 큰 하락 한 번으로 정해져요. 여기서는 모든 하락의 깊이·기간·횟수와 10년 구간의 보통 성적으로 수익과 위험을 봅니다.</p></div>
-    <div class="tbl-wrap"><table id="t-risk" class="risk mtbl"></table></div>
-    <p class="risk-key">굵은 값이 그 줄에서 가장 좋은 값이에요. 10년 구간은 1개월 간격으로 잡은 모든 10년이에요.</p>
-    <details class="vd-crit" style="margin-top:8px">
-      <summary>지표 읽는 법</summary>
-      <ul>
-        <li><b>보통의 10년</b>: 모든 10년 구간의 중앙값이에요. 분석을 언제 시작하고 끝냈는지, 큰 폭락이 기간의 어디에 있었는지에 덜 좌우돼요.</li>
-        <li><b>평균 낙폭</b>: 매달 직전 고점보다 몇 % 아래에 있었는지를 전체 기간 평균한 값이에요(Pain Index). 한 번의 폭락보다 ‘평소에 얼마나 빠져 있었나’를 봐요.</li>
-        <li><b>울서 지수</b>: 매달 고점 대비 낙폭을 제곱해 평균한 뒤 제곱근을 씌운 값이에요(Ulcer Index). 깊게 빠질수록, 오래 회복하지 못할수록 커져요.</li>
-        <li><b>마틴 비율</b>: (CAGR − 같은 기간 단기국채 수익률) ÷ 울서 지수예요(Ulcer Performance Index). 샤프 비율이 오르내림(변동성)을 위험으로 본다면, 마틴 비율은 실제로 손실 상태였던 깊이와 기간을 위험으로 봐요. 1986~2026년 기준 60/40은 약 1.1, S&amp;P 500은 약 0.6이에요.</li>
-        <li><b>가장 큰 하락의 비중</b>: 가장 큰 하락 한 번이 울서 지수(제곱한 낙폭의 합)에서 차지하는 몫이에요. 70%가 넘으면 위험 지표의 대부분이 그 한 번에서 나온 것이라, 그 폭락이 다시 오느냐에 따라 평가가 크게 바뀌어요.</li>
-        <li>한 번의 하락은 고점에서 떨어지기 시작해 그 고점을 되찾을 때까지예요. 회복하기 전에 더 떨어지면 같은 하락으로 봐요.</li>
-      </ul>
-    </details>
-    <div class="sub-sec" data-detail>
-      <div class="sub-head"><h3>주요 하락 목록 — 큰 하락 5개</h3><div class="chips" id="dd-port" role="group" aria-label="하락 목록을 볼 포트폴리오"></div></div>
-      <p class="small muted" id="dd-note"></p>
-      <div class="tbl-wrap"><table id="t-dd" class="ddtbl"></table></div>
+  <section class="panel hero" aria-labelledby="h-hero" id="sec-hero">
+    <div class="hero-head">
+      <h2 id="h-hero">한눈에 보기</h2>
+      <p class="hero-when" id="hero-when"></p>
+      <div id="msg" class="notice" hidden></div>
+      <div class="chips hero-q" id="quick2" role="group" aria-label="기간 빠르게 바꾸기"></div>
     </div>
+    <div class="hero-cards" id="hero"></div>
+    <dl class="terms">
+      <div><dt>연 수익률 (CAGR)</dt><dd>해마다 평균 몇 %씩 불어났나</dd></div>
+      <div><dt>최대 낙폭 (MDD)</dt><dd>고점에서 가장 크게 떨어진 폭</dd></div>
+      <div><dt>최장 회복 기간</dt><dd>떨어진 뒤 고점을 다시 넘기까지 가장 오래 걸린 시간</dd></div>
+    </dl>
   </section>
 
   <section class="panel" aria-labelledby="h-charts">
-    <div class="panel-head"><h2 id="h-charts">차트</h2><p>차트 위에 마우스를 올리면 해당 시점 값이 보입니다.</p></div>
+    <div class="panel-head"><h2 id="h-charts">차트</h2><p>선 위를 누르거나 마우스를 올리면 그때 값이 보여요.</p></div>
     <div class="charts">
       <div>
         <div class="chart-title"><h3>자산 성장 <span class="muted small" id="growth-sub"></span></h3>
-          <div class="row"><div class="legend" id="lg-growth"></div><div class="seg-toggle" role="group" aria-label="세로축"><button type="button" id="ax-log" aria-pressed="true">로그</button><button type="button" id="ax-lin" aria-pressed="false">일반</button></div></div>
+          <div class="seg-toggle" role="group" aria-label="세로축"><button type="button" id="ax-log" aria-pressed="true">로그</button><button type="button" id="ax-lin" aria-pressed="false">일반</button></div>
         </div>
+        <p class="help">선이 오를수록 돈이 불어난 거예요. ‘로그’는 같은 비율의 변화를 같은 높이로 그려 긴 기간을 비교하기 좋아요.</p>
+        <div class="legend" id="lg-growth"></div>
         <div class="chart-box" id="c-growth"></div>
       </div>
       <div>
-        <div class="chart-title"><h3>최고점 대비 낙폭 (Drawdown)</h3><div class="legend" id="lg-dd"></div></div>
+        <div class="chart-title"><h3>고점 대비 낙폭</h3></div>
+        <p class="help">0%가 그때까지의 최고점이에요. 아래로 깊을수록 크게 떨어진 거예요.</p>
+        <div class="legend" id="lg-dd"></div>
         <div class="chart-box" id="c-dd"></div>
-      </div>
-      <div data-detail>
-        <div class="chart-title"><h3 id="ann-title">연도별 수익률</h3><div class="legend" id="lg-ann"></div></div>
-        <div class="scroll-x"><div class="chart-box" id="c-ann"></div></div>
-      </div>
-      <div id="inc-chart" hidden data-detail>
-        <div class="chart-title"><h3>연도별 받은 배당금 <span class="muted small" id="inc-sub"></span></h3><div class="legend" id="lg-inc"></div></div>
-        <div class="scroll-x"><div class="chart-box" id="c-inc"></div></div>
-        <p class="small muted" style="margin-top:6px">막대에 마우스를 올리면 금액과 그해 시작 평가액 대비 배당률이 보여요. *는 일부 기간만 포함된 해예요.</p>
       </div>
     </div>
   </section>
 
-  <section class="panel" aria-labelledby="h-trail">
-    <div class="panel-head"><h2 id="h-trail">기간별 CAGR · MDD — 최근 10·15·20·25·30년</h2><p>종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작해 계산합니다. 그래서 ‘최근 10년 MDD’는 그 10년 안에서 가장 크게 떨어진 폭이에요. MDD 아래 작은 글씨는 그 구간의 최장 회복 기간이고, +는 구간 끝까지 아직 회복하지 못했다는 뜻입니다.</p></div>
-    <p class="small muted" id="trail-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 CAGR·MDD는 평가액(가격) 기준이에요. CAGR 아래 작은 글씨는 그 구간에 받은 배당금을 평가액에 견준 연평균 배당률입니다.</p>
+  <section class="panel" aria-labelledby="h-trail" id="sec-trail">
+    <div class="panel-head"><h2 id="h-trail">최근 10·15·20·25·30년 성과</h2><p class="help">마지막 달에서 거꾸로 N년만 떼어, 그때 처음 투자했다면 어땠는지 따로 계산해요. 그래서 ‘최근 10년 MDD’는 그 10년 안에서 가장 크게 떨어진 폭이에요.</p></div>
+    <p class="small muted" id="trail-div" hidden>배당을 현금으로 받는 기준이라 CAGR·MDD는 평가액(가격) 기준이에요. CAGR 아래 작은 글씨는 그 구간에 받은 배당금을 평가액에 견준 연평균 배당률이에요.</p>
     <div class="tbl-wrap trail-wide"><table id="t-trail" class="trail"></table></div>
-    <div class="tbl-wrap trail-narrow"><table id="t-trail-m" class="trail-m"></table></div>
+    <div class="trail-narrow">
+      <div class="chips trail-pick" id="trail-pick" role="group" aria-label="볼 기간"></div>
+      <p class="trail-when" id="trail-when"></p>
+      <div class="tbl-wrap"><table id="t-trail-m" class="trail-m"></table></div>
+    </div>
+    <p class="small muted">MDD 아래 작은 글씨는 그 구간의 최장 회복 기간이고, +는 구간 끝까지 아직 회복하지 못했다는 뜻이에요.</p>
   </section>
 
-  <section data-detail class="panel" aria-labelledby="h-roll">
-    <div class="panel-head"><h2 id="h-roll">롤링 CAGR — N년 보유하면 어땠나</h2><p>분석 기간 안의 모든 N년 구간(1개월 간격)에서 연복리 수익률의 최저·중앙·최고값과, 각 구간 안에서 가장 크게 떨어진 폭(MDD) 중 최악값입니다. 보유 기간(10·15·20·25·30년)마다 묶어 보여줘요.</p></div>
-    <p class="small muted" id="roll-div" hidden style="margin:0 0 8px">배당을 현금으로 받는 기준이라 평가액(가격) 기준 연복리입니다. 받은 배당금은 포함하지 않아요.</p>
-    <div class="tbl-wrap"><table id="t-roll"></table></div>
+  <section class="panel" aria-labelledby="h-mdd" id="sec-mdd">
+    <div class="panel-head"><h2 id="h-mdd">MDD 구분 — 어느 구간의 MDD인가요?</h2><p class="help">같은 포트폴리오도 어느 구간에서 재느냐에 따라 MDD가 달라요. 이 앱에 나오는 MDD를 한곳에 모았어요.</p></div>
+    <div class="tbl-wrap"><table id="t-mdd" class="mddtbl"></table></div>
+    <p class="mdd-note" id="mdd-note"></p>
   </section>
 
-  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-setup">← 1 입력</button><button class="btn" type="button" data-go="g-checks">3 점검 보기 →</button></nav>
+  <p class="adv-lead">아래 ‘고급’ 항목은 투자 지표에 익숙한 분을 위한 자세한 숫자예요. 필요할 때 눌러서 펼쳐요.</p>
+
+  <details class="panel fold adv" data-fold="r-metrics" id="sec-sum">
+    <summary><span class="fold-h"><span class="fold-t" id="h-sum">자세한 지표</span><span class="adv-b">고급</span></span><span class="fold-d">표준편차·샤프·소르티노·칼마 비율, 최고·최악 연도, MDD 회복 기간</span></summary>
+    <div class="fold-body">
+      <p class="small muted" id="sum-note"></p>
+      <div class="tbl-wrap"><table id="t-summary" class="mtbl"></table></div>
+    </div>
+  </details>
+
+  <details class="panel fold adv" data-fold="r-risk" id="sec-risk">
+    <summary><span class="fold-h"><span class="fold-t" id="h-risk">수익과 위험</span><span class="adv-b">고급</span></span><span class="fold-d">한 번의 폭락에 덜 휘둘리는 지표(보통의 10년, 평균 낙폭, 마틴 비율)와 큰 하락 목록</span></summary>
+    <div class="fold-body">
+      <p class="help">MDD·칼마 비율은 가장 큰 하락 한 번으로 정해져요. 여기서는 모든 하락의 깊이·기간·횟수와 10년 구간의 보통 성적으로 봐요.</p>
+      <div class="tbl-wrap"><table id="t-risk" class="risk mtbl"></table></div>
+      <p class="risk-key">굵은 값이 그 줄에서 가장 좋은 값이에요. 10년 구간은 1개월 간격으로 잡은 모든 10년이에요.</p>
+      <details class="vd-crit">
+        <summary>지표 읽는 법</summary>
+        <ul>
+          <li><b>보통의 10년</b>: 모든 10년 구간의 중앙값이에요. 분석을 언제 시작하고 끝냈는지, 큰 폭락이 기간의 어디에 있었는지에 덜 좌우돼요.</li>
+          <li><b>평균 낙폭</b>: 매달 직전 고점보다 몇 % 아래에 있었는지를 전체 기간 평균한 값이에요(Pain Index). 한 번의 폭락보다 ‘평소에 얼마나 빠져 있었나’를 봐요.</li>
+          <li><b>울서 지수</b>: 매달 고점 대비 낙폭을 제곱해 평균한 뒤 제곱근을 씌운 값이에요(Ulcer Index). 깊게 빠질수록, 오래 회복하지 못할수록 커져요.</li>
+          <li><b>마틴 비율</b>: (CAGR − 같은 기간 단기국채 수익률) ÷ 울서 지수예요(Ulcer Performance Index). 샤프 비율이 오르내림(변동성)을 위험으로 본다면, 마틴 비율은 실제로 손실 상태였던 깊이와 기간을 위험으로 봐요. 1986~2026년 기준 60/40은 약 1.1, S&amp;P 500은 약 0.6이에요.</li>
+          <li><b>가장 큰 하락의 비중</b>: 가장 큰 하락 한 번이 울서 지수(제곱한 낙폭의 합)에서 차지하는 몫이에요. 70%가 넘으면 위험 지표의 대부분이 그 한 번에서 나온 것이라, 그 폭락이 다시 오느냐에 따라 평가가 크게 바뀌어요.</li>
+          <li>한 번의 하락은 고점에서 떨어지기 시작해 그 고점을 되찾을 때까지예요. 회복하기 전에 더 떨어지면 같은 하락으로 봐요.</li>
+        </ul>
+      </details>
+      <div class="sub-sec">
+        <div class="sub-head"><h3>주요 하락 목록 — 큰 하락 5개</h3><div class="chips" id="dd-port" role="group" aria-label="하락 목록을 볼 포트폴리오"></div></div>
+        <p class="small muted" id="dd-note"></p>
+        <div class="tbl-wrap"><table id="t-dd" class="ddtbl"></table></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="panel fold adv" data-fold="r-annual" id="sec-annual">
+    <summary><span class="fold-h"><span class="fold-t" id="h-annual">연도별 수익률</span><span class="adv-b">고급</span></span><span class="fold-d">해마다 몇 % 오르고 내렸나 (배당을 현금으로 받으면 연도별 배당금도)</span></summary>
+    <div class="fold-body">
+      <div>
+        <div class="chart-title"><h3 id="ann-title">연도별 수익률</h3></div>
+        <div class="legend" id="lg-ann"></div>
+        <div class="scroll-x"><div class="chart-box" id="c-ann"></div></div>
+      </div>
+      <div id="inc-chart" hidden>
+        <div class="chart-title"><h3>연도별 받은 배당금 <span class="muted small" id="inc-sub"></span></h3></div>
+        <div class="legend" id="lg-inc"></div>
+        <div class="scroll-x"><div class="chart-box" id="c-inc"></div></div>
+        <p class="small muted">막대를 누르거나 마우스를 올리면 금액과 그해 시작 평가액 대비 배당률이 보여요. *는 일부 기간만 포함된 해예요.</p>
+      </div>
+    </div>
+  </details>
+
+  <details class="panel fold adv" data-fold="r-roll" id="sec-roll">
+    <summary><span class="fold-h"><span class="fold-t" id="h-roll">롤링 CAGR</span><span class="adv-b">고급</span></span><span class="fold-d">아무 때나 N년 들고 있었다면 — 운이 가장 나빴을 때와 좋았을 때</span></summary>
+    <div class="fold-body">
+      <p class="help">분석 기간 안의 모든 N년 구간(1개월 간격)에서 연복리 수익률의 최저·중앙·최고값과, 그 구간들 안의 MDD 중 가장 나빴던 값이에요.</p>
+      <p class="small muted" id="roll-div" hidden>배당을 현금으로 받는 기준이라 평가액(가격) 기준 연복리예요. 받은 배당금은 포함하지 않아요.</p>
+      <div class="tbl-wrap"><table id="t-roll"></table></div>
+    </div>
+  </details>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-setup">← 입력</button><button class="btn" type="button" data-go="g-checks">점검 보기 →</button></nav>
   </div>
 
   <div class="pane" data-g="g-checks" id="pane-checks">
-  <div class="gsec" id="g-checks"><span class="grp-n" aria-hidden="true">3</span><div class="grp-tx"><h2 class="grp-t">점검</h2><p class="grp-d">같은 비중이 시기마다 얼마나 달랐는지, 최근 급등에 기대고 있지 않은지 확인해요.</p></div></div>
+  <div class="gsec" id="g-checks"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-checks"/></svg><div class="grp-tx"><h2 class="grp-t">점검</h2><p class="grp-d">같은 비중이 시기가 바뀌어도 비슷했는지 확인해요.</p></div></div>
 
   <section class="panel" aria-labelledby="h-period" id="sec-period">
-    <div class="panel-head"><h2 id="h-period">구간별 점검 — 시기가 바뀌어도 비슷했을까?</h2><p>같은 비중을 분석 기간 안의 여러 시기에 새로 시작해 따로 계산하고, CAGR·MDD가 얼마나 달라지는지 봅니다.</p></div>
+    <div class="panel-head"><h2 id="h-period">구간별 점검</h2><p class="help">같은 비중을 여러 시기에 새로 시작해 따로 계산하고, 결과가 시기마다 얼마나 달랐는지 봐요.</p></div>
     <div class="pc-pick"><span class="lbl" id="pc-port-lbl">점검할 포트폴리오</span><div class="chips" id="pc-port" role="group" aria-labelledby="pc-port-lbl"></div><span class="small muted" id="pc-data"></span></div>
     <div id="pc-verdict" class="verdict" aria-live="polite"></div>
-    <div class="sub-sec">
-      <div class="sub-head"><h3>가장 과거 vs 최근 · 연대별</h3><span class="small muted" id="pc-tbl-note"></span></div>
+  </section>
+
+  <p class="adv-lead">판정의 근거가 된 자세한 숫자는 아래 ‘고급’ 항목에 있어요. 익숙한 분만 펼쳐 봐도 충분해요.</p>
+
+  <details class="panel fold adv" data-fold="c-table" id="pc-table-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-pc-table">가장 과거 vs 최근 · 연대별</span><span class="adv-b">고급</span></span><span class="fold-d">처음 10·20·30년과 최근 10·20·30년, 1990년대·2000년대처럼 10년 단위</span></summary>
+    <div class="fold-body">
+      <p class="small muted" id="pc-tbl-note"></p>
       <div class="tbl-wrap"><table id="pc-table" class="pctbl"></table></div>
       <div class="pc-key" id="pc-key"></div>
     </div>
-    <div class="sub-sec" data-detail>
-      <div class="sub-head"><h3>모든 구간 한눈에 — 시작 연도 × 끝 연도</h3><div class="seg-toggle" id="pc-metric" role="group" aria-label="지도에 표시할 지표"><button type="button" data-m="cagr" aria-pressed="true">CAGR</button><button type="button" data-m="mdd" aria-pressed="false">MDD</button></div></div>
+  </details>
+
+  <details class="panel fold adv" data-fold="c-heat" id="pc-heat-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-pc-heat">모든 구간 한눈에</span><span class="adv-b">고급</span></span><span class="fold-d">시작 연도 × 끝 연도 지도 — 칸을 누르면 그 구간을 따로 계산</span></summary>
+    <div class="fold-body">
+      <div class="seg-toggle" id="pc-metric" role="group" aria-label="지도에 표시할 지표"><button type="button" data-m="cagr" aria-pressed="true">CAGR</button><button type="button" data-m="mdd" aria-pressed="false">MDD</button></div>
       <div class="heat-wrap">
         <div class="chart-box" id="pc-heat"></div>
         <div class="heat-side"><div class="heat-legend" id="pc-legend"></div><p class="heat-note" id="pc-heat-note"></p></div>
       </div>
     </div>
-    <div class="sub-sec" data-detail id="pc-custom-sec">
-      <div class="sub-head"><h3>직접 고른 구간</h3><div class="row" id="pc-quick"></div></div>
+  </details>
+
+  <details class="panel fold adv" data-fold="c-custom" id="pc-custom-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-pc-custom">직접 고른 구간</span><span class="adv-b">고급</span></span><span class="fold-d">원하는 시작·끝을 골라 따로 계산해 전체 기간과 비교</span></summary>
+    <div class="fold-body">
+      <div class="row" id="pc-quick"></div>
       <div class="pc-range"><span class="pr-g"><span>시작</span><select id="pc-sy" aria-label="구간 시작 연도"></select><select id="pc-sm" aria-label="구간 시작 월"></select></span><span class="pr-g"><span>종료</span><select id="pc-ey" aria-label="구간 종료 연도"></select><select id="pc-em" aria-label="구간 종료 월"></select></span></div>
       <div id="pc-custom"></div>
     </div>
-  </section>
+  </details>
 
-  <section data-detail class="panel" aria-labelledby="h-trend">
-    <div class="panel-head"><h2 id="h-trend">추세 유지 보정 — 최근에 튀어 오른 종목을 과거 추세로</h2><p>최근 급등이 결과를 부풀리지 않았는지 보려고, 급등한 종목의 최근 구간을 그 종목의 과거 추세 속도로 바꾼 데이터로 한 번 더 계산합니다.</p></div>
-    <div class="trend-set">
-      <label class="toggle" for="tr-on"><input id="tr-on" type="checkbox" checked><span>급등 종목을 보정한 결과도 함께 보기 (월별 오르내림은 그대로 두고 오르는 속도만 과거 추세로 낮춤)</span></label>
-      <div class="row">
-        <label for="tr-r" class="small muted">최근 구간</label><select id="tr-r"><option value="24">2년</option><option value="36" selected>3년</option><option value="60">5년</option></select>
-        <label for="tr-l" class="small muted">과거 추세</label><select id="tr-l"><option value="60">직전 5년</option><option value="120" selected>직전 10년</option><option value="240">직전 20년</option></select>
-        <label for="tr-thr" class="small muted">급등 기준</label><select id="tr-thr"><option value="10">추세보다 연 10%p 이상</option><option value="15" selected>추세보다 연 15%p 이상</option><option value="20">추세보다 연 20%p 이상</option><option value="30">추세보다 연 30%p 이상</option></select>
+  <details class="panel fold adv" data-fold="c-trend" id="sec-trend">
+    <summary><span class="fold-h"><span class="fold-t" id="h-trend">추세 유지 보정</span><span class="adv-b">고급</span></span><span class="fold-d">최근에 튀어 오른 종목을 과거 추세 속도로 바꿔 다시 계산</span></summary>
+    <div class="fold-body">
+      <p class="help">최근 급등이 결과를 부풀리지 않았는지 보려고, 급등한 종목의 최근 구간을 그 종목의 과거 추세 속도로 바꾼 데이터로 한 번 더 계산해요.</p>
+      <div class="trend-set">
+        <label class="toggle" for="tr-on"><input id="tr-on" type="checkbox" checked><span>급등 종목을 보정한 결과도 함께 보기 (월별 오르내림은 그대로 두고 오르는 속도만 과거 추세로 낮춤)</span></label>
+        <div class="row">
+          <label for="tr-r" class="small muted">최근 구간</label><select id="tr-r"><option value="24">2년</option><option value="36" selected>3년</option><option value="60">5년</option></select>
+          <label for="tr-l" class="small muted">과거 추세</label><select id="tr-l"><option value="60">직전 5년</option><option value="120" selected>직전 10년</option><option value="240">직전 20년</option></select>
+          <label for="tr-thr" class="small muted">급등 기준</label><select id="tr-thr"><option value="10">추세보다 연 10%p 이상</option><option value="15" selected>추세보다 연 15%p 이상</option><option value="20">추세보다 연 20%p 이상</option><option value="30">추세보다 연 30%p 이상</option></select>
+        </div>
+      </div>
+      <p class="small muted" id="tr-note"></p>
+      <div class="tbl-wrap"><table id="t-trend-list" class="trend"></table></div>
+      <button class="btn ghost sm" type="button" id="tr-more" hidden></button>
+      <div id="tr-cmp-wrap" class="sub-sec">
+        <div class="sub-head"><h3>포트폴리오 결과: 실제 → 추세 보정</h3></div>
+        <p class="small muted">빨간 값은 보정 후 나빠진 값이에요. 차이가 클수록 그 포트폴리오의 성과가 최근 급등에 기대고 있다는 뜻이에요.</p>
+        <div class="tbl-wrap"><table id="t-trend-cmp" class="trendcmp"></table></div>
       </div>
     </div>
-    <p class="small muted" id="tr-note" style="margin-top:10px"></p>
-    <div class="tbl-wrap" style="margin-top:8px"><table id="t-trend-list" class="trend"></table></div>
-    <button class="btn ghost sm" type="button" id="tr-more" hidden style="margin-top:8px"></button>
-    <div id="tr-cmp-wrap" class="sub-sec">
-      <div class="sub-head"><h3>포트폴리오 결과: 실제 → 추세 보정</h3></div>
-      <p class="small muted">빨간 값은 보정 후 나빠진 값이에요. 차이가 클수록 그 포트폴리오의 성과가 최근 급등에 기대고 있다는 뜻입니다.</p>
-      <div class="tbl-wrap"><table id="t-trend-cmp" class="trendcmp"></table></div>
-    </div>
-  </section>
+  </details>
 
-  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-results">← 2 결과</button><button class="btn" type="button" data-go="g-opt">4 최적화 보기 →</button></nav>
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-results">← 결과</button><button class="btn" type="button" data-go="g-opt">최적화 보기 →</button></nav>
   </div>
 
   <div class="pane" data-g="g-opt" id="pane-opt">
-  <div class="gsec" id="g-opt"><span class="grp-n" aria-hidden="true">4</span><div class="grp-tx"><h2 class="grp-t">최적화</h2><p class="grp-d">고른 자산으로 구간별 최적 비중과 생애 주기별 추천을 찾아요.</p></div></div>
+  <div class="gsec" id="g-opt"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-opt"/></svg><div class="grp-tx"><h2 class="grp-t">최적화 <span class="adv-b">고급</span></h2><p class="grp-d">투자에 익숙한 분을 위한 기능이에요. 고른 자산으로 과거 구간마다 가장 좋았던 비중을 찾아요. 지나간 구간에 맞춘 결과라 앞으로도 그렇다는 보장은 없어요.</p></div></div>
 
-  <div class="panel simple-only" id="simple-opt"><div class="simple-card"><p>비중 최적화, 생애 주기별 추천, 과최적화 점검은 ‘자세히’ 보기에서 볼 수 있어요. 고른 자산으로 최근·가장 과거 10·20·30년의 최적 비중을 찾아 줍니다.</p><button class="btn sm" type="button" id="to-full">자세히 보기로 바꾸기</button></div></div>
-
-  <section data-detail class="panel" aria-labelledby="h-opt">
-    <div class="panel-head"><h2 id="h-opt">비중 최적화</h2><p>분석 기간(<span id="o-end" class="mono">–</span>)의 최근 10·20·30년과 가장 과거 10·20·30년 구간마다, 고른 자산으로 만들 수 있는 비중 조합을 같은 리밸런싱 규칙으로 백테스트해 최적 비중을 찾습니다.</p></div>
-    <div class="field">
-      <div class="pk-top">
-        <span class="lbl">대상 자산 <span class="muted" id="o-count" style="font-weight:400"></span></span>
-        <div class="row">
-          <button class="btn ghost sm" type="button" id="o-all">전체 선택</button>
-          <button class="btn ghost sm" type="button" id="o-none">선택 해제</button>
+  <section class="panel" aria-labelledby="h-opt" id="sec-opt">
+    <div class="panel-head"><h2 id="h-opt">비중 최적화</h2><p>분석 기간(<span id="o-end" class="mono">–</span>)의 최근 10·20·30년과 가장 과거 10·20·30년마다, 고른 자산으로 만들 수 있는 비중 조합을 같은 리밸런싱 규칙으로 모두 계산해 봐요.</p></div>
+    <details class="fold sub" data-fold="o-assets" id="fold-assets">
+      <summary><span class="fold-h"><span class="fold-t">대상 자산</span><span class="cnt" id="o-count"></span></span><span class="fold-d" id="o-sel-sum">처음에는 포트폴리오에 넣은 자산이 골라져 있어요.</span></summary>
+      <div class="fold-body">
+        <div class="pk-top">
+          <div class="chips" id="o-src"></div>
+          <div class="row">
+            <button class="btn ghost sm" type="button" id="o-all">전체 선택</button>
+            <button class="btn ghost sm" type="button" id="o-none">선택 해제</button>
+          </div>
+        </div>
+        <div class="tk-picker" id="o-picker" role="group" aria-label="최적화 대상 자산"></div>
+        <p class="small muted" id="o-elig"></p>
+      </div>
+    </details>
+    <details class="fold sub" data-fold="o-crit">
+      <summary><span class="fold-h"><span class="fold-t">기준</span></span><span class="fold-d" id="o-crit-sum">비중 5% 단위 · 자산별 최대 100% · 내 기준 MDD 20~30% · 회복 기간 제한 없음</span></summary>
+      <div class="fold-body">
+        <div class="opt-grid">
+          <div class="field">
+            <label for="o-step">비중 단위</label>
+            <select id="o-step"><option value="0.05">5%</option><option value="0.1">10%</option><option value="0.025">2.5%</option></select>
+            <p class="help">작을수록 촘촘하지만 오래 걸려요.</p>
+          </div>
+          <div class="field">
+            <label for="o-max">자산별 최대 비중 (%)</label>
+            <input id="o-max" type="number" min="10" max="100" step="5" value="100" inputmode="numeric">
+            <p class="help">한 자산에 너무 몰리지 않게 막아요.</p>
+          </div>
+          <div class="field">
+            <span class="lbl">내 기준: MDD 범위 (%)</span>
+            <div class="row"><input id="o-lo" type="number" min="0" max="95" step="1" value="20" aria-label="MDD 하한" inputmode="numeric" class="w-num"><span class="muted">이상 ~</span><input id="o-hi" type="number" min="1" max="100" step="1" value="30" aria-label="MDD 상한" inputmode="numeric" class="w-num"><span class="muted">미만</span></div>
+            <p class="help">감당할 수 있는 낙폭 안에서 수익이 가장 높은 조합을 골라요.</p>
+          </div>
+          <div class="field">
+            <label for="o-uw">회복 기간 한도</label>
+            <select id="o-uw">
+              <option value="0">제한 없음</option><option value="12">1년 이내</option><option value="24">2년 이내</option><option value="36">3년 이내</option>
+              <option value="48">4년 이내</option><option value="60">5년 이내</option><option value="84">7년 이내</option><option value="120">10년 이내</option>
+            </select>
+            <p class="help">AI 추천과 내 기준 모두에 적용돼요.</p>
+          </div>
         </div>
       </div>
-      <div class="chips" id="o-src"></div>
-      <div class="tk-picker" id="o-picker" role="group" aria-label="최적화 대상 자산"></div>
-      <p class="small muted" id="o-elig"></p>
-    </div>
-    <div class="opt-grid" style="margin-top:16px">
-      <div class="field">
-        <label for="o-step">비중 단위</label>
-        <select id="o-step"><option value="0.05">5%</option><option value="0.1">10%</option><option value="0.025">2.5%</option></select>
-      </div>
-      <div class="field">
-        <label for="o-max">자산별 최대 비중 (%)</label>
-        <input id="o-max" type="number" min="10" max="100" step="5" value="100">
-      </div>
-      <div class="field">
-        <span class="lbl">내 기준: MDD 범위 (%)</span>
-        <div class="row"><input id="o-lo" type="number" min="0" max="95" step="1" value="20" aria-label="MDD 하한" style="width:62px"><span class="muted">이상 ~</span><input id="o-hi" type="number" min="1" max="100" step="1" value="30" aria-label="MDD 상한" style="width:62px"><span class="muted">미만</span></div>
-      </div>
-      <div class="field">
-        <label for="o-uw">회복 기간 한도 (AI·내 기준)</label>
-        <select id="o-uw">
-          <option value="0">제한 없음</option><option value="12">1년 이내</option><option value="24">2년 이내</option><option value="36">3년 이내</option>
-          <option value="48">4년 이내</option><option value="60">5년 이내</option><option value="84">7년 이내</option><option value="120">10년 이내</option>
-        </select>
-      </div>
-      <div class="field">
-        <button class="btn" id="o-run" type="button">최적 비중 찾기</button>
-      </div>
-    </div>
-    <div style="display:grid; gap:8px; margin-top:14px;">
+    </details>
+    <div class="run-row"><button class="btn" id="o-run" type="button">최적 비중 찾기</button></div>
+    <div class="opt-prog">
       <div class="progress" aria-hidden="true"><i id="o-prog"></i></div>
       <p class="small muted" id="o-status" aria-live="polite">대상 자산과 기준을 정한 뒤 실행하세요.</p>
     </div>
+  </section>
 
-    <div class="sub-sec" id="o-era-sec">
-      <div class="sub-head"><h3>가장 과거 vs 최근 — 시대가 바뀌어도 같은 비중일까?</h3></div>
-      <p class="small muted" id="o-era-note" aria-live="polite"></p>
-      <div id="o-era"></div>
-    </div>
-
+  <section class="panel" aria-labelledby="h-hz" id="sec-hz">
+    <div class="panel-head"><h2 id="h-hz">기간별 최적 비중</h2><p class="help">AI 추천은 앞뒤 어느 시기에도 위험 대비 성과가 고른 조합, 내 기준은 정한 MDD 범위 안에서 수익이 가장 높은 조합이에요. 짧은 구간일수록 최근 강세 자산에 쏠려요.</p></div>
     <div class="pos-bar" role="group" aria-labelledby="o-pos-lbl">
       <span class="lbl" id="o-pos-lbl">아래 결과의 구간</span>
       <div class="seg-toggle big" id="o-pos">
@@ -1026,76 +1294,128 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
       </div>
       <span class="small muted" id="o-pos-note"></span>
     </div>
+    <p class="small muted" id="o-crit"></p>
+    <p class="small muted" id="o-div-note" hidden>배당금 처리를 ‘현금으로 받기’로 골라도 최적 비중은 배당 재투자(총수익) 기준으로 찾아요. 배당을 꺼내 쓰면 평가액이 얼마나 자라는지는 비중보다 배당률에 크게 좌우되기 때문이에요. 대신 결과마다 배당을 현금으로 받을 때의 평가액 CAGR·MDD와 배당률을 함께 보여줘요.</p>
+    <div class="hz-grid" id="o-hz"></div>
+  </section>
 
-    <div class="sub-sec" id="o-adj-sec">
-      <div class="sub-head"><h3>실제 데이터 vs 추세 보정 — 최적 비중 비교</h3><button class="btn ghost sm" type="button" id="o-adj-rerun" hidden>보정 결과 다시 계산</button></div>
+  <details class="panel fold" data-fold="o-era" id="o-era-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-o-era">가장 과거 vs 최근</span></span><span class="fold-d">시대가 바뀌어도 같은 비중이 뽑혔을까?</span></summary>
+    <div class="fold-body">
+      <p class="small muted" id="o-era-note" aria-live="polite"></p>
+      <div id="o-era"></div>
+    </div>
+  </details>
+
+  <details class="panel fold" data-fold="o-adj" id="o-adj-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-o-adj">실제 데이터 vs 추세 보정</span></span><span class="fold-d">최근 급등을 덜어 낸 데이터로 찾으면 최적 비중이 어떻게 바뀌나</span></summary>
+    <div class="fold-body">
+      <div class="row"><button class="btn ghost sm" type="button" id="o-adj-rerun" hidden>보정 결과 다시 계산</button></div>
       <p class="small muted" id="o-adj-note" aria-live="polite"></p>
       <div id="o-adj-cmp"></div>
-      <div class="row" id="o-view" hidden><span class="small muted">아래 결과를 어떤 데이터로 볼까요?</span><div class="seg-toggle" role="group" aria-label="결과 데이터"><button type="button" data-v="actual" aria-pressed="true">실제 데이터</button><button type="button" data-v="adj" aria-pressed="false">추세 보정 데이터</button></div></div>
+      <div class="row" id="o-view" hidden><span class="small muted">위 ‘기간별 최적 비중’을 어떤 데이터로 볼까요?</span><div class="seg-toggle" role="group" aria-label="결과 데이터"><button type="button" data-v="actual" aria-pressed="true">실제 데이터</button><button type="button" data-v="adj" aria-pressed="false">추세 보정 데이터</button></div></div>
     </div>
+  </details>
 
-    <div class="sub-sec">
-      <div class="sub-head"><h3>기간별 최적 비중</h3><span class="small muted">과거 데이터에 맞춘 결과라 미래 성과를 보장하지 않고, 짧은 구간일수록 최근 강세 자산에 쏠립니다.</span></div>
-      <p class="small muted" id="o-crit"></p>
-      <p class="small muted" id="o-div-note" hidden>배당금 처리를 ‘현금으로 받기’로 골라도 최적 비중은 배당 재투자(총수익) 기준으로 찾아요. 배당을 꺼내 쓰면 평가액이 얼마나 자라는지는 비중보다 배당률에 크게 좌우되기 때문이에요. 대신 결과마다 배당을 현금으로 받을 때의 평가액 CAGR·MDD와 배당률을 함께 보여줍니다.</p>
-      <div class="hz-grid" id="o-hz"></div>
-    </div>
-
-    <div class="sub-sec">
-      <div class="sub-head"><h3>생애 주기별 추천 CAGR · MDD</h3><button class="btn ghost sm" type="button" id="life-reset">기준 초기화</button></div>
-      <p class="small muted">단계마다 감당할 수 있는 MDD와 회복 기간 한도, 목표 CAGR을 두고, 한도 안에서 CAGR이 가장 높은 조합을 구간별로 찾습니다. 기준 숫자는 바꿀 수 있고 바꾸면 바로 다시 고릅니다. 칸을 누르면 비중과 적용 버튼이 나옵니다. 일반적인 가이드라인이며 개인별 투자 조언이 아닙니다.</p>
+  <details class="panel fold" data-fold="o-life" id="o-life-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-o-life">생애 주기별 추천</span></span><span class="fold-d">30대·40대·50대·은퇴 이후, 감당할 MDD와 회복 기간 안에서 CAGR이 가장 높은 조합</span></summary>
+    <div class="fold-body">
+      <div class="row"><button class="btn ghost sm" type="button" id="life-reset">기준 초기화</button></div>
+      <p class="small muted">단계마다 감당할 수 있는 MDD와 회복 기간 한도, 목표 CAGR을 두고, 한도 안에서 CAGR이 가장 높은 조합을 구간별로 찾아요. 기준 숫자는 바꿀 수 있고 바꾸면 바로 다시 골라요. 칸을 누르면 비중과 적용 버튼이 나와요. 일반적인 가이드라인이며 개인별 투자 조언이 아니에요.</p>
       <div class="tbl-wrap"><table id="o-life" class="life"></table></div>
       <div id="life-pick"></div>
     </div>
+  </details>
 
-    <div class="sub-sec">
-      <div class="sub-head"><h3>과최적화 점검 — 그 비중이 다음 구간에도 통했을까?</h3><button class="btn ghost sm" type="button" id="w-run">점검 실행</button></div>
-      <p class="small muted">위 결과는 이미 지나간 구간에 맞춘 비중이라 앞으로도 같은 성과를 낸다는 보장이 없어요. 같은 자산·기준으로 <b>직전 10·20년</b>에서 비중을 고른 뒤, 그 비중을 <b>최근 10·20년</b>에 그대로 들고 갔을 때 결과가 어떻게 달라졌는지 보여줍니다. 빨간 값은 고를 때 정한 한도를 넘었다는 뜻이에요.</p>
+  <details class="panel fold" data-fold="o-walk" id="o-walk-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-o-walk">과최적화 점검</span></span><span class="fold-d">직전 10·20년에서 고른 비중이 다음 10·20년에도 통했을까?</span></summary>
+    <div class="fold-body">
+      <div class="row"><button class="btn ghost sm" type="button" id="w-run">점검 실행</button></div>
+      <p class="small muted">최적화 결과는 이미 지나간 구간에 맞춘 비중이라 앞으로도 같은 성과를 낸다는 보장이 없어요. 같은 자산·기준으로 <b>직전 10·20년</b>에서 비중을 고른 뒤, 그 비중을 <b>최근 10·20년</b>에 그대로 들고 갔을 때 결과가 어떻게 달라졌는지 보여줘요. 빨간 값은 고를 때 정한 한도를 넘었다는 뜻이에요.</p>
       <p class="small muted" id="w-status"></p>
       <p class="small" id="w-sum"></p>
       <div class="tbl-wrap"><table id="w-table" class="walk"></table></div>
     </div>
+  </details>
 
-    <div class="sub-sec">
-      <div class="chart-title"><h3>모든 조합의 CAGR과 MDD</h3><div class="seg-toggle" id="o-ftabs" role="group" aria-label="구간 선택"></div></div>
+  <details class="panel fold" data-fold="o-front" id="o-front-sec">
+    <summary><span class="fold-h"><span class="fold-t" id="h-o-front">모든 조합의 CAGR과 MDD</span></span><span class="fold-d">점 하나가 비중 조합 하나 — 눌러서 그 조합을 포트폴리오에 넣기</span></summary>
+    <div class="fold-body">
+      <div class="seg-toggle" id="o-ftabs" role="group" aria-label="구간 선택"></div>
       <div class="legend" id="lg-front"></div>
       <div class="chart-box" id="c-front"></div>
-      <p class="small muted" id="front-note">점 하나가 비중 조합 하나입니다(최대 6,000개 표시). 점을 누르면 그 조합을 포트폴리오에 적용할 수 있어요. 네모는 위 포트폴리오를 같은 구간으로 계산한 위치입니다.</p>
+      <p class="small muted" id="front-note">점 하나가 비중 조합 하나예요(최대 6,000개 표시). 점을 누르면 그 조합을 포트폴리오에 넣을 수 있어요. 네모는 내 포트폴리오를 같은 구간으로 계산한 위치예요.</p>
       <div id="front-pick"></div>
+    </div>
+  </details>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-checks">← 점검</button><button class="btn ghost" type="button" data-go="g-ref">도움말 →</button></nav>
+  </div>
+
+  <div class="pane" data-g="g-ref" id="pane-ref">
+  <div class="gsec" id="g-ref"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-help"/></svg><div class="grp-tx"><h2 class="grp-t">도움말</h2><p class="grp-d">용어 풀이, 화면 설정, 사용한 데이터와 계산 방식.</p></div></div>
+
+  <section class="panel" aria-labelledby="h-terms" id="sec-terms">
+    <div class="panel-head"><h2 id="h-terms">용어 풀이</h2></div>
+    <dl class="gloss">
+      <div><dt>CAGR (연 수익률)</dt><dd>해마다 평균 몇 %씩 불어났는지예요. 연 10%면 7년 남짓에 두 배가 돼요.</dd></div>
+      <div><dt>MDD (최대 낙폭)</dt><dd>고점에서 가장 크게 떨어진 폭이에요. −30%면 1,000만 원이 700만 원까지 내려간 적이 있다는 뜻이에요.</dd></div>
+      <div><dt>최장 회복 기간</dt><dd>떨어진 뒤 그 고점을 다시 넘기까지 가장 오래 걸린 시간이에요. 그동안은 손실 상태로 버텨야 해요.</dd></div>
+      <div><dt>리밸런싱</dt><dd>오른 자산은 팔고 내린 자산은 사서, 정해진 때마다 처음 비중으로 되돌리는 것이에요.</dd></div>
+      <div><dt>벤치마크</dt><dd>내 포트폴리오와 비교할 기준이에요. 보통 미국 대표 지수 S&amp;P 500을 따르는 SPY를 써요.</dd></div>
+      <div><dt>배당 재투자</dt><dd>받은 배당금으로 같은 ETF를 다시 사는 것이에요. 오래 둘수록 차이가 커져요.</dd></div>
+      <div><dt>물가 반영 (실질)</dt><dd>물가 상승분을 빼고 지금 돈의 가치로 본 수익률이에요.</dd></div>
+      <div><dt>샤프 비율</dt><dd>오르내림(변동성) 1만큼의 위험을 지고 현금보다 얼마나 더 벌었나예요. 높을수록 좋아요.</dd></div>
+      <div><dt>롤링 수익률</dt><dd>‘아무 때나 N년 들고 있었다면’을 1개월씩 옮겨 가며 모두 계산한 값이에요.</dd></div>
+      <div><dt>추세 보정</dt><dd>최근에 갑자기 급등한 종목의 상승 속도를 과거 추세로 낮춰 다시 계산하는 ‘만약’ 계산이에요.</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel" aria-labelledby="h-view" id="sec-view">
+    <div class="panel-head"><h2 id="h-view">화면 설정</h2><p>이 기기의 브라우저에 기억해요.</p></div>
+    <div class="view-set">
+      <div class="vs-row">
+        <span class="lbl" id="lay-lbl">화면 배치</span>
+        <div class="seg-toggle" role="group" aria-labelledby="lay-lbl"><button type="button" id="lay-tabs" aria-pressed="true">탭으로 보기</button><button type="button" id="lay-page" aria-pressed="false">한 페이지로 보기</button></div>
+        <p class="help">한 페이지로 보기는 모든 내용을 위에서 아래로 이어 보여주는 이전 방식이에요.</p>
+      </div>
+      <div class="vs-row">
+        <span class="lbl">접힌 항목</span>
+        <div class="row"><button class="btn ghost sm" type="button" id="fold-open-all">모두 펼치기</button><button class="btn ghost sm" type="button" id="fold-close-all">모두 접기</button></div>
+        <p class="help">‘고급’ 항목처럼 접혀 있는 칸을 한 번에 열거나 닫아요. 하나씩 연 항목도 다음에 열면 그대로예요.</p>
+      </div>
     </div>
   </section>
 
-  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-checks">← 3 점검</button><button class="btn" type="button" data-go="g-ref" data-detail>5 도움말 보기 →</button></nav>
-  </div>
+  <details class="panel fold" data-fold="h-cov" id="sec-cov">
+    <summary><span class="fold-h"><span class="fold-t" id="h-cov">사용한 데이터</span></span><span class="fold-d">포트폴리오에 들어간 티커마다 어느 기간에 어떤 데이터를 썼나</span></summary>
+    <div class="fold-body">
+      <div class="cov-legend" id="cov-legend"></div>
+      <div class="cov" id="cov"></div>
+    </div>
+  </details>
 
-  <div class="pane" data-g="g-ref" id="pane-ref" data-detail>
-  <div class="gsec" id="g-ref" data-detail><span class="grp-n" aria-hidden="true">5</span><div class="grp-tx"><h2 class="grp-t">도움말</h2><p class="grp-d">사용한 데이터, 지원 티커, 계산 방식과 데이터 출처.</p></div></div>
+  <details class="panel fold" data-fold="h-list" id="sec-list">
+    <summary><span class="fold-h"><span class="fold-t" id="h-list">지원 티커</span></span><span class="fold-d">계산할 수 있는 ETF 목록, 없는 티커는 CSV로 추가</span></summary>
+    <div class="fold-body">
+      <div class="tick-groups" id="tick-groups"></div>
+      <details class="csv-add">
+        <summary>내 데이터로 티커 추가 (CSV 붙여넣기)</summary>
+        <div class="custom-box">
+          <p class="small muted">Yahoo Finance 등에서 받은 CSV를 붙여 넣으세요. 첫 열은 날짜, 가격 열은 <span class="mono">Adj Close</span>(배당 반영 종가)를 우선 사용해요. 일간·월간 모두 가능하며 월말 값으로 바꿔 계산해요. 열이 날짜와 숫자 두 개뿐이면 가격으로, 헤더가 <span class="mono">return</span>이면 수익률로 읽어요(일간이면 월별로 복리 합산). 수익률이 0.025 같은 소수면 단위를 ‘소수’로 고르세요. 추가한 뒤 나오는 첫 달 수익률로 제대로 읽혔는지 확인하세요. 추가한 티커는 이 화면을 닫으면 사라져요.</p>
+          <div class="row"><input id="cu-tk" type="text" class="mono" placeholder="티커 (예: VBR)" autocomplete="off"><label class="small muted" for="cu-unit">수익률 열 단위</label><select id="cu-unit"><option value="pct">% (2.5 = 2.5%)</option><option value="dec">소수 (0.025 = 2.5%)</option></select><input id="cu-file" type="file" accept=".csv,text/csv,text/plain" aria-label="CSV 파일"></div>
+          <textarea id="cu-text" spellcheck="false" placeholder="Date,Open,High,Low,Close,Adj Close,Volume&#10;2015-01-01,...&#10;..."></textarea>
+          <div class="row"><button class="btn sm" id="cu-add" type="button">티커 추가</button><span class="small" id="cu-msg"></span></div>
+        </div>
+      </details>
+    </div>
+  </details>
 
-  <section data-detail class="panel" aria-labelledby="h-cov">
-    <div class="panel-head"><h2 id="h-cov">사용한 데이터</h2><p>포트폴리오에 들어간 티커별로 어떤 데이터가 쓰였는지 보여줍니다.</p></div>
-    <div class="cov-legend" id="cov-legend"></div>
-    <div class="cov" id="cov" style="margin-top:12px;"></div>
-  </section>
-
-  <section data-detail class="panel" aria-labelledby="h-list">
-    <div class="panel-head"><h2 id="h-list">지원 티커</h2><p>목록에 없는 티커는 아래에서 직접 월간 데이터를 붙여 넣어 추가할 수 있습니다.</p></div>
-    <div class="tick-groups" id="tick-groups"></div>
-    <details style="margin-top:16px;">
-      <summary>내 데이터로 티커 추가 (CSV 붙여넣기)</summary>
-      <div class="custom-box" style="margin-top:10px;">
-        <p class="small muted">Yahoo Finance 등에서 받은 CSV를 붙여 넣으세요. 첫 열은 날짜, 가격 열은 <span class="mono">Adj Close</span>(배당 반영 종가)를 우선 사용합니다. 일간·월간 모두 가능하며 월말 값으로 바꿔 계산합니다. 열이 날짜와 숫자 두 개뿐이면 가격으로, 헤더가 <span class="mono">return</span>이면 수익률로 읽어요(일간이면 월별로 복리 합산). 수익률이 0.025 같은 소수면 단위를 ‘소수’로 고르세요. 추가한 뒤 나오는 첫 달 수익률로 제대로 읽혔는지 확인하세요. 추가한 티커는 이 화면을 닫으면 사라집니다.</p>
-        <div class="row"><input id="cu-tk" type="text" class="mono" placeholder="티커 (예: VBR)" style="width:140px" autocomplete="off"><label class="small muted" for="cu-unit">수익률 열 단위</label><select id="cu-unit"><option value="pct">% (2.5 = 2.5%)</option><option value="dec">소수 (0.025 = 2.5%)</option></select><input id="cu-file" type="file" accept=".csv,text/csv,text/plain" aria-label="CSV 파일"></div>
-        <textarea id="cu-text" spellcheck="false" placeholder="Date,Open,High,Low,Close,Adj Close,Volume&#10;2015-01-01,...&#10;..."></textarea>
-        <div class="row"><button class="btn sm" id="cu-add" type="button">티커 추가</button><span class="small" id="cu-msg"></span></div>
-      </div>
-    </details>
-  </section>
-
-  <section data-detail class="panel" aria-labelledby="h-method">
-    <div class="panel-head"><h2 id="h-method">계산 방식과 데이터 출처</h2><p>지표 정의는 <a href="https://www.portfoliovisualizer.com/backtest-portfolio" target="_blank" rel="noopener">Portfolio Visualizer</a> 백테스트를 따릅니다.</p></div>
-    <div class="method">
-      <div>
-        <h3>지표</h3>
+  <section class="panel" aria-labelledby="h-method" id="sec-method">
+    <div class="panel-head"><h2 id="h-method">계산 방식과 데이터 출처</h2><p>지표 정의는 <a href="https://www.portfoliovisualizer.com/backtest-portfolio" target="_blank" rel="noopener">Portfolio Visualizer</a> 백테스트를 따라요. 궁금한 항목을 눌러 펼쳐요.</p></div>
+    <div class="faq">
+      <details class="faq-i" data-fold="m-1">
+        <summary>지표</summary>
         <ul>
           <li>모든 계산은 월말 잔고 기준이고 ETF 보수는 수익률에 이미 반영돼 있습니다. 기본은 분배금(배당·이자)을 재투자하는 총수익이고, ‘현금으로 받기’를 고르면 아래 ‘배당금 처리’ 방식으로 계산합니다.</li>
           <li>CAGR = (최종 잔고 ÷ 초기 잔고)<sup>12/개월 수</sup> − 1</li>
@@ -1107,9 +1427,9 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li><b>MDD 구분</b>: 전체 기간 MDD는 분석 기간 전체에서 가장 크게 떨어진 한 번이고, 최근 N년 MDD는 그 N년만 목표 비중으로 새로 시작해 계산한 값입니다. N년 보유 시 최악 MDD는 모든 N년 구간(1개월 간격)의 MDD 중 가장 깊은 값, 보통의 10년 MDD는 모든 10년 구간 MDD의 중앙값, 평균 낙폭은 매달 직전 고점 대비 낙폭의 평균이에요. 구간이 짧으면 큰 폭락이 빠질 수 있어 MDD가 얕게 나옵니다.</li>
           <li><b>MDD 회복 기간</b>은 MDD 저점에서 직전 고점을 다시 넘은 달까지, <b>최장 회복 기간</b>은 어느 하락이든 고점에서 떨어진 뒤 그 고점을 되찾기까지 걸린 기간 중 가장 긴 값입니다(Portfolio Visualizer의 Recovery Time·Underwater Period). 구간 끝까지 회복하지 못했으면 그때까지의 기간에 +를 붙입니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>배당금 처리</h3>
+      </details>
+      <details class="faq-i" data-fold="m-2">
+        <summary>배당금 처리</summary>
         <ul>
           <li><b>재투자(기본)</b>: 분배금을 받은 달에 같은 ETF를 다시 사는 총수익 기준입니다. Portfolio Visualizer의 기본값(Reinvest Dividends)과 같습니다.</li>
           <li><b>현금으로 받기</b>: 매달 ETF별 분배금(배당·이자·자본이득 분배)을 꺼내 현금으로 따로 모읍니다. 보유한 ETF는 가격 수익률(총수익률 − 분배율)로만 움직이고, 리밸런싱도 이 평가액으로 합니다. 모은 현금에는 이자를 붙이지 않습니다. CAGR·MDD·회복 기간·차트·롤링은 평가액 기준이고, 받은 배당금 합계·최근 1년 배당금·평균 배당률·‘평가액 + 받은 배당’ CAGR은 따로 보여줍니다(Portfolio Visualizer에서 배당 재투자를 끈 것과 같은 방식).</li>
@@ -1119,18 +1439,18 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li>BIL·SGOV 같은 현금성 ETF는 수익 전부가 분배금이라, 현금으로 받으면 평가액은 거의 그대로이고 수익은 모두 배당금으로 잡혀요. JEPI·JEPQ 같은 커버드콜 ETF는 배당률이 연 8~12%로 높아 평가액 CAGR이 총수익보다 크게 낮아요.</li>
           <li>배당금은 세전 금액입니다(한국 거주자 원천징수 15% 미반영).</li>
         </ul>
-      </div>
-      <div>
-        <h3>리밸런싱과 기간</h3>
+      </details>
+      <details class="faq-i" data-fold="m-3">
+        <summary>리밸런싱과 기간</summary>
         <ul>
           <li>정기 리밸런싱은 달력 기준입니다. 매년은 12월 말, 반기는 6·12월 말, 분기는 3·6·9·12월 말에 목표 비중으로 되돌립니다.</li>
           <li>밴드는 매월 말 확인해 어느 자산이든 목표 대비 5%p(큰 비중) 또는 상대 25%(작은 비중) 넘게 벗어나면 전체를 되돌립니다.</li>
           <li>기간별 성과(10~30년)는 종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작한 독립 백테스트입니다.</li>
           <li>여러 포트폴리오는 모두 같은 기간으로 계산합니다. 자산의 데이터가 늦게 시작하면 시작 시점이 자동으로 뒤로 밀립니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>최적화 기준</h3>
+      </details>
+      <details class="faq-i" data-fold="m-4">
+        <summary>최적화 기준</summary>
         <ul>
           <li>분석 종료 시점에서 거꾸로 10·20·30년(최근 구간)과 분석 시작 시점부터 10·20·30년(가장 과거 구간)을 각각 따로 최적화합니다. 두 구간의 결과는 ‘가장 과거 vs 최근’ 표에서 나란히 비교하고, 겹치는 비중은 두 조합에 공통으로 들어간 비중의 합(같은 지수 ETF는 하나로 봄)입니다. 각 구간 전체의 데이터가 있는 자산만 쓰고, VOO·IVV·SPLG처럼 같은 지수를 따르는 ETF는 보수가 가장 낮은 하나로 합쳐 계산합니다.</li>
           <li><b>AI 추천</b>: 구간 전체와 앞 절반·뒤 절반 각각의 샤프 비율 중 가장 낮은 값이 최대인 비중입니다. 한 시기에만 잘 맞은 조합보다 앞뒤 어느 쪽에서도 위험 대비 성과가 고른 조합을 고릅니다. 초과수익이 마이너스인 구간은 변동성이 작을수록 낫게 보정합니다(Israelsen 방식). BIL·SGOV 같은 현금성 자산은 샤프 비율의 기준(무위험 수익)이라 비중을 바꿔도 비율이 거의 같아 제외합니다(현금성 자산만 고르면 그대로 씀). 샤프 비율 최대화는 Portfolio Visualizer 최적화 도구의 기본 목표이기도 합니다.</li>
@@ -1138,13 +1458,13 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li>조합이 12만 개 이하면 전부 계산합니다. 넘으면 모든 단일 자산과 10% 간격의 두 자산 조합, 무작위 표본 약 4만 개를 계산한 뒤, 기준마다 상위 조합 주변에서 비중을 조금씩 옮겨 가며 더 나은 조합을 찾습니다.</li>
           <li>조건을 모두 만족하는 조합이 없으면 조건에 가장 가까운 조합을 보여주고 표시합니다.</li>
           <li>조합이 12만 개를 넘을 때 쓰는 탐색(굵은 간격 전수 또는 표본 + 주변 탐색)은 자산 7~10개로 전수 계산과 비교한 108개 기준 중 104개가 같았고, 나머지도 CAGR 차이가 0.1%p 이하였어요(조건을 만족하는 조합이 아예 없을 때 보여주는 ‘가장 가까운 조합’은 다를 수 있음). 자산을 아주 많이 고르면(예: 전체 선택) 표본 탐색이라 더 나은 조합이 남아 있을 수 있어요. 기준을 바꾸면 바뀐 기준으로 주변 조합을 다시 찾습니다.</li>
-          <li><b>추세 유지 보정</b>: 분석 종료 시점 기준 최근 3년(바꿀 수 있음) 연평균 수익률이 그 직전 10년 추세보다 연 15%p 이상 높은 종목을 ‘급등’으로 잡습니다. 그 종목은 최근 구간의 매달 수익률에서 같은 크기의 상승분(로그 기준)을 덜어 내, 월별 오르내림의 모양과 변동성은 그대로 두고 최근 구간 전체의 상승 속도만 직전 추세와 같게 만든 데이터를 따로 만들어 백테스트와 최적화를 한 번 더 합니다. 3배 레버리지 ETF는 기초 지수가 보정될 때 덜어 낸 상승분의 3배를 덜어 내는데, 변동성 비용은 그대로라 보정 후 수익률이 크게 낮아질 수 있어요. 급등이 일시적인 과열인지 실제 변화인지는 알 수 없으니, 두 결과를 함께 보고 판단하는 ‘만약’ 계산으로 쓰세요. 내 포트폴리오도 ‘기간과 규칙 › 결과 데이터’에서 추세 보정 데이터를 고르면 성과 요약·차트·기간별 표·롤링·구간별 점검을 모두 보정 데이터로 계산합니다.</li>
+          <li><b>추세 유지 보정</b>: 분석 종료 시점 기준 최근 3년(바꿀 수 있음) 연평균 수익률이 그 직전 10년 추세보다 연 15%p 이상 높은 종목을 ‘급등’으로 잡습니다. 그 종목은 최근 구간의 매달 수익률에서 같은 크기의 상승분(로그 기준)을 덜어 내, 월별 오르내림의 모양과 변동성은 그대로 두고 최근 구간 전체의 상승 속도만 직전 추세와 같게 만든 데이터를 따로 만들어 백테스트와 최적화를 한 번 더 합니다. 3배 레버리지 ETF는 기초 지수가 보정될 때 덜어 낸 상승분의 3배를 덜어 내는데, 변동성 비용은 그대로라 보정 후 수익률이 크게 낮아질 수 있어요. 급등이 일시적인 과열인지 실제 변화인지는 알 수 없으니, 두 결과를 함께 보고 판단하는 ‘만약’ 계산으로 쓰세요. 내 포트폴리오도 ‘입력 › 고급 설정 › 결과 데이터’에서 추세 보정 데이터를 고르면 성과 요약·차트·기간별 표·롤링·구간별 점검을 모두 보정 데이터로 계산합니다.</li>
           <li><b>과최적화 점검</b>은 같은 방법으로 직전 10·20년에서 고른 비중을 최근 10·20년에 그대로 적용한 결과입니다. 기본 6개 자산으로 해 보면 2006–2016년에 MDD 15% 이하로 고른 은퇴용 비중이 2016–2026년에는 MDD −32%였어요(2022년 주식·채권 동반 하락). 최적화 결과의 MDD·회복 기간은 ‘과거에 그랬다’이지 ‘앞으로 그렇다’가 아닙니다.</li>
           <li>과거 최적 비중은 미래 최적 비중을 보장하지 않습니다. 특히 최근 10년처럼 짧은 구간이나 레버리지·섹터 ETF를 넣으면 지나간 강세 자산에 쏠리기 쉽습니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>수익과 위험 지표</h3>
+      </details>
+      <details class="faq-i" data-fold="m-5">
+        <summary>수익과 위험 지표</summary>
         <ul>
           <li>모두 월말 잔고로 계산합니다. 배당을 현금으로 받으면 평가액, 물가 반영이면 실질, 추세 보정 데이터를 고르면 보정 데이터 기준이에요.</li>
           <li><b>보통의 10년 CAGR·MDD</b>: 분석 기간 안의 모든 10년 구간(1개월 간격)에서 CAGR과 구간 내 최대 낙폭의 중앙값. <b>나쁜 10년 CAGR</b>은 하위 10% 값입니다. 분석 기간이 10년보다 짧으면 비워 둡니다.</li>
@@ -1152,9 +1472,9 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li><b>하락</b>은 고점에서 떨어지기 시작해 그 고점을 다시 넘을 때까지(회복 전이면 마지막 달까지)를 하나로 셉니다. ‘10% 넘는 하락’은 이런 하락 중 깊이가 −10%를 넘은 횟수, ‘큰 하락 5개 평균’은 −5%를 넘은 하락 가운데 깊은 순서로 5개(5개 미만이면 있는 만큼)의 평균입니다.</li>
           <li><b>가장 큰 하락의 비중</b> = 가장 큰 하락 기간의 낙폭² 합 ÷ 전체 기간 낙폭² 합. 70% 이상이면 ‘한 번에 집중’, 40% 미만이면 ‘여러 번에 나뉨’으로 표시합니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>구간별 점검</h3>
+      </details>
+      <details class="faq-i" data-fold="m-6">
+        <summary>구간별 점검</summary>
         <ul>
           <li>점검할 포트폴리오를 분석 기간 안의 여러 구간에서 목표 비중으로 새로 시작해 따로 계산합니다. 리밸런싱·배당 처리·물가 반영·결과 데이터(실제/추세 보정)는 위 설정을 그대로 씁니다.</li>
           <li><b>가장 과거 vs 최근</b>: 분석 시작부터 10·20·30년과 분석 종료까지 10·20·30년. <b>연대별</b>: 1990년대·2000년대처럼 달력 10년 단위이고, 분석 기간 안에 3년 미만만 걸치는 연대는 뺍니다.</li>
@@ -1162,9 +1482,9 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li>종합: ‘큼·높음’이 하나라도 있으면 ‘시기에 따라 크게 달라요’, ‘보통’이 둘 이상이면 ‘시기에 따라 차이가 있어요’, 그 밖에는 ‘비교적 일관돼요’입니다. 기준값은 판단을 돕는 눈금이지 합격선이 아니고, MDD 수준 자체를 감당할 수 있는지는 따로 봐야 해요.</li>
           <li><b>시작 연도 × 끝 연도 지도</b>: 칸마다 그해 1월(분석 시작 해는 시작 달)에 시작해 끝 연도 12월(마지막 해는 종료 달)까지 보유한 결과입니다. 12개월이 안 되는 구간은 비워 둡니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>생애 주기 기준</h3>
+      </details>
+      <details class="faq-i" data-fold="m-7">
+        <summary>생애 주기 기준</summary>
         <ul>
           <li>단계가 올라갈수록 남은 투자 기간이 짧아지고 인출이 가까워져 감당할 수 있는 낙폭과 회복 기간을 줄였습니다.</li>
           <li>기본값은 지난 30년(1996.10–2026.09) 미국 주식(SPY)·중기 국채(IEF) 혼합의 실제 성과에 맞춰 잡았습니다. 주식 80%: CAGR 9.4%, MDD −39.1%, 최장 회복 5년 3개월 → 30대 MDD 40%·회복 7년·목표 9%. 주식 60%: 8.4%, −26.4%, 3년 5개월 → 40대 30%·5년·8%. 주식 50%: 7.8%, −19.8%, 3년 2개월 → 50대 20%·4년·7%. 은퇴 이후는 인출 중 손실을 줄이도록 주식 30%(6.5%, −18.1%)보다 낮은 MDD 15%·회복 3년·목표 5%로 잡았습니다.</li>
@@ -1172,18 +1492,18 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li>나이만으로 정한 일반적인 가이드라인입니다. 소득 안정성, 다른 자산, 인출 계획에 따라 맞는 수준이 다르니 숫자를 바꿔 보세요. 개인별 투자 조언이 아닙니다.</li>
           <li>물가 반영을 켜면 목표 CAGR도 물가를 뺀 값(지난 30년 기준 약 2.5%p 낮게)으로 바꿔 보세요.</li>
         </ul>
-      </div>
-      <div>
-        <h3>계산하지 않는 것 (은퇴 계획에 쓸 때)</h3>
+      </details>
+      <details class="faq-i" data-fold="m-8">
+        <summary>계산하지 않는 것 (은퇴 계획에 쓸 때)</summary>
         <ul>
           <li><b>세금</b>: 미국 ETF 분배금의 원천징수(한국 거주자 15%), 해외 주식 양도소득세(연 250만 원 초과분 22%), 리밸런싱 때 생기는 세금은 빠져 있어요. 채권처럼 분배금이 큰 자산일수록 실제 수익률이 더 낮아집니다. ‘현금으로 받기’의 배당금도 세전 금액이에요.</li>
           <li><b>환율</b>: 모든 수익률은 달러 기준이에요. 원화로 투자하면 원/달러 환율 변화가 더해지고, 위기 때 달러가 오르는 경우가 많아 원화 기준 MDD는 달러 기준과 다를 수 있어요.</li>
           <li><b>적립과 인출</b>: 한 번에 넣고 그대로 두는 계산이에요. 매달 넣거나 은퇴 후 매달 빼 쓰면 같은 CAGR이라도 하락 시점에 따라 결과가 크게 달라집니다(수익률 순서 위험).</li>
           <li><b>거래 비용·호가 차이</b>와 연금저축·IRP 계좌에서 사는 국내 상장 ETF(미국 지수 추종)의 보수·세금 차이도 반영하지 않습니다.</li>
         </ul>
-      </div>
-      <div>
-        <h3>데이터 (기준일 2026-10-07)</h3>
+      </details>
+      <details class="faq-i" data-fold="m-9">
+        <summary>데이터 (기준일 2026-10-07)</summary>
         <ul>
           <li><b>2017.01 ~ 2026.09</b>: 각 ETF의 실제 월간 총수익률 (<a href="https://chartrow.com" target="_blank" rel="noopener">ChartRow</a>), 2017~2025년은 연간 총수익률에 맞춰 반올림 오차를 보정.</li>
           <li><b>상장 ~ 2016</b>: ETF의 실제 연간 총수익률(<a href="https://totalrealreturns.com" target="_blank" rel="noopener">TotalRealReturns</a>)과 일치하도록 보정한 월간 경로. 월별 모양은 기초지수·선물 데이터에서 가져왔습니다.</li>
@@ -1195,19 +1515,19 @@ thead th.grp { color: var(--ink); font-size: 12.5px; font-weight: 700; }
           <li><b>분배금(배당) 데이터</b> (2026-10-08 수집): 2022년 이후(SCHD·VYM·VUG·VTV는 2024년 이후)는 ETF별 실제 분배금 내역(<a href="https://stockanalysis.com" target="_blank" rel="noopener">stockanalysis.com</a>, SCHD·VYM·VUG는 <a href="https://chartrow.com" target="_blank" rel="noopener">ChartRow</a>, VTV는 stockscan.io, 모두 분할 조정)을 각 ETF의 총수익률로 되짚은 그 시점 가격으로 나눠 월별 분배율로 바꿨어요. 그 이전은 ETF별 연도별 실제 분배율(<a href="https://www.lazyportfolioetf.com" target="_blank" rel="noopener">lazyportfolioetf.com</a>, 그해 첫 가격 대비)을 그해 열두 달에 고르게 나눴고, SPY·VOO·IVV·SPLG는 S&amp;P 500 실제 배당(SteelCerberus)을 썼습니다. SPY로 맞춰 보면 1994–2023년 연간 배당률이 두 출처 사이 0.04%p 안에서 같았어요(lazyportfolioetf의 2024·2025년 값은 10~20% 낮게 나와 쓰지 않았습니다).</li>
           <li>분배금 추정 구간: 상장 이전 미국 주식은 S&amp;P 500 배당률(DIA는 1998–2021년 S&amp;P 500의 1.25배), 나스닥100은 연 0.5%, 국채·종합채권·하이일드는 미 10년물·단기국채 금리에 각 ETF의 실제 분배율로 맞춘 차이를 더했고, 해외는 EFA·EEM 분배율, VXUS·VT의 2021년 이전은 구성 ETF 분배율을 섞었어요. SOXX·SMH의 2021년 이전은 XLK 분배율, JEPI의 2021년 9월 이전은 연 약 7%, 3배 레버리지(UPRO·TQQQ·SOXL)는 2022년 이후 실제 분배금만 넣고 그 전은 0입니다. 금·은 ETF는 분배가 없어요. ETF별 출처와 구간은 ‘현금으로 받기’를 고르면 ‘사용한 데이터’에 나와요.</li>
         </ul>
-      </div>
+      </details>
     </div>
   </section>
 
-  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-opt">← 4 최적화</button></nav>
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-opt">← 최적화</button><button class="btn ghost" type="button" data-go="g-setup">처음으로</button></nav>
   </div>
 </div>
 <nav class="bnav" id="bnav" aria-label="탭">
-  <a href="#g-setup" data-g="g-setup"><b>1</b><span>입력</span></a>
-  <a href="#g-results" data-g="g-results"><b>2</b><span>결과</span></a>
-  <a href="#g-checks" data-g="g-checks"><b>3</b><span>점검</span></a>
-  <a href="#g-opt" data-g="g-opt"><b>4</b><span>최적화</span></a>
-  <a href="#g-ref" data-g="g-ref" data-detail><b>5</b><span>도움말</span></a>
+  <a href="#g-setup" data-g="g-setup"><svg class="ic" aria-hidden="true"><use href="#i-setup"/></svg><span>입력</span></a>
+  <a href="#g-results" data-g="g-results"><svg class="ic" aria-hidden="true"><use href="#i-results"/></svg><span>결과</span></a>
+  <a href="#g-checks" data-g="g-checks"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span>점검</span></a>
+  <a href="#g-opt" data-g="g-opt"><svg class="ic" aria-hidden="true"><use href="#i-opt"/></svg><span>최적화</span></a>
+  <a href="#g-ref" data-g="g-ref"><svg class="ic" aria-hidden="true"><use href="#i-help"/></svg><span>도움말</span></a>
 </nav>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
@@ -2016,7 +2336,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     div: false,  // false = distributions reinvested (total return), true = paid out as cash
     optPos: 'recent',  // optimizer results shown for the most recent ('recent') or the oldest ('old') 10·20·30 years
     dataAdj: false,    // v7: run my portfolios on the trend-kept data instead of the actual data
-    simple: false,     // v7: simple view (core results only)
+    portCur: 0,        // v8: the portfolio card shown on a phone
+    trailJ: 0,         // v8: the period shown in the phone 'recent N years' table
     optDeferred: false,
     pc: { key: null, metric: 'cagr', range: null, auto: true },  // v7: period check (portfolio, map metric, chosen window)
     ddKey: null       // v7.1: portfolio shown in the drawdown list
@@ -2037,6 +2358,10 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   const SAME = 0.0005;   // differences below 0.05%p show as '같음'
   const ppTxt = d => (Math.abs(d) < SAME ? '0.0%p' : (d > 0 ? '+' : '−') + Math.abs(d * 100).toFixed(1) + '%p');
   const nbsp = t => t.replace(/ /g, '\u00a0');   // keep 'label value' pieces on one line
+  /* object particle after a name the user typed: 을 after a final consonant, 를 after a vowel, 을(를) when it does not end in Hangul */
+  const eul = w => { const c = String(w || '').trim().slice(-1).charCodeAt(0); return c >= 0xAC00 && c <= 0xD7A3 ? ((c - 0xAC00) % 28 ? '을' : '를') : '을(를)'; };
+  /* on screen: laid out and not inside a closed fold (a closed <details> may still report boxes for its content) */
+  const isShown = e => !!e && e.getClientRects().length > 0 && !e.closest('details:not([open]) > :not(summary)');
   // number field with a default only when it is left empty (a typed 0 stays 0)
   const fieldNum = (sel, d) => { const v = $(sel).value.trim(); return v === '' || !isFinite(+v) ? d : +v; };
 
@@ -2046,6 +2371,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   const monthItems = []; for (let m = 1; m <= 12; m++) monthItems.push([m, m + '월']);
   fillSelect($('#s-y'), yearItems); fillSelect($('#s-m'), monthItems); fillSelect($('#e-y'), yearItems); fillSelect($('#e-m'), monthItems);
   $('#span-range').textContent = '1972.01 – ' + BT.label(NM - 1);
+  $('#n-assets').textContent = Object.keys(DATA.assets).length;
 
   function refreshTickerLists() {
     const dl = $('#tickers'); dl.innerHTML = '';
@@ -2072,9 +2398,13 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
 
   const QUICK = [['max', '최대'], [30, '30년'], [25, '25년'], [20, '20년'], [15, '15년'], [10, '10년'], [5, '5년']];
   for (const [k, t] of QUICK) {
-    const b = el('button', 'chip', t); b.type = 'button'; b.dataset.q = k; b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', () => { applyQuick(k); });
-    $('#quick').appendChild(b);
+    // the input tab has every length; the results tab repeats the common ones so the period can change where the numbers are
+    for (const host of [$('#quick'), (k === 25 || k === 15) ? null : $('#quick2')]) {
+      if (!host) continue;
+      const b = el('button', 'chip', t); b.type = 'button'; b.dataset.q = k; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { applyQuick(k); });
+      host.appendChild(b);
+    }
   }
 
   /* ---------- portfolios ---------- */
@@ -2087,7 +2417,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function renderPorts() {
     const host = $('#ports'); host.innerHTML = '';
     state.ports.forEach((p, pi) => {
-      const card = el('div', 'pcard'); card.dataset.p = pi;
+      const card = el('div', 'pcard' + (pi === state.portCur ? ' cur' : '')); card.dataset.p = pi;
       const top = el('div', 'pcard-top');
       const key = el('span', 'key'); key.style.background = PCOL[pi]; top.appendChild(key);
       const nm = el('input', 'pname'); nm.type = 'text'; nm.value = p.name; nm.id = 'pname-' + pi; nm.setAttribute('aria-label', `포트폴리오 ${pi + 1} 이름`); top.appendChild(nm);
@@ -2141,9 +2471,10 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
         const r = p.rows[+row.dataset.r]; const t = r.t.trim().toUpperCase(); const sub = row.querySelector('.sub');
         sub.classList.remove('err');
         if (!t) { sub.textContent = ''; return; }
-        if (!known(t)) { sub.textContent = '지원하지 않는 티커예요. 아래 지원 티커 목록을 확인하세요.'; sub.classList.add('err'); return; }
+        if (!known(t)) { sub.textContent = '지원하지 않는 티커예요. ‘도움말 › 지원 티커’에서 목록을 확인하세요.'; sub.classList.add('err'); return; }
         const a = DATA.assets[t]; const [s0] = BT.avail(t, 'ext'); const [s1] = BT.avail(t, 'etf');
-        sub.textContent = `${a.n} · ${s1 > s0 ? '상장 ' + BT.label(s1) + ' · 확장 ' + BT.label(s0) + '~' : '데이터 ' + BT.label(s0) + '~'}`;
+        sub.textContent = state.ext && s1 > s0 ? `${a.c} · ${BT.label(s1)} 상장, 그 전(${BT.label(s0)}~)은 지수 데이터` : `${a.c} · 데이터 ${BT.label(state.ext ? s0 : s1)}~`;
+        sub.title = a.n;
       });
       const sumEl = card.querySelector('.sum');
       sumEl.textContent = info.empty ? '자산 없음 (계산 제외)' : `합계 ${+info.sum.toFixed(2)}%`;
@@ -2153,7 +2484,26 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       else pr.textContent = info.errs[0] || (info.empty ? '' : '비중 합계를 100%로 맞추세요');
       card.classList.toggle('off', !info.ok);
     });
+    renderPortTabs();
   }
+  /* phones: a switcher above the one card being edited, with each portfolio's state */
+  function renderPortTabs() {
+    const host = $('#port-tabs'); host.innerHTML = '';
+    state.ports.forEach((p, pi) => {
+      const info = portInfo(p);
+      const b = el('button', 'pt'); b.type = 'button'; b.dataset.p = pi; b.setAttribute('aria-pressed', pi === state.portCur ? 'true' : 'false');
+      const n = el('span', 'pt-n'); const k = el('span', 'key'); k.style.background = PCOL[pi];
+      n.append(k, el('span', null, p.name.trim() || `포트폴리오 ${pi + 1}`));
+      b.append(n, el('span', 'pt-s ' + (info.empty ? '' : info.ok ? 'ok' : 'bad'), info.empty ? '비어 있음' : info.ok ? `✓ 자산 ${info.tickers.length}개` : info.errs.length ? '입력 확인 필요' : `합계 ${+info.sum.toFixed(2)}%`));
+      host.appendChild(b);
+    });
+  }
+  function setPortCur(pi) {
+    state.portCur = pi;
+    document.querySelectorAll('#ports .pcard').forEach(c => c.classList.toggle('cur', +c.dataset.p === pi));
+    renderPortTabs();
+  }
+  $('#port-tabs').addEventListener('click', e => { const b = e.target.closest('.pt'); if (b) setPortCur(+b.dataset.p); });
   const ports = $('#ports');
   ports.addEventListener('input', e => {
     const card = e.target.closest('.pcard'); if (!card) return; const pi = +card.dataset.p;
@@ -2257,7 +2607,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (e - s < 11) { e = Math.min(ce, s + 11); s = Math.max(cs, e - 11); notes.push('분석 기간은 최소 12개월이라 기간을 늘렸어요.'); }
     state.start = s; state.end = e; writePeriodSelects();
     if (state.quickShort) notes.push(`공통 데이터가 ${state.quickShort}년보다 짧아 가능한 최대 기간으로 계산했어요.`);
-    document.querySelectorAll('#quick .chip').forEach(b => {
+    document.querySelectorAll('#quick .chip, #quick2 .chip').forEach(b => {
       const k = b.dataset.q === 'max' ? 'max' : +b.dataset.q;
       const on = k === 'max' ? (s === cs && e === ce) : (e === ce && s === ce - k * 12 + 1);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2279,7 +2629,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
         trail: BT.trailing([state.bench], [1], s, e, 'N', YEARS, adj, dv), roll: BT.rolling(benchRes, YEARS) });
     }
     const usesProxy = state.ext && series.some(x => x.tickers.some(t => BT.avail(t, 'etf')[0] > s));
-    if (usesProxy) notes.push('분석 기간 일부가 ETF 상장 이전이라 대용 지수·시뮬레이션 데이터를 썼어요. 자세한 내용은 ‘사용한 데이터’를 보세요.');
+    if (usesProxy) notes.push('분석 기간 일부가 ETF 상장 이전이라 대용 지수·시뮬레이션 데이터를 썼어요. 자세한 내용은 ‘도움말 › 사용한 데이터’에 있어요.');
     if (dv) {
       const noInc = [...new Set(series.flatMap(x => x.tickers))].filter(t => !BT.hasIncome(t));
       if (noInc.length) notes.push(`${noInc.join(', ')}은(는) 배당 데이터가 없어 배당 0으로 계산했어요(총수익이 모두 가격 상승으로 잡힘).`);
@@ -2287,7 +2637,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     msg.hidden = notes.length === 0; msg.className = 'notice'; msg.textContent = notes.join(' ');
     $('#avail-note').textContent = `선택한 자산의 공통 데이터: ${BT.label(cs)} ~ ${BT.label(ce)}`;
     state.last = { s, e, series, cs, ce, adj };
-    renderSummary(); renderQuickRes(); renderRisk(); renderMDD(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
+    renderSummary(); renderHero(); renderQuickRes(); renderRisk(); renderMDD(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
   }
 
   function renderEmpty() {
@@ -2295,7 +2645,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     $('#mdd-note').textContent = '';
     for (const id of ['#c-growth', '#c-dd', '#c-ann', '#lg-growth', '#lg-dd', '#lg-ann']) $(id).innerHTML = '';
     for (const id of ['#pc-port', '#pc-verdict', '#pc-table', '#pc-key', '#pc-heat', '#pc-legend', '#pc-custom', '#pc-quick', '#t-risk', '#t-dd', '#dd-port']) $(id).innerHTML = '';
-    $('#dd-note').textContent = ''; state.riskData = null; renderQuickRes();
+    $('#dd-note').textContent = ''; state.riskData = null; renderQuickRes(); renderHero();
+    $('#trail-pick').innerHTML = ''; $('#trail-when').textContent = '';
     $('#pc-heat-note').textContent = ''; $('#pc-tbl-note').textContent = ''; $('#pc-data').textContent = '';
     $('#dm-banner').hidden = true; state.pcHeat = null;
     $('#cov').innerHTML = ''; $('#sum-note').textContent = '';
@@ -2318,7 +2669,6 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const tb = el('tbody'); t.appendChild(tb);
     const add = (label, fn, opts = {}) => {
       const tr = el('tr'); if (opts.hl) tr.className = 'hl';
-      if (opts.detail) tr.setAttribute('data-detail', '');   // hidden in the simple view
       tr.appendChild(el('th', null, label));
       for (const x of series) { const td = cellFor(el('td'), x); const v = fn(x, td); if (typeof v === 'string') td.textContent = v; tr.appendChild(td); }
       tb.appendChild(tr);
@@ -2328,7 +2678,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const I = x => x.st.income;
       add('최종 평가액 (배당 제외)', x => money(state.initial * x.st.final));
       add('받은 배당금 합계', (x, td) => { td.textContent = money(state.initial * I(x).total); td.appendChild(el('span', 'sub', `평가액 + 배당 ${money(state.initial * I(x).wealth)}`)); });
-      add('최근 1년 배당금', (x, td) => { td.textContent = money(state.initial * I(x).ttm); td.appendChild(el('span', 'sub', `지금 평가액의 ${pct(I(x).ttmYield)}`)); }, { detail: true });
+      add('최근 1년 배당금', (x, td) => { td.textContent = money(state.initial * I(x).ttm); td.appendChild(el('span', 'sub', `지금 평가액의 ${pct(I(x).ttmYield)}`)); });
       add('평균 배당률 (연)', (x, td) => { td.textContent = pct(I(x).avgYield); td.appendChild(el('span', 'sub', `첫해 ${money(state.initial * I(x).firstYear)}`)); });
       add('CAGR (평가액, 연복리)', x => pct(x.st.cagr), { hl: true });
       add('CAGR (평가액 + 받은 배당)', (x, td) => { td.textContent = pct(I(x).wealthCagr); td.appendChild(el('span', 'sub', '배당을 현금으로 모아 둔 경우(이자 없음)')); });
@@ -2346,21 +2696,79 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       if (!(m.mdd < 0)) { td.textContent = '–'; return; }
       if (m.recMonths != null) { td.textContent = dur(m.recMonths); td.appendChild(el('span', 'sub', `고점부터 ${dur(m.months)} (하락 ${dur(m.fallMonths)})`)); }
       else { td.textContent = '아직 회복 전'; td.classList.add('neg'); td.appendChild(el('span', 'sub', m.sinceTrough > 0 ? `저점 후 ${dur(m.sinceTrough)} 지남` : '마지막 달이 저점')); }
-    }, { detail: true });
+    });
     add('최장 회복 기간 (전고점 회복까지)', (x, td) => {
       const u = x.st.uw;
       if (!u.months) { td.textContent = '없음'; return; }
       td.textContent = dur(u.months) + (u.ongoing ? '+' : '');
       td.appendChild(el('span', 'sub', `${u.startLabel} → ${u.ongoing ? '진행 중' : u.endLabel}`));
     }, { hl: true });
-    add('표준편차 (연)', x => pct(x.st.stdev), { detail: true });
-    add('최고 연도', x => x.st.best ? `${spct(x.st.best.ret)} (${x.st.best.year})` : '–', { detail: true });
+    add('표준편차 (연)', x => pct(x.st.stdev));
+    add('최고 연도', x => x.st.best ? `${spct(x.st.best.ret)} (${x.st.best.year})` : '–');
     add('최악 연도', (x, td) => { if (!x.st.worst) return '–'; td.textContent = `${spct(x.st.worst.ret)} (${x.st.worst.year})`; if (x.st.worst.ret < 0) td.classList.add('neg'); });
     add('샤프 비율', x => num(x.st.sharpe));
-    add('소르티노 비율', x => num(x.st.sortino), { detail: true });
-    add('칼마 비율 (CAGR÷MDD)', x => num(x.st.calmar), { detail: true });
-    if (state.bench && known(state.bench)) add(`${state.bench} 상관계수`, x => num(x.st.corr), { detail: true });
-    add('상승한 달 비율', x => pct(x.st.posMonths, 1), { detail: true });
+    add('소르티노 비율', x => num(x.st.sortino));
+    add('칼마 비율 (CAGR÷MDD)', x => num(x.st.calmar));
+    if (state.bench && known(state.bench)) add(`${state.bench} 상관계수`, x => num(x.st.corr));
+    add('상승한 달 비율', x => pct(x.st.posMonths, 1));
+  }
+
+  /* ---------- v8: results at a glance ---------- */
+  /* the growth line on a log scale, with the worst fall (peak -> trough) drawn in red */
+  function sparkline(x) {
+    const v = x.res.vals, n = v.length, m = x.st.mddInfo, W = 160, H = 46, pad = 3;
+    const step = Math.max(1, Math.floor(n / 150)); const idx = [];
+    for (let t = 0; t < n; t += step) idx.push(t);
+    if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+    if (m.mdd < 0) for (const k of [m.peak, m.trough]) if (!idx.includes(k)) idx.push(k);
+    idx.sort((a, b) => a - b);
+    let lo = Infinity, hi = -Infinity; for (const t of idx) { const y = Math.log(v[t]); if (y < lo) lo = y; if (y > hi) hi = y; }
+    const X = t => (n <= 1 ? 0 : t / (n - 1) * W), Y = t => pad + (hi - lo < 1e-9 ? (H - 2 * pad) / 2 : (hi - Math.log(v[t])) / (hi - lo) * (H - 2 * pad));
+    const pts = ts => ts.map(t => X(t).toFixed(1) + ',' + Y(t).toFixed(1)).join(' ');
+    const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': `${x.name} 자산 곡선` + (m.mdd < 0 ? `. 빨간 부분이 가장 크게 떨어진 ${m.peakLabel}–${m.troughLabel}` : '') });
+    const line = svg('polyline', { points: pts(idx), fill: 'none', 'stroke-width': 1.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }, root);
+    line.style.stroke = x.color;
+    if (m.mdd < 0) {
+      const fall = svg('polyline', { points: pts(idx.filter(t => t >= m.peak && t <= m.trough)), fill: 'none', 'stroke-width': 2.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }, root);
+      fall.style.stroke = 'var(--neg)';
+    }
+    return root;
+  }
+  /* one card per portfolio: final amount, CAGR, worst fall, longest time under water, and one plain sentence */
+  function renderHero() {
+    const host = $('#hero'), when = $('#hero-when'); if (!host) return; host.innerHTML = '';
+    if (!state.last) { when.textContent = ''; if ($('#msg').hidden) host.appendChild(el('p', 'empty', '비중 합계가 100%인 포트폴리오가 생기면 여기에 결과가 나와요. ‘입력’ 탭에서 티커와 비중을 넣어 주세요.')); return; }
+    const { s, e, series } = state.last, init = state.initial;
+    when.textContent = `${BT.label(s)} – ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 처음 ${money(init)}` + (state.div ? ' · 배당은 현금으로 받기' : ' · 배당 재투자') +
+      (state.real ? ' · 물가 반영(지금 돈 가치)' : '') + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    for (const x of series) {
+      const st = x.st, m = st.mddInfo, u = st.uw;
+      const card = el('div', 'hc' + (x.bench ? ' bench' : '')); card.dataset.key = x.key;
+      const top = el('div', 'hc-top'); const k = el('span', 'key'); k.style.background = x.color;
+      top.append(k, el('span', 'nm', x.bench ? state.bench : x.name)); if (x.bench) top.appendChild(el('span', 'bt', '비교 기준'));
+      card.appendChild(top);
+      const main = el('div', 'hc-main');
+      main.appendChild(el('div', 'hc-amt', money(init * st.final)));
+      if (!x.bench) { const sp = el('div', 'hc-spark'); sp.appendChild(sparkline(x)); main.appendChild(sp); }
+      card.appendChild(main);
+      const from = el('div', 'hc-from');
+      if (state.div) from.append('평가액(배당 제외) · 받은 배당 ', el('b', null, money(init * st.income.total)), ' 따로');
+      else from.append('처음 넣은 돈 ', el('b', null, money(init)), ' 기준');
+      card.appendChild(from);
+      const kv = el('div', 'hc-kv');
+      const cell = (lab, val, neg, sub) => { const d = el('div'); d.append(el('span', null, lab), el('b', neg ? 'neg' : null, val)); if (sub) d.appendChild(el('i', null, sub)); kv.appendChild(d); };
+      cell(state.div ? '연 수익률(평가액)' : '연 수익률', pct(st.cagr, 1), st.cagr < 0);
+      cell('최대 낙폭', mpct1(st.mdd), st.mdd < 0);
+      cell('최장 회복', u.months ? dur(u.months) + (u.ongoing ? '+' : '') : '없음', false, u.months ? `${u.startLabel}–${u.ongoing ? '진행 중' : u.endLabel}` : null);
+      card.appendChild(kv);
+      if (!x.bench) {
+        const note = el('p', 'hc-note');
+        if (m.mdd < 0) note.append('가장 크게 떨어진 때 ', el('b', null, `${m.peakLabel} → ${m.troughLabel}`), m.recLabel ? ` · ${m.recLabel}에 고점 회복` : ' · 아직 고점 회복 전');
+        else note.textContent = '분석 기간에 고점보다 떨어진 달이 없어요.';
+        card.appendChild(note);
+      }
+      host.appendChild(card);
+    }
   }
 
   /* series name with its colour key (table row header) */
@@ -2428,17 +2836,22 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       tb.appendChild(tr);
     });
     t.appendChild(tb);
-    // phones: one block per period, so the period is always written right above its numbers
-    const tbm = el('tbody');
+    // phones: pick one period, then every portfolio for it in a table that fits the screen
+    if (!cols[state.trailJ] || !cols[state.trailJ].ok) state.trailJ = cols.findIndex(c => c.ok);
+    const pick = $('#trail-pick'); pick.innerHTML = '';
     cols.forEach((c, j) => {
-      const hr = el('tr', 'ph'); const h0 = el('th'); h0.scope = 'colgroup';
-      h0.append(el('span', 'gname', name(c)), el('span', 'when', c.ok ? `${c.start}–${c.end}` : '분석 기간이 짧아 계산 안 함'));
-      hr.appendChild(h0);
-      if (c.ok) { hr.appendChild(el('th', null, 'CAGR')); hr.appendChild(el('th', null, 'MDD')); } else h0.colSpan = 3;
-      tbm.appendChild(hr);
-      if (!c.ok) return;
-      series.forEach((x, i) => { const tr = el('tr'); tr.append(seriesTh(x), cagrCell(x, vals[i][j]), mddCell(x, vals[i][j])); tbm.appendChild(tr); });
+      const b = el('button', 'chip', c.Y === 'full' ? '전체' : `${c.Y}년`); b.type = 'button'; b.setAttribute('aria-pressed', j === state.trailJ ? 'true' : 'false');
+      if (!c.ok) { b.disabled = true; b.title = '분석 기간이 짧아 계산하지 않았어요'; }
+      b.addEventListener('click', () => { state.trailJ = j; renderTrailing(); });
+      pick.appendChild(b);
     });
+    const j = state.trailJ, c = cols[j];
+    $('#trail-when').textContent = `${name(c)} · ${c.start}–${c.end}`;
+    const hm = el('thead'), hr = el('tr');
+    hr.append(el('th', null, '포트폴리오'), el('th', null, `${c.Y === 'full' ? '전체' : c.Y + '년'} CAGR`), el('th', null, `${c.Y === 'full' ? '전체' : c.Y + '년'} MDD`));
+    hm.appendChild(hr); tm.appendChild(hm);
+    const tbm = el('tbody');
+    series.forEach((x, i) => { const tr = el('tr'); tr.append(seriesTh(x), cagrCell(x, vals[i][j]), mddCell(x, vals[i][j])); tbm.appendChild(tr); });
     tm.appendChild(tbm);
   }
 
@@ -2702,7 +3115,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   function updatePickerState() {
     document.querySelectorAll('#o-picker .tchip').forEach(c => c.setAttribute('aria-pressed', state.optSel.has(c.dataset.t) ? 'true' : 'false'));
-    $('#o-count').textContent = `${state.optSel.size}개 선택 / 전체 ${Object.keys(DATA.assets).length}개`;
+    $('#o-count').textContent = `${state.optSel.size}개 / 전체 ${Object.keys(DATA.assets).length}개`;
+    const sel = [...state.optSel].filter(known);
+    $('#o-sel-sum').textContent = sel.length ? listShort(sel, 10) : '고른 자산이 없어요. 눌러서 고르세요.';
     if (state.last) { computeTrend(); renderTrend(); }
     markOptStale();
   }
@@ -2754,12 +3169,18 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     } else if (state.opt && !optBusy) { $('#o-run').classList.remove('attn'); updateOptStatus(); }
   }
   ['#o-step', '#o-max'].forEach(id => $(id).addEventListener('change', () => markOptStale()));
+  /* the folded optimizer criteria, readable without opening them */
+  function renderCritSum() {
+    const uw = +$('#o-uw').value || 0, lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
+    $('#o-crit-sum').textContent = `비중 ${fmtW(+$('#o-step').value)} 단위 · 자산별 최대 ${fieldNum('#o-max', 100)}% · 내 기준 MDD ${lo}~${hi}% · 회복 기간 ${uw ? dur(uw) + ' 이내' : '제한 없음'}`;
+  }
+  ['#o-step', '#o-max', '#o-lo', '#o-hi', '#o-uw'].forEach(id => { $(id).addEventListener('input', renderCritSum); $(id).addEventListener('change', renderCritSum); });
   $('#o-max').addEventListener('input', () => renderElig());
 
   async function runOpt() {
     const st = $('#o-status');
     if (optBusy) return;
-    if (!state.last) { st.textContent = '분석 기간이 아직 정해지지 않았어요. 위 포트폴리오 중 하나 이상을 비중 합계 100%로 입력해 주세요.'; return; }
+    if (!state.last) { st.textContent = '분석 기간이 아직 정해지지 않았어요. ‘입력’ 탭의 포트폴리오 중 하나 이상을 비중 합계 100%로 넣어 주세요.'; return; }
     const tickers = [...state.optSel].filter(known);
     if (!tickers.length) { st.textContent = '대상 자산을 1개 이상 골라 주세요.'; return; }
     const lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
@@ -2827,7 +3248,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (!pos || pos === 'recent') for (const Y of HZ) out.push({ id: 'r' + Y, pos: 'recent', years: Y, i0: e - Y * 12 + 1, i1: e });
     if (!pos || pos === 'old') for (const Y of HZ) {
       const w = { id: 'o' + Y, pos: 'old', years: Y, i0: s, i1: s + Y * 12 - 1 };
-      if (w.i1 > e) { w.reason = `분석 기간(${BT.label(s)}~${BT.label(e)})이 ${Y}년보다 짧아요. 위 ‘기간과 규칙’에서 시작 시점을 앞당기면 계산돼요.`; w.i0 = w.i1 = -1; }
+      if (w.i1 > e) { w.reason = `분석 기간(${BT.label(s)}~${BT.label(e)})이 ${Y}년보다 짧아요. ‘입력 › 기간과 금액’에서 시작 시점을 앞당기면 계산돼요.`; w.i0 = w.i1 = -1; }
       out.push(w);
     }
     return out;
@@ -2921,8 +3342,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       const b = el('button', 'btn ghost sm', `포트폴리오 ${pi + 1}`); b.type = 'button';
       b.addEventListener('click', () => {
         state.ports[pi] = { name, rows: items.map(([t, w]) => ({ t, w: String(+(w * 100).toFixed(2)) })) };
-        renderPorts(); schedule(true); b.textContent = `포트폴리오 ${pi + 1}에 적용됨`;
-        if (state.layout === 'tabs') toast(`‘${name}’을 포트폴리오 ${pi + 1}에 넣었어요. 결과는 ‘2 결과’ 탭에서 볼 수 있어요.`);
+        state.portCur = pi; renderPorts(); schedule(true); b.textContent = `포트폴리오 ${pi + 1}에 적용됨`;
+        if (state.layout === 'tabs') toast(`‘${name}’${eul(name)} 포트폴리오 ${pi + 1}에 넣었어요. 결과는 ‘결과’ 탭에서 볼 수 있어요.`);
         goTo('h-ports');
       });
       ap.appendChild(b);
@@ -3371,7 +3792,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const hit = o.tickers.some(t => BT.isAdjusted(t));
     if (!state.trend.on || !hit) {
       o.resAdj = null; o.adjKey = adjKeyNow(); state.optView = 'actual';
-      $('#o-adj-note').textContent = !state.trend.on ? '추세 보정이 꺼져 있어요. 위 ‘추세 유지 보정’ 패널에서 켤 수 있어요.' : '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.';
+      $('#o-adj-note').textContent = !state.trend.on ? '추세 보정이 꺼져 있어요. ‘점검 › 추세 유지 보정’에서 켤 수 있어요.' : '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.';
       $('#o-adj-rerun').hidden = true; renderAdjCompare(); renderOptResults(); return;
     }
     if (o.key !== optKey()) {
@@ -3389,7 +3810,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const universeHit = o.tickers.some(t => BT.isAdjusted(t));
     if (!state.trend.on || !universeHit) {
       state.optView = 'actual';
-      st.textContent = state.trend.on ? '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.' : '추세 보정이 꺼져 있어요(위 ‘추세 유지 보정’ 패널).';
+      st.textContent = state.trend.on ? '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.' : '추세 보정이 꺼져 있어요(‘점검 › 추세 유지 보정’).';
       renderAdjCompare(); return;
     }
     optBusy = true; $('#o-run').disabled = true; $('#o-adj-rerun').disabled = true;
@@ -3526,7 +3947,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   function renderPosNote() {
     const n = $('#o-pos-note'); if (!n) return;
-    n.textContent = state.optPos === 'old' ? `분석 시작(${state.last ? BT.label(state.last.s) : '–'})부터 10·20·30년 구간이에요. 시작 시점은 ‘기간과 규칙’에서 바꿀 수 있어요.` : `분석 종료(${state.last ? BT.label(state.last.e) : '–'})까지의 10·20·30년 구간이에요.`;
+    n.textContent = state.optPos === 'old' ? `분석 시작(${state.last ? BT.label(state.last.s) : '–'})부터 10·20·30년 구간이에요. 시작 시점은 ‘입력 › 기간과 금액’에서 바꿀 수 있어요.` : `분석 종료(${state.last ? BT.label(state.last.e) : '–'})까지의 10·20·30년 구간이에요.`;
   }
   document.querySelectorAll('#o-pos button').forEach(b => b.addEventListener('click', () => setOptPos(b.dataset.p)));
 
@@ -3680,7 +4101,10 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     };
   }
   function loadLocal() { const a = lsRead(); if (a === null) { SV.lsOK = false; return; } SV.items = a.map(x => Object.assign(cleanItem(x) || {}, { id: x.id })).filter(x => x.rows); }
-  function flashSaved(msg) { const m = $('#sv-msg'); m.textContent = msg; clearTimeout(flashSaved.t); flashSaved.t = setTimeout(() => { m.textContent = ''; }, 4000); }
+  function flashSaved(msg) {
+    const m = $('#sv-msg'); m.textContent = msg; clearTimeout(flashSaved.t); flashSaved.t = setTimeout(() => { m.textContent = ''; }, 4000);
+    if (!isShown(m)) toast(msg);   // the saved list is folded or on another tab: say it where it can be seen
+  }
   function toLocal(note) {
     if (SV.unsub) { try { SV.unsub(); } catch (_) {} }
     SV.unsub = null; SV.col = null; SV.mode = 'local'; loadLocal(); renderSaved(); if (note) flashSaved(note);
@@ -3690,7 +4114,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (!item) { flashSaved('비중 합계가 100%인 포트폴리오만 저장할 수 있어요.'); return false; }
     if (SV.mode === 'account' && SV.col) {
       for (let tryN = 0; tryN < 2; tryN++) {
-        try { await SV.col.doc(newId()).set(item); flashSaved(`‘${item.name}’을 내 계정에 저장했어요.`); return true; }
+        try { await SV.col.doc(newId()).set(item); flashSaved(`‘${item.name}’${eul(item.name)} 내 계정에 저장했어요.`); return true; }
         catch (e) {
           const code = e && e.code;
           if (code === 'quota_exceeded') { flashSaved('저장 공간이 꽉 찼어요. 오래된 항목을 지운 뒤 다시 저장해 주세요.'); return false; }
@@ -3701,7 +4125,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     }
     item.id = newId(); SV.items.unshift(item);
     if (!lsWrite(SV.items)) SV.lsOK = false;
-    renderSaved(); flashSaved(SV.lsOK ? `‘${item.name}’을 이 기기에 저장했어요.` : '이 브라우저는 저장을 막고 있어 창을 닫으면 사라져요. 내보내기로 보관하세요.');
+    renderSaved(); flashSaved(SV.lsOK ? `‘${item.name}’${eul(item.name)} 이 기기에 저장했어요.` : '이 브라우저는 저장을 막고 있어 창을 닫으면 사라져요. 내보내기로 보관하세요.');
     return true;
   }
   async function deleteItem(id) {
@@ -3780,8 +4204,8 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     if (b.dataset.act === 'load') {
       const pi = +b.dataset.p;
       state.ports[pi] = { name: it.name, rows: it.rows.map(r => ({ t: r.t, w: String(r.w) })) };
-      renderPorts(); schedule(true);
-      flashSaved(`‘${it.name}’을 포트폴리오 ${pi + 1}에 불러왔어요.` + ((it.snap && it.snap.rule && it.snap.rule !== state.rebal) ? ` 저장할 때 리밸런싱은 ${REBAL_TXT[it.snap.rule]}이었어요.` : '') +
+      state.portCur = pi; renderPorts(); schedule(true);
+      flashSaved(`‘${it.name}’${eul(it.name)} 포트폴리오 ${pi + 1}에 불러왔어요.` + ((it.snap && it.snap.rule && it.snap.rule !== state.rebal) ? ` 저장할 때 리밸런싱은 ${REBAL_TXT[it.snap.rule]}이었어요.` : '') +
         ((it.snap && it.snap.cagr != null && !!it.snap.div !== state.div) ? ` 저장한 수치는 배당 ${it.snap.div ? '현금 수령' : '재투자'} 기준이에요.` : ''));
       goTo('h-ports');
     } else if (b.dataset.act === 'code') {
@@ -3892,7 +4316,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   function savePortCard(pi, btn) {
     const p = state.ports[pi], info = portInfo(p);
-    if (!info.ok) { flashSaved('비중 합계를 100%로 맞춘 뒤 저장할 수 있어요.'); document.getElementById('h-saved').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+    if (!info.ok) { flashSaved('비중 합계를 100%로 맞춘 뒤 저장할 수 있어요.'); return; }
     const x = state.last && state.last.series.find(s => s.key === 'p' + pi);
     const snap = x ? { cagr: x.st.cagr, mdd: x.st.mdd, uw: x.st.uw.months, ong: x.st.uw.ongoing, from: BT.label(state.last.s), to: BT.label(state.last.e), real: state.real, rule: state.rebal,
       div: state.div, dy: x.st.income ? x.st.income.ttmYield : null, adj: !!(state.last.adj && usesAdjusted(x.tickers)) } : null;
@@ -4060,13 +4484,14 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const hits = adjHits(), show = on && !!state.last;
     $('#dm-banner').hidden = !show;
     if (show) $('#dm-banner-txt').textContent = hits.length ? `보정 종목 ${hits.map(t => `${t} ${trendTxt(t)}`).join(', ')}. 성과 요약·차트·기간별 표·롤링·구간별 점검이 모두 이 데이터 기준이에요.` : '포트폴리오에 보정한 종목이 없어 결과가 실제 데이터와 같아요.';
-    for (const id of ['h-sum', 'h-risk', 'h-charts', 'h-trail', 'h-roll', 'h-period']) {
+    for (const id of ['h-hero', 'h-sum', 'h-risk', 'h-charts', 'h-trail', 'h-mdd', 'h-roll', 'h-annual', 'h-period']) {
       const h = document.getElementById(id); if (!h) continue;
       let m = h.querySelector('.adj-mark');
       if (show && hits.length) { if (!m) { m = el('span', 'adj-mark', '보정 데이터'); m.style.marginLeft = '8px'; h.appendChild(m); } }
       else if (m) m.remove();
     }
-    $('#set-sum').textContent = `데이터 ${state.ext ? '상장 이전까지 확장' : 'ETF 상장 이후만'} · ${state.real ? '물가 반영(실질)' : '명목'} · 배당 ${state.div ? '현금으로 받기' : '재투자'}. 이 설정은 ‘자세히’ 보기에서 바꿀 수 있어요.`;
+    // what the folded 'advanced settings' are set to, readable without opening it
+    $('#adv-sum').textContent = `벤치마크 ${state.bench && known(state.bench) ? state.bench : '없음'} · ${on ? '추세 보정 데이터' : '실제 데이터'} · ${state.ext ? '상장 전 확장' : 'ETF 상장 이후만'} · ${state.real ? '물가 반영' : '물가 미반영'} · 배당 ${state.div ? '현금으로 받기' : '재투자'}`;
   }
   function setDataAdj(on) {
     if (on && !state.trend.on) { state.trend.on = true; $('#tr-on').checked = true; }
@@ -4125,9 +4550,9 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const { series } = state.last, R = series.map(riskOf); state.riskData = R;
     const thead = el('thead'), hr = el('tr'); headRow(hr, series, '지표'); thead.appendChild(hr); t.appendChild(thead);
     const tb = el('tbody'); t.appendChild(tb);
-    const sep = (txt, detail) => { const tr = el('tr', 'sep'); const th = el('th', null, txt); th.colSpan = series.length + 1; tr.appendChild(th); if (detail) tr.setAttribute('data-detail', ''); tb.appendChild(tr); };
+    const sep = txt => { const tr = el('tr', 'sep'); const th = el('th', null, txt); th.colSpan = series.length + 1; tr.appendChild(th); tb.appendChild(tr); };
     const row = (label, hint, vals, fmt, better, opts = {}) => {
-      const tr = el('tr'); if (opts.detail) tr.setAttribute('data-detail', ''); if (opts.hl) tr.className = 'hl';
+      const tr = el('tr'); if (opts.hl) tr.className = 'hl';
       const th = el('th', null, label); if (hint) th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
       const ok = vals.filter(v => v != null && isFinite(v));
       const best = better && ok.length > 1 ? (better === 'hi' ? Math.max(...ok) : Math.min(...ok)) : null;
@@ -4144,21 +4569,21 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const has10 = R.some(r => r.r10);
     sep('수익 — 시작·끝 시점에 덜 좌우되는 10년 구간 성적');
     row('보통의 10년 CAGR', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.med : null), P1, 'hi', { na: '기간 부족' });
-    row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족', detail: true });
+    row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족' });
     sep('위험 — 모든 하락의 깊이·기간·횟수');
     row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값', R.map(r => r.r10 ? r.r10.mddMed : null), M1, 'hi', { na: '기간 부족' });
     row('평균 낙폭', '매달 고점 대비 평균', R.map(r => -r.pain), M1, 'hi');
-    row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo', { detail: true });
-    row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo', { detail: true });
-    row('10% 넘는 하락', '횟수', R.map(r => r.n10), (td, v, i) => { td.textContent = `${v}번`; td.appendChild(el('span', 'sub', `10년에 ${(v / R[i].years * 10).toFixed(1)}번`)); }, 'lo', { detail: true });
+    row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo');
+    row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo');
+    row('10% 넘는 하락', '횟수', R.map(r => r.n10), (td, v, i) => { td.textContent = `${v}번`; td.appendChild(el('span', 'sub', `10년에 ${(v / R[i].years * 10).toFixed(1)}번`)); }, 'lo');
     sep('수익 ÷ 위험');
     row('마틴 비율', '(CAGR − 현금 수익) ÷ 울서 지수', R.map(r => r.martin), (td, v) => { td.textContent = num(v); }, 'hi', { hl: true });
-    row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
-    row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
+    row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi');
+    row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi');
     sep('한 번의 폭락에 얼마나 좌우되나');
     row('가장 큰 하락', '= 전체 기간 MDD', R.map(r => r.eps[0] ? r.eps[0].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[0]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '하락 없음' });
     row('두 번째로 큰 하락', '따로 일어난 하락', R.map(r => r.eps[1] ? r.eps[1].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[1]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '없음' });
-    row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음', detail: true });
+    row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음' });
     row('가장 큰 하락의 비중', '전체 낙폭(울서 지수) 중', R.map(r => r.eps[0] ? r.eps[0].share : null), (td, v) => { td.textContent = pctm(v, 0); const [c, txt] = shareTag(v); const w = el('span', 'tagrow'); w.appendChild(el('span', c, txt)); td.appendChild(w); }, null, { na: '하락 없음' });
     if (!has10) { const tr = el('tr'); const td = el('td', 'na', '분석 기간이 10년보다 짧아 ‘10년 구간’ 지표는 비워 뒀어요.'); td.colSpan = series.length + 1; td.style.textAlign = 'left'; tr.appendChild(td); tb.appendChild(tr); }
   }
@@ -4200,11 +4625,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const t = $('#t-mdd'), note = $('#mdd-note'); t.innerHTML = ''; note.textContent = '';
     if (!state.last || !state.riskData) return;
     const { s, e, series } = state.last, R = state.riskData, n = e - s + 1;
-    const thead = el('thead'), hr = el('tr'); headRow(hr, series, 'MDD 종류 (어느 구간에서 쟀나)'); thead.appendChild(hr); t.appendChild(thead);
+    const thead = el('thead'), hr = el('tr'); headRow(hr, series, 'MDD 종류 · 잰 구간'); thead.appendChild(hr); t.appendChild(thead);
     const tb = el('tbody'); t.appendChild(tb);
-    const row = (label, hint, fill, opts = {}) => {
-      const tr = el('tr'); if (opts.hl) tr.className = 'hl'; if (opts.detail) tr.setAttribute('data-detail', '');
-      const th = el('th', null, label); th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
+    /* label, the window it was measured over (always shown), and a longer note (hidden on a phone) */
+    const row = (label, win, hint, fill, opts = {}) => {
+      const tr = el('tr'); if (opts.hl) tr.className = 'hl';
+      const th = el('th'); th.appendChild(el('span', 'ml', label)); if (win) th.appendChild(el('span', 'mw', win)); if (hint) th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
       series.forEach((x, i) => { const td = cellFor(el('td'), x); fill(td, x, i); tr.appendChild(td); });
       tb.appendChild(tr);
     };
@@ -4214,15 +4640,15 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       if (sub) td.appendChild(el('span', 'sub', sub));
     };
     const when = m => (m.mdd < 0 ? `${m.peakLabel} → ${m.troughLabel}` : '낙폭 없음');
-    row('전체 기간 MDD', `${BT.label(s)}–${BT.label(e)} 전체에서 가장 크게 떨어진 한 번 · 성과 요약의 MDD`, (td, x) => M(td, x.st.mddInfo.mdd, when(x.st.mddInfo)), { hl: true });
+    row('전체 기간 MDD', `${BT.label(s)}–${BT.label(e)}`, '분석 기간 전체에서 가장 크게 떨어진 한 번 · 한눈에 보기의 최대 낙폭', (td, x) => M(td, x.st.mddInfo.mdd, when(x.st.mddInfo)), { hl: true });
     const rec = [10, 20].map(Y => ({ Y, j: YEARS.indexOf(Y), ok: Y * 12 <= n }));
-    rec.forEach(({ Y, j, ok }) => row(`최근 ${Y}년 MDD`, ok ? `${BT.label(e - Y * 12 + 1)}–${BT.label(e)}만 새로 시작해 계산 · 기간별 표` : `분석 기간이 ${Y}년보다 짧아 계산 안 함`, (td, x) => {
+    rec.forEach(({ Y, j, ok }) => row(`최근 ${Y}년 MDD`, ok ? `${BT.label(e - Y * 12 + 1)}–${BT.label(e)}` : '기간 부족', ok ? `그 ${Y}년만 새로 시작해 계산 · 최근 N년 성과 표` : `분석 기간이 ${Y}년보다 짧아 계산하지 않았어요`, (td, x) => {
       const v = ok ? x.trail[j] : null; if (!v || !v.ok) { M(td, null); return; }
       M(td, v.mdd, when(v.mddInfo));
     }));
-    row('10년 보유 시 최악 MDD', '모든 10년 구간(1개월 간격) 중 가장 깊은 값 · 롤링 표', (td, x, i) => { const r = R[i].r10; if (!r) { M(td, null); return; } M(td, r.mddWorst, `${r.mddWorstWin} 구간`); }, { detail: true });
-    row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값 · 수익과 위험', (td, x, i) => { const r = R[i].r10; M(td, r ? r.mddMed : null); });
-    row('평균 낙폭', '매달 직전 고점보다 얼마나 아래 있었나의 평균 · 수익과 위험', (td, x, i) => M(td, -R[i].pain));
+    row('10년 보유 시 최악', '모든 10년 구간 중', '1개월 간격으로 잡은 모든 10년 구간의 MDD 중 가장 깊은 값 · 롤링 CAGR 표', (td, x, i) => { const r = R[i].r10; if (!r) { M(td, null); return; } M(td, r.mddWorst, `${r.mddWorstWin} 구간`); });
+    row('보통의 10년 MDD', '10년 구간 중앙값', '모든 10년 구간 MDD의 중앙값 · 수익과 위험', (td, x, i) => { const r = R[i].r10; M(td, r ? r.mddMed : null); });
+    row('평균 낙폭', '매달의 평균', '매달 직전 고점보다 얼마나 아래 있었나의 평균 · 수익과 위험', (td, x, i) => M(td, -R[i].pain));
     // one plain sentence for the first portfolio
     const x = series[0], m = x.st.mddInfo, R0 = R[0];
     if (!(m.mdd < 0)) { note.textContent = `${x.name}: 분석 기간에 떨어진 달이 없어 MDD가 0%예요.`; return; }
@@ -4460,14 +4886,14 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     };
     root.addEventListener('pointermove', ev => { const c = cellAt(ev); if (c) show(c, ev); else hide(); });
     root.addEventListener('pointerleave', hide);
-    root.addEventListener('click', ev => { const c = cellAt(ev); if (!c) return; setPcRange(c.a, c.b, true); const sec = $('#pc-custom-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+    root.addEventListener('click', ev => { const c = cellAt(ev); if (!c) return; setPcRange(c.a, c.b, true); goTo('pc-custom-sec', 'nearest'); });
     root.style.cursor = 'pointer';
     // legend: swatches from best to worst
     lg.appendChild(el('div', 'ttl', HEAT[metric].ttl));
     const nB = HEAT[metric].edges.length + 1, counts = new Array(nB).fill(0);
     for (const c of H.cells) counts[heatBin(metric, metric === 'cagr' ? c.cagr : c.mdd)]++;
     for (let k = nB - 1; k >= 0; k--) { const row = el('div', 'hl-row'); const i = el('i'); i.style.background = heatFill(metric, k); row.append(i, el('span', null, heatLabel(metric, k))); if (!counts[k]) { row.style.opacity = '0.45'; row.title = '이 색에 해당하는 구간이 없어요'; } lg.appendChild(row); }
-    $('#pc-heat-note').textContent = '칸 하나 = 시작 연도 1월부터 끝 연도 12월까지 보유한 결과. 대각선은 그해 1년, 오른쪽 위 끝은 전체 기간이에요. 칸을 누르면 아래에서 그 구간을 자세히 봐요.' + (metric === 'mdd' ? ` 내 기준 MDD 상한은 ${Math.round(+$('#o-hi').value || 30)}%예요.` : '');
+    $('#pc-heat-note').textContent = '칸 하나 = 시작 연도 1월부터 끝 연도 12월까지 보유한 결과. 대각선은 그해 1년, 오른쪽 위 끝은 전체 기간이에요. 칸을 누르면 아래 ‘직접 고른 구간’에서 그 구간을 따로 계산해요.' + (metric === 'mdd' ? ` 내 기준 MDD 상한은 ${Math.round(+$('#o-hi').value || 30)}%예요.` : '');
   }
   document.querySelectorAll('#pc-metric button').forEach(b => b.addEventListener('click', () => { state.pc.metric = b.dataset.m; drawHeat(); }));
   /* ---- a window of your choice ---- */
@@ -4548,23 +4974,28 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   $('#o-hi').addEventListener('change', () => { if (state.last) renderPeriod(); });
 
-  /* ---------- simple / full view and the section bar ---------- */
-  const VIEW_KEY = 'etf-backtester.view.v1';
-  function readView() { try { return window.localStorage.getItem(VIEW_KEY) === 'simple'; } catch (_) { return false; } }
-  function setSimple(on, save) {
-    state.simple = !!on;
-    document.documentElement.classList.toggle('simple', state.simple);
-    $('#v-simple').setAttribute('aria-pressed', state.simple ? 'true' : 'false');
-    $('#v-full').setAttribute('aria-pressed', state.simple ? 'false' : 'true');
-    if (save) { try { window.localStorage.setItem(VIEW_KEY, state.simple ? 'simple' : 'full'); } catch (_) {} }
-    if (!state.simple) requestAnimationFrame(() => { drawCharts(); drawFrontier(); drawHeat(); });   // panels that were hidden had no width
-    if (state.simple && state.layout === 'tabs' && state.tab === 'g-ref') showTab('g-setup');
-    maybeRunDeferredOpt();
-    markNav();
+  /* ---------- v8: folded sections ('고급' and the like), each remembered per device ---------- */
+  const FOLD_KEY = 'etf-backtester.folds.v1';
+  const foldEls = () => [...document.querySelectorAll('details[data-fold]')];
+  function foldsRead() { try { const o = JSON.parse(window.localStorage.getItem(FOLD_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (_) { return {}; } }
+  function foldsSave() { const o = {}; foldEls().forEach(d => { if (d.open) o[d.dataset.fold] = 1; }); try { window.localStorage.setItem(FOLD_KEY, JSON.stringify(o)); } catch (_) {} }
+  let foldRedrawT = null;
+  function initFolds() {
+    const saved = foldsRead();
+    foldEls().forEach(d => {
+      d.open = !!saved[d.dataset.fold];
+      d.addEventListener('toggle', () => {
+        // charts drawn while folded had no width
+        if (d.open && d.querySelector('.chart-box')) { clearTimeout(foldRedrawT); foldRedrawT = setTimeout(() => { drawCharts(); drawFrontier(); drawHeat(); }, 30); }
+        foldsSave();
+      });
+    });
+    try { window.localStorage.removeItem('etf-backtester.view.v1'); } catch (_) {}   // the v7 simple/full switch is gone
   }
-  $('#v-simple').addEventListener('click', () => setSimple(true, true));
-  $('#v-full').addEventListener('click', () => setSimple(false, true));
-  $('#to-full').addEventListener('click', () => { setSimple(false, true); if (state.layout === 'tabs') showTab('g-opt', { user: true }); else goTo('g-opt'); });
+  /* open every fold around an element (a jump target inside a closed fold would be invisible) */
+  function openFoldsAround(t) { for (let d = t && t.closest('details'); d; d = d.parentElement ? d.parentElement.closest('details') : null) d.open = true; }
+  $('#fold-open-all').addEventListener('click', () => { document.querySelectorAll('details.fold').forEach(d => { d.open = true; }); toast('접힌 항목을 모두 펼쳤어요.'); });
+  $('#fold-close-all').addEventListener('click', () => { document.querySelectorAll('details.fold').forEach(d => { d.open = false; }); toast('접힌 항목을 모두 접었어요.'); });
   const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll('#tb-nav a, #bnav a').forEach(a => a.addEventListener('click', ev => {
     ev.preventDefault();
@@ -4591,15 +5022,14 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function readLayout() { try { return window.localStorage.getItem(LAYOUT_KEY) === 'page' ? 'page' : 'tabs'; } catch (_) { return 'tabs'; } }
   const paneOf = g => document.querySelector(`.pane[data-g="${g}"]`);
   const redrawVisible = () => requestAnimationFrame(() => { drawCharts(); drawFrontier(); drawHeat(); });
-  /* the optimizer is heavy: run it once its panel can be seen (full view, and its tab open when using tabs) */
+  /* the optimizer is heavy: run it once its tab is open (or at once on the one-page layout) */
   function maybeRunDeferredOpt() {
-    if (!state.optDeferred || state.simple) return;
+    if (!state.optDeferred) return;
     if (state.layout === 'tabs' && state.tab !== 'g-opt') return;
     state.optDeferred = false; setTimeout(runOpt, 60);
   }
   function showTab(g, opts = {}) {
     if (!TAB_IDS.includes(g)) g = 'g-setup';
-    if (state.simple && g === 'g-ref') g = 'g-setup';
     state.tab = g;
     document.documentElement.dataset.tab = g;
     if (state.layout === 'tabs') {
@@ -4625,28 +5055,30 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   $('#lay-tabs').addEventListener('click', () => setLayout('tabs', true));
   $('#lay-page').addEventListener('click', () => setLayout('page', true));
   document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) showTab(b.dataset.go, { user: true }); });
-  /* jump to an element, opening its tab first when needed */
+  /* jump to an element, opening its tab and any fold around it first */
   function goTo(id, block) {
     const t = document.getElementById(id); if (!t) return;
     if (state.layout === 'tabs') { const p = t.closest('.pane'); if (p && !p.classList.contains('on')) showTab(p.dataset.g, { keepScroll: true }); }
+    openFoldsAround(t);
     requestAnimationFrame(() => t.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: block || 'start' }));
   }
   let toastT = null;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200); }
-  /* a compact preview of the results right under the portfolio cards (tabs) */
+  /* a small table of the results right under the portfolio cards (tabs), so edits show their effect at once */
   function renderQuickRes() {
     const host = $('#qr-body'); if (!host) return; host.innerHTML = '';
     if (!state.last) { $('#qr-when').textContent = ''; host.appendChild(el('p', 'small muted', '비중 합계가 100%인 포트폴리오가 생기면 여기에서 바로 결과를 보여줘요.')); return; }
     const { s, e, series } = state.last;
-    $('#qr-when').textContent = `${BT.label(s)} ~ ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 초기 ${money(state.initial)}` + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    $('#qr-when').textContent = `${BT.label(s)} – ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 처음 ${money(state.initial)}` + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    const t = el('table', 'qr-t'), th = el('thead'), hr = el('tr');
+    ['포트폴리오', '연 수익률', '최대 낙폭', '최종 금액'].forEach(h => hr.appendChild(el('th', null, h))); th.appendChild(hr); t.appendChild(th);
+    const tb = el('tbody');
     for (const x of series) {
-      const card = el('div', 'qr-item');
-      const nm = el('div', 'qr-name'); const k = el('span', 'key'); k.style.background = x.color; nm.append(k, el('span', null, x.name)); card.appendChild(nm);
-      const kv = el('div', 'qr-kv');
-      const cell = (lab, val, neg) => { const d = el('div'); d.append(el('span', null, lab), el('b', neg ? 'neg' : null, val)); kv.appendChild(d); };
-      cell('CAGR', pct(x.st.cagr, 1), x.st.cagr < 0); cell('MDD (전체 기간)', mpct1(x.st.mdd), x.st.mdd < 0); cell('최종 금액', fmtMoneyShort(state.initial * x.st.final));
-      card.appendChild(kv); host.appendChild(card);
+      const tr = el('tr'); tr.appendChild(seriesTh(x));
+      tr.append(el('td', x.st.cagr < 0 ? 'neg' : null, pct(x.st.cagr, 1)), el('td', x.st.mdd < 0 ? 'neg' : null, mpct1(x.st.mdd)), el('td', null, fmtMoneyShort(state.initial * x.st.final)));
+      tb.appendChild(tr);
     }
+    t.appendChild(tb); const w = el('div', 'tbl-wrap'); w.appendChild(t); host.appendChild(w);
   }
   let navRaf = 0;
   window.addEventListener('scroll', () => { if (navRaf) return; navRaf = requestAnimationFrame(() => { navRaf = 0; markNav(); }); }, { passive: true });
@@ -4655,12 +5087,12 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   state.optDeferred = true;   // runs once its panel can be seen (see maybeRunDeferredOpt)
   state.layout = readLayout();
   { const h = (location.hash || '').slice(1); state.tab = TAB_IDS.includes(h) ? h : 'g-setup'; }
-  setSimple(readView(), false);
+  initFolds();
   setLayout(state.layout, false);
   renderPorts();
   recompute();
   validPorts().forEach(p => p.info.tickers.forEach(t => state.optSel.add(t)));
-  renderPicker(); buildLife(); fillLife(); renderCritLine(); renderWalk(); renderEraCompare();
+  renderPicker(); buildLife(); fillLife(); renderCritLine(); renderCritSum(); renderWalk(); renderEraCompare();
   initSaved();
   maybeRunDeferredOpt();
   markNav();

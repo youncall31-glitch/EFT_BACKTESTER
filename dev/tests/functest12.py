@@ -8,7 +8,7 @@ T = lambda sel: f"(document.querySelector('{sel}')||{{innerText:''}}).innerText.
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        ctx = await b.new_context(viewport={'width': 1280, 'height': 900}, color_scheme='dark'); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page(); errs = []
+        ctx = await b.new_context(viewport={'width': 1280, 'height': 900}, color_scheme='dark'); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page(); errs = []
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.route('**/fonts.*/**', lambda r: r.abort())
         await page.goto('file://' + OUT + 'test.html')
@@ -35,13 +35,13 @@ async def main():
         print('nav on:', await page.evaluate("[...document.querySelectorAll('#tb-nav a.on')].map(a=>a.textContent)"))
         await (await page.query_selector('section[aria-labelledby="h-charts"]')).screenshot(path=SH + 'v7_d_charts.png')
         print('errors', errs); await ctx.close()
-        # mobile light + simple dark
-        for scheme, simple, tag in [('light', False, 'm_light'), ('dark', True, 'm_simple_dark')]:
-            ctx = await b.new_context(viewport={'width': 390, 'height': 844}, color_scheme=scheme, device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page(); errs = []
+        # mobile light (folds open) + dark with every fold closed
+        for scheme, closed, tag in [('light', False, 'm_light'), ('dark', True, 'm_closed_dark')]:
+            ctx = await b.new_context(viewport={'width': 390, 'height': 844}, color_scheme=scheme, device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page(); errs = []
             page.on('pageerror', lambda e: errs.append(str(e)))
             await page.route('**/fonts.*/**', lambda r: r.abort())
             await page.goto('file://' + OUT + 'test.html'); await page.wait_for_timeout(2500)
-            if simple: await page.click('#v-simple'); await page.wait_for_timeout(300)
+            if closed: await page.click('#fold-close-all'); await page.wait_for_timeout(300)
             await page.screenshot(path=SH + f'v7_{tag}_top.png')
             await (await page.query_selector('#sec-period')).screenshot(path=SH + f'v7_{tag}_period.png')
             sw = await page.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")

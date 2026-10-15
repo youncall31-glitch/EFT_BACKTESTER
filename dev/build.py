@@ -18,7 +18,7 @@ from PIL import Image, ImageDraw
 DEV = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(DEV)
 OUT = f'{DEV}/out/app'
-VERSION = 'v7.3-2026-10-10'
+VERSION = 'v8-2026-10-16'
 GOATCOUNTER = ''          # GoatCounter site code; '' = no visit counting
 
 # ---- 1) the artifact page: template with data, engine and app inlined (no doctype; claude.ai wraps it)

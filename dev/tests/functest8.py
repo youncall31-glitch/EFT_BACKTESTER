@@ -9,7 +9,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
         ctx = await b.new_context(viewport={'width': 1280, 'height': 900})
-        await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page(); errs = []
+        await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page(); errs = []
         page.on('pageerror', lambda e: errs.append(str(e)))
         page.on('console', lambda m: errs.append(m.text) if m.type == 'error' and 'Failed to load resource' not in m.text else None)
         await page.route('**/fonts.*/**', lambda r: r.abort())

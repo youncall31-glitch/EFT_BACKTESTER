@@ -3,7 +3,7 @@ _T = _os.path.dirname(_os.path.abspath(__file__)); _D = _os.path.dirname(_T)   #
 import asyncio, subprocess, time, os
 from playwright.async_api import async_playwright
 APP = _D + '/out/app'
-DONE = "document.querySelectorAll('#t-summary tbody tr').length > 5 && document.querySelectorAll('#qr-body .qr-item').length > 0"
+DONE = "document.querySelectorAll('#t-summary tbody tr').length > 5 && document.querySelectorAll('#qr-body tbody tr').length > 0"
 async def main():
     srv = subprocess.Popen(['python3', '-m', 'http.server', '8765', '--bind', '127.0.0.1'], cwd=APP + '/pwa', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(1.0)
@@ -20,7 +20,7 @@ async def main():
             print('single: title', await page.title(), '| doctype', await page.evaluate("document.doctype && document.doctype.name"), '| mode', await page.evaluate("document.compatMode"))
             await page.click('.pcard[data-p="0"] .sv'); await page.wait_for_timeout(300)
             print('  saved where:', (await page.evaluate("document.querySelector('#sv-where').textContent"))[:40], '| items', await page.evaluate("document.querySelectorAll('.sv-card').length"))
-            await page.click('#sv-export'); await page.wait_for_timeout(200)
+            await page.click('#fold-saved > summary'); await page.click('#sv-export'); await page.wait_for_timeout(200)   # v8: the saved list is a fold
             print('  file-save visible:', await page.evaluate("!document.querySelector('#io-file-save').hidden"))
             async with page.expect_download() as dl:
                 await page.click('#io-file-save')

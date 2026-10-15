@@ -7,7 +7,7 @@ IDLE = "/가장 과거: \\d/.test(document.querySelector('#o-status').textConten
 T = lambda sel: f"(document.querySelector('{sel}')||{{innerText:''}}).innerText.replace(/\\s+/g,' ').trim()"
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width': 1280, 'height': 900}); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page(); errs = []
+        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width': 1280, 'height': 900}); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page(); errs = []
         page.on('pageerror', lambda e: errs.append(str(e)))
         page.on('console', lambda m: errs.append(m.text) if m.type == 'error' and 'Failed to load resource' not in m.text else None)
         await page.route('**/fonts.*/**', lambda r: r.abort())
@@ -50,19 +50,16 @@ async def main():
         print('custom select:', await page.evaluate(T('#pc-custom')))
         await page.click('#pc-metric button[data-m="mdd"]'); await page.wait_for_timeout(200)
         print('mdd legend:', await page.evaluate(T('#pc-legend')))
-        # ---- simple view: persists, defers the optimizer on load
+        # ---- v8 folds: close all from the help tab, check what a beginner still sees, open all again
         await page.wait_for_function(IDLE, timeout=300000, polling=300)
-        await page.click('#v-simple'); await page.wait_for_timeout(200)
-        vis = await page.evaluate("['#sec-period','section[aria-labelledby=\"h-opt\"]','#simple-opt','section[aria-labelledby=\"h-roll\"]','#g-ref','#pc-custom-sec'].map(s=>{const e=document.querySelector(s);return s+':'+(e&&e.getClientRects().length>0)})")
-        print('simple visible:', vis)
-        print('summary rows simple:', await page.evaluate("[...document.querySelectorAll('#t-summary tbody tr')].filter(r=>r.getClientRects().length).map(r=>r.querySelector('th').textContent)"))
-        await page.reload(); await page.wait_for_timeout(2500)
-        print('after reload simple?', await page.evaluate("document.documentElement.classList.contains('simple')"), 'o-status:', (await page.evaluate(T('#o-status')))[:80])
-        await page.click('#v-full'); await page.wait_for_function("/평가/.test(document.querySelector('#o-status').textContent)", timeout=120000)
-        print('full again o-status:', (await page.evaluate(T('#o-status')))[:80])
+        await page.click('#fold-close-all'); await page.wait_for_timeout(300)
+        vis = await page.evaluate("['#hero','#t-trail','#t-mdd','#pc-verdict','#o-hz','#t-summary','#t-risk','#pc-table','#pc-heat','#o-life','#c-front','#cov'].map(s=>{const e=document.querySelector(s);return s+':'+(!!e&&e.checkVisibility())})")
+        print('folds closed, visible:', vis)
+        print('toast:', await page.evaluate(T('#toast')))
+        await page.click('#fold-open-all'); await page.wait_for_timeout(300)
+        print('open all ->', await page.evaluate("[...document.querySelectorAll('details.fold')].every(d=>d.open)"), '| saved:', await page.evaluate("Object.keys(JSON.parse(localStorage.getItem('etf-backtester.folds.v1')||'{}')).length"))
         await page.click('#tb-nav a[data-g="g-checks"]'); await page.wait_for_timeout(900)
         print('nav on:', await page.evaluate("[...document.querySelectorAll('#tb-nav a.on')].map(a=>a.textContent)"), 'scrollY', await page.evaluate('scrollY'))
-        await page.click('#v-full')
         print('upd summary:', await page.evaluate(T('#upd summary')))
         print('errors', errs)
         await b.close()

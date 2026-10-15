@@ -7,7 +7,7 @@ DONE = "/평가/.test(document.querySelector('#o-status').textContent) && !docum
 ADJDONE = DONE + " && !/다시 계산 중/.test(document.querySelector('#o-adj-note').textContent)"
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':1280,'height':900}); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page()
+        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':1280,'height':900}); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page()
         errs=[]; page.on('pageerror', lambda e: errs.append(str(e)))
         await page.route('**/fonts.*/**', lambda r: r.abort())
         t0 = time.time()
@@ -44,7 +44,7 @@ async def main():
         await page.uncheck('#tr-on'); await page.wait_for_timeout(300)
         print('off:', await txt('#tr-note'), '| cmp hidden:', await ev("document.querySelector('#tr-cmp-wrap').hidden"), '| view hidden:', await ev("document.querySelector('#o-view').hidden"), '|', await txt('#o-adj-note'))
         await page.check('#tr-on'); await page.wait_for_timeout(300)
-        for sel, name in [('section[aria-labelledby="h-trend"]', 'd_trend.png'), ('#o-adj-sec', 'd_adjcmp.png')]:
+        for sel, name in [('#sec-trend', 'd_trend.png'), ('#o-adj-sec', 'd_adjcmp.png')]:
             el = await page.query_selector(sel); await el.screenshot(path=OUT + name)
         print('errors:', errs)
         await b.close()

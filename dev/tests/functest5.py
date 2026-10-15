@@ -6,7 +6,7 @@ OUT=_T + '/'
 DONE = "/평가/.test(document.querySelector('#o-status').textContent) && !document.querySelector('#o-run').disabled"
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True, device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page()
+        b = await p.chromium.launch(); ctx = await b.new_context(viewport={'width':390,'height':844}, has_touch=True, is_mobile=True, device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page()
         errs=[]; page.on('pageerror', lambda e: errs.append(str(e)))
         await page.route('**/fonts.*/**', lambda r: r.abort())
         await page.goto('file://'+OUT+'test.html')
@@ -33,7 +33,7 @@ async def main():
         print('input font sizes:', await ev("[...new Set([...document.querySelectorAll('select, input[type=number], input[type=text], textarea')].map(e=>getComputedStyle(e).fontSize))].join(',')"))
         sw = await ev("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
         print('scroll/client', sw)
-        for sel, name in [('section[aria-labelledby="h-saved"]', 'm_saved.png'), ('section[aria-labelledby="h-set"]', 'm_set.png')]:
+        for sel, name in [('#fold-saved', 'm_saved.png'), ('#sec-set', 'm_set.png')]:
             el = await page.query_selector(sel); await el.screenshot(path=OUT + name)
         await page.tap('#w-run'); await page.wait_for_function("document.querySelector('#w-table tbody') && !document.querySelector('#w-run').disabled", timeout=180000)
         el = await page.query_selector('#w-table'); await el.screenshot(path=OUT + 'm_walk.png')

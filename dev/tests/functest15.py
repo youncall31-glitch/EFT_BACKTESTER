@@ -1,4 +1,4 @@
-# v7.3: MDD 구분 panel, period labels on every table, phone cards, walk queue, sign formatting
+# v7.3: MDD 구분 panel, period labels on every table, phone cards, walk queue, sign formatting (updated for the v8 folds)
 import os as _os
 _T = _os.path.dirname(_os.path.abspath(__file__)); _D = _os.path.dirname(_T)   # dev/tests, dev
 import asyncio, json, re
@@ -44,6 +44,7 @@ async def main():
         # 3 optimizer: queue the walk while the optimizer is busy
         await tab(page, 'g-opt')
         await page.wait_for_function("document.querySelector('#o-run').disabled", timeout=10000)
+        await ev("document.querySelector('#o-walk-sec').open = true")   # v8: the check sits in a fold
         await page.click('#w-run'); queued = await ev("document.querySelector('#w-status').textContent")
         await page.wait_for_function("document.querySelectorAll('#w-table tbody tr').length > 0", timeout=240000, polling=300)
         print('walk queued msg:', queued, '| rows', await ev("document.querySelectorAll('#w-table tbody tr').length"))
@@ -61,10 +62,12 @@ async def main():
         vis = await ev("""['.trail-wide', '.trail-narrow'].map(s => !!document.querySelector(s).getClientRects().length)""")
         lab = await ev("""[...document.querySelectorAll('#t-summary td, #t-mdd td, #t-risk td')].filter(td => !td.dataset.label).length""")
         cardcols = await ev("""getComputedStyle(document.querySelector('#t-summary tbody tr')).display""")
-        before = await ev("""getComputedStyle(document.querySelector('#t-mdd tbody td'), '::before').content""")
-        ph = await ev("""[...document.querySelectorAll('#t-trail-m tr.ph')].map(r => r.querySelector('.gname').textContent + ' ' + r.querySelector('.when').textContent)""")
-        print('phone trail wide/narrow visible', vis, '| unlabeled cells', lab, '| row display', cardcols, '| label', before)
-        print('phone trail periods', ph)
+        mddw = await ev("""(() => { const w = document.querySelector('#t-mdd').closest('.tbl-wrap'); return [w.scrollWidth, w.clientWidth, getComputedStyle(document.querySelector('#t-mdd tbody tr')).display]; })()""")
+        ph = await ev("""[[...document.querySelectorAll('#trail-pick .chip')].map(b => b.textContent + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')).join(' '), document.querySelector('#trail-when').textContent, [...document.querySelectorAll('#t-trail-m thead th')].map(t => t.textContent).join('/')]""")
+        print('phone trail wide/narrow visible', vis, '| unlabeled cells', lab, '| summary row display', cardcols, '| MDD matrix scroll/client/row', mddw)
+        print('phone trail period picker', ph)
+        await page.click('#trail-pick .chip:nth-child(3)'); await page.wait_for_timeout(150)
+        print('picked 20y:', await ev("document.querySelector('#trail-when').textContent"), '|', await ev("[...document.querySelectorAll('#t-trail-m tbody tr')].map(r => r.innerText.replace(/\\s+/g, ' ')).join(' / ')"))
         res = {}
         for g in ['g-setup', 'g-results', 'g-checks', 'g-opt']:
             await tab(page, g)
@@ -74,16 +77,18 @@ async def main():
         print('phone widths', res, '| era caps', caps)
         print('errors', errs)
         await ctx.close()
-        # 6 short period (< 10 years), one portfolio, no benchmark, simple view
-        ctx, page, errs = await open_page(b, 390, 844, view='simple'); ev = page.evaluate
+        # 6 short period (< 10 years), two portfolios, no benchmark
+        ctx, page, errs = await open_page(b, 390, 844); ev = page.evaluate
         await page.select_option('#s-y', '2019'); await page.select_option('#s-m', '1'); await page.wait_for_timeout(400)
-        await page.select_option('#bench', ''); await page.wait_for_timeout(300)
-        await page.click('.pcard[data-p="1"] .clr') if await page.locator('.pcard[data-p="1"] .clr').count() else None
+        await page.click('#fold-set > summary'); await page.select_option('#bench', ''); await page.wait_for_timeout(300)
+        await page.click('#port-tabs .pt[data-p="1"]'); await page.click('.pcard[data-p="1"] .clr'); await page.wait_for_timeout(300)
+        print('switcher:', await ev("[...document.querySelectorAll('#port-tabs .pt')].map(b => b.innerText.replace(/\\s+/g, ' ') + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')).join(' | ')"), '| adv sum:', await ev("document.querySelector('#adv-sum').textContent"))
         await tab(page, 'g-results')
         mdd = await ev("""[...document.querySelectorAll('#t-mdd tbody tr')].filter(r => r.getClientRects().length).map(r => r.querySelector('th').childNodes[0].textContent + ': ' + [...r.querySelectorAll('td')].map(td => td.textContent).join(' | '))""")
         for r in mdd: print('short mdd', r)
         print('short note:', await ev("document.querySelector('#mdd-note').textContent"))
-        print('short trail-m:', await ev("[...document.querySelectorAll('#t-trail-m tr.ph')].map(r => r.textContent).join(' / ')"))
+        print('short trail chips:', await ev("[...document.querySelectorAll('#trail-pick .chip')].map(b => b.textContent + (b.disabled ? '(x)' : '') + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')).join(' ')"), '|', await ev("document.querySelector('#trail-when').textContent"))
+        print('short hero:', await ev("[...document.querySelectorAll('#hero .hc')].map(c => c.innerText.replace(/\\s+/g, ' ')).join(' // ')"))
         print('errors', errs)
         await ctx.close()
         await b.close()

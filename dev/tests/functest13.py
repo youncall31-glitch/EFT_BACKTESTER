@@ -7,7 +7,7 @@ SH=_T + '/shots/'
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        ctx = await b.new_context(viewport={'width': 1280, 'height': 900}, color_scheme='dark'); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page(); errs = []
+        ctx = await b.new_context(viewport={'width': 1280, 'height': 900}, color_scheme='dark'); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page(); errs = []
         page.on('pageerror', lambda e: errs.append(str(e)))
         await page.route('**/fonts.*/**', lambda r: r.abort())
         await page.goto('file://' + OUT + 'test.html')
@@ -20,12 +20,14 @@ async def main():
         await (await page.query_selector('#sec-risk')).screenshot(path=SH + 'v71_d_risk.png')
         await page.click('#dm button[data-v="adj"]'); await page.wait_for_timeout(300)
         print('adj martin row:', await page.evaluate("[...document.querySelectorAll('#t-risk tr')].find(r=>/마틴/.test(r.innerText)).innerText.replace(/\\s+/g,' ')"), '| mark:', await page.evaluate("!!document.querySelector('#h-risk .adj-mark')"))
-        await page.click('#dm-off'); await page.click('#v-simple'); await page.wait_for_timeout(200)
-        print('simple rows:', await page.evaluate("[...document.querySelectorAll('#t-risk tbody tr')].filter(r=>r.getClientRects().length).map(r=>r.querySelector('th').childNodes[0].textContent)"))
-        print('simple dd visible:', await page.evaluate("document.querySelector('#t-dd').getClientRects().length>0"))
-        await page.click('#v-full')
+        await page.click('#dm-off'); await page.wait_for_timeout(200)
+        # v8: the whole risk section folds away; closed, nothing of it shows, open again it is all there
+        await page.evaluate("document.querySelector('#sec-risk').open = false"); await page.wait_for_timeout(200)
+        print('folded: risk rows visible', await page.evaluate("[...document.querySelectorAll('#t-risk tbody tr')].filter(r=>r.checkVisibility()).length"), '| dd visible', await page.evaluate("document.querySelector('#t-dd').checkVisibility()"))
+        await page.click('#sec-risk > summary'); await page.wait_for_timeout(200)
+        print('opened: risk rows visible', await page.evaluate("[...document.querySelectorAll('#t-risk tbody tr')].filter(r=>r.checkVisibility()).length"), '| dd visible', await page.evaluate("document.querySelector('#t-dd').checkVisibility()"))
         print('errors', errs); await ctx.close()
-        ctx = await b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='light', device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){}"); page = await ctx.new_page()
+        ctx = await b.new_context(viewport={'width': 390, 'height': 844}, color_scheme='light', device_scale_factor=2); await ctx.add_init_script("try{localStorage.setItem('etf-backtester.layout.v1','page')}catch(e){};document.addEventListener('DOMContentLoaded',()=>document.querySelectorAll('details[data-fold]').forEach(d=>d.open=true))"); page = await ctx.new_page()
         await page.route('**/fonts.*/**', lambda r: r.abort())
         await page.goto('file://' + OUT + 'test.html'); await page.wait_for_timeout(2500)
         await (await page.query_selector('#sec-risk')).screenshot(path=SH + 'v71_m_risk.png')

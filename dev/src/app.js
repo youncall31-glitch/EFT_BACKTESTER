@@ -53,7 +53,8 @@
     div: false,  // false = distributions reinvested (total return), true = paid out as cash
     optPos: 'recent',  // optimizer results shown for the most recent ('recent') or the oldest ('old') 10·20·30 years
     dataAdj: false,    // v7: run my portfolios on the trend-kept data instead of the actual data
-    simple: false,     // v7: simple view (core results only)
+    portCur: 0,        // v8: the portfolio card shown on a phone
+    trailJ: 0,         // v8: the period shown in the phone 'recent N years' table
     optDeferred: false,
     pc: { key: null, metric: 'cagr', range: null, auto: true },  // v7: period check (portfolio, map metric, chosen window)
     ddKey: null       // v7.1: portfolio shown in the drawdown list
@@ -74,6 +75,10 @@
   const SAME = 0.0005;   // differences below 0.05%p show as '같음'
   const ppTxt = d => (Math.abs(d) < SAME ? '0.0%p' : (d > 0 ? '+' : '−') + Math.abs(d * 100).toFixed(1) + '%p');
   const nbsp = t => t.replace(/ /g, '\u00a0');   // keep 'label value' pieces on one line
+  /* object particle after a name the user typed: 을 after a final consonant, 를 after a vowel, 을(를) when it does not end in Hangul */
+  const eul = w => { const c = String(w || '').trim().slice(-1).charCodeAt(0); return c >= 0xAC00 && c <= 0xD7A3 ? ((c - 0xAC00) % 28 ? '을' : '를') : '을(를)'; };
+  /* on screen: laid out and not inside a closed fold (a closed <details> may still report boxes for its content) */
+  const isShown = e => !!e && e.getClientRects().length > 0 && !e.closest('details:not([open]) > :not(summary)');
   // number field with a default only when it is left empty (a typed 0 stays 0)
   const fieldNum = (sel, d) => { const v = $(sel).value.trim(); return v === '' || !isFinite(+v) ? d : +v; };
 
@@ -83,6 +88,7 @@
   const monthItems = []; for (let m = 1; m <= 12; m++) monthItems.push([m, m + '월']);
   fillSelect($('#s-y'), yearItems); fillSelect($('#s-m'), monthItems); fillSelect($('#e-y'), yearItems); fillSelect($('#e-m'), monthItems);
   $('#span-range').textContent = '1972.01 – ' + BT.label(NM - 1);
+  $('#n-assets').textContent = Object.keys(DATA.assets).length;
 
   function refreshTickerLists() {
     const dl = $('#tickers'); dl.innerHTML = '';
@@ -109,9 +115,13 @@
 
   const QUICK = [['max', '최대'], [30, '30년'], [25, '25년'], [20, '20년'], [15, '15년'], [10, '10년'], [5, '5년']];
   for (const [k, t] of QUICK) {
-    const b = el('button', 'chip', t); b.type = 'button'; b.dataset.q = k; b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', () => { applyQuick(k); });
-    $('#quick').appendChild(b);
+    // the input tab has every length; the results tab repeats the common ones so the period can change where the numbers are
+    for (const host of [$('#quick'), (k === 25 || k === 15) ? null : $('#quick2')]) {
+      if (!host) continue;
+      const b = el('button', 'chip', t); b.type = 'button'; b.dataset.q = k; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { applyQuick(k); });
+      host.appendChild(b);
+    }
   }
 
   /* ---------- portfolios ---------- */
@@ -124,7 +134,7 @@
   function renderPorts() {
     const host = $('#ports'); host.innerHTML = '';
     state.ports.forEach((p, pi) => {
-      const card = el('div', 'pcard'); card.dataset.p = pi;
+      const card = el('div', 'pcard' + (pi === state.portCur ? ' cur' : '')); card.dataset.p = pi;
       const top = el('div', 'pcard-top');
       const key = el('span', 'key'); key.style.background = PCOL[pi]; top.appendChild(key);
       const nm = el('input', 'pname'); nm.type = 'text'; nm.value = p.name; nm.id = 'pname-' + pi; nm.setAttribute('aria-label', `포트폴리오 ${pi + 1} 이름`); top.appendChild(nm);
@@ -178,9 +188,10 @@
         const r = p.rows[+row.dataset.r]; const t = r.t.trim().toUpperCase(); const sub = row.querySelector('.sub');
         sub.classList.remove('err');
         if (!t) { sub.textContent = ''; return; }
-        if (!known(t)) { sub.textContent = '지원하지 않는 티커예요. 아래 지원 티커 목록을 확인하세요.'; sub.classList.add('err'); return; }
+        if (!known(t)) { sub.textContent = '지원하지 않는 티커예요. ‘도움말 › 지원 티커’에서 목록을 확인하세요.'; sub.classList.add('err'); return; }
         const a = DATA.assets[t]; const [s0] = BT.avail(t, 'ext'); const [s1] = BT.avail(t, 'etf');
-        sub.textContent = `${a.n} · ${s1 > s0 ? '상장 ' + BT.label(s1) + ' · 확장 ' + BT.label(s0) + '~' : '데이터 ' + BT.label(s0) + '~'}`;
+        sub.textContent = state.ext && s1 > s0 ? `${a.c} · ${BT.label(s1)} 상장, 그 전(${BT.label(s0)}~)은 지수 데이터` : `${a.c} · 데이터 ${BT.label(state.ext ? s0 : s1)}~`;
+        sub.title = a.n;
       });
       const sumEl = card.querySelector('.sum');
       sumEl.textContent = info.empty ? '자산 없음 (계산 제외)' : `합계 ${+info.sum.toFixed(2)}%`;
@@ -190,7 +201,26 @@
       else pr.textContent = info.errs[0] || (info.empty ? '' : '비중 합계를 100%로 맞추세요');
       card.classList.toggle('off', !info.ok);
     });
+    renderPortTabs();
   }
+  /* phones: a switcher above the one card being edited, with each portfolio's state */
+  function renderPortTabs() {
+    const host = $('#port-tabs'); host.innerHTML = '';
+    state.ports.forEach((p, pi) => {
+      const info = portInfo(p);
+      const b = el('button', 'pt'); b.type = 'button'; b.dataset.p = pi; b.setAttribute('aria-pressed', pi === state.portCur ? 'true' : 'false');
+      const n = el('span', 'pt-n'); const k = el('span', 'key'); k.style.background = PCOL[pi];
+      n.append(k, el('span', null, p.name.trim() || `포트폴리오 ${pi + 1}`));
+      b.append(n, el('span', 'pt-s ' + (info.empty ? '' : info.ok ? 'ok' : 'bad'), info.empty ? '비어 있음' : info.ok ? `✓ 자산 ${info.tickers.length}개` : info.errs.length ? '입력 확인 필요' : `합계 ${+info.sum.toFixed(2)}%`));
+      host.appendChild(b);
+    });
+  }
+  function setPortCur(pi) {
+    state.portCur = pi;
+    document.querySelectorAll('#ports .pcard').forEach(c => c.classList.toggle('cur', +c.dataset.p === pi));
+    renderPortTabs();
+  }
+  $('#port-tabs').addEventListener('click', e => { const b = e.target.closest('.pt'); if (b) setPortCur(+b.dataset.p); });
   const ports = $('#ports');
   ports.addEventListener('input', e => {
     const card = e.target.closest('.pcard'); if (!card) return; const pi = +card.dataset.p;
@@ -294,7 +324,7 @@
     if (e - s < 11) { e = Math.min(ce, s + 11); s = Math.max(cs, e - 11); notes.push('분석 기간은 최소 12개월이라 기간을 늘렸어요.'); }
     state.start = s; state.end = e; writePeriodSelects();
     if (state.quickShort) notes.push(`공통 데이터가 ${state.quickShort}년보다 짧아 가능한 최대 기간으로 계산했어요.`);
-    document.querySelectorAll('#quick .chip').forEach(b => {
+    document.querySelectorAll('#quick .chip, #quick2 .chip').forEach(b => {
       const k = b.dataset.q === 'max' ? 'max' : +b.dataset.q;
       const on = k === 'max' ? (s === cs && e === ce) : (e === ce && s === ce - k * 12 + 1);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -316,7 +346,7 @@
         trail: BT.trailing([state.bench], [1], s, e, 'N', YEARS, adj, dv), roll: BT.rolling(benchRes, YEARS) });
     }
     const usesProxy = state.ext && series.some(x => x.tickers.some(t => BT.avail(t, 'etf')[0] > s));
-    if (usesProxy) notes.push('분석 기간 일부가 ETF 상장 이전이라 대용 지수·시뮬레이션 데이터를 썼어요. 자세한 내용은 ‘사용한 데이터’를 보세요.');
+    if (usesProxy) notes.push('분석 기간 일부가 ETF 상장 이전이라 대용 지수·시뮬레이션 데이터를 썼어요. 자세한 내용은 ‘도움말 › 사용한 데이터’에 있어요.');
     if (dv) {
       const noInc = [...new Set(series.flatMap(x => x.tickers))].filter(t => !BT.hasIncome(t));
       if (noInc.length) notes.push(`${noInc.join(', ')}은(는) 배당 데이터가 없어 배당 0으로 계산했어요(총수익이 모두 가격 상승으로 잡힘).`);
@@ -324,7 +354,7 @@
     msg.hidden = notes.length === 0; msg.className = 'notice'; msg.textContent = notes.join(' ');
     $('#avail-note').textContent = `선택한 자산의 공통 데이터: ${BT.label(cs)} ~ ${BT.label(ce)}`;
     state.last = { s, e, series, cs, ce, adj };
-    renderSummary(); renderQuickRes(); renderRisk(); renderMDD(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
+    renderSummary(); renderHero(); renderQuickRes(); renderRisk(); renderMDD(); renderDD(); renderTrailing(); renderTrend(); drawCharts(); renderRolling(); renderCoverage(); renderDataMode(); renderPeriod(); markOptStale(); markAdjStale();
   }
 
   function renderEmpty() {
@@ -332,7 +362,8 @@
     $('#mdd-note').textContent = '';
     for (const id of ['#c-growth', '#c-dd', '#c-ann', '#lg-growth', '#lg-dd', '#lg-ann']) $(id).innerHTML = '';
     for (const id of ['#pc-port', '#pc-verdict', '#pc-table', '#pc-key', '#pc-heat', '#pc-legend', '#pc-custom', '#pc-quick', '#t-risk', '#t-dd', '#dd-port']) $(id).innerHTML = '';
-    $('#dd-note').textContent = ''; state.riskData = null; renderQuickRes();
+    $('#dd-note').textContent = ''; state.riskData = null; renderQuickRes(); renderHero();
+    $('#trail-pick').innerHTML = ''; $('#trail-when').textContent = '';
     $('#pc-heat-note').textContent = ''; $('#pc-tbl-note').textContent = ''; $('#pc-data').textContent = '';
     $('#dm-banner').hidden = true; state.pcHeat = null;
     $('#cov').innerHTML = ''; $('#sum-note').textContent = '';
@@ -355,7 +386,6 @@
     const tb = el('tbody'); t.appendChild(tb);
     const add = (label, fn, opts = {}) => {
       const tr = el('tr'); if (opts.hl) tr.className = 'hl';
-      if (opts.detail) tr.setAttribute('data-detail', '');   // hidden in the simple view
       tr.appendChild(el('th', null, label));
       for (const x of series) { const td = cellFor(el('td'), x); const v = fn(x, td); if (typeof v === 'string') td.textContent = v; tr.appendChild(td); }
       tb.appendChild(tr);
@@ -365,7 +395,7 @@
       const I = x => x.st.income;
       add('최종 평가액 (배당 제외)', x => money(state.initial * x.st.final));
       add('받은 배당금 합계', (x, td) => { td.textContent = money(state.initial * I(x).total); td.appendChild(el('span', 'sub', `평가액 + 배당 ${money(state.initial * I(x).wealth)}`)); });
-      add('최근 1년 배당금', (x, td) => { td.textContent = money(state.initial * I(x).ttm); td.appendChild(el('span', 'sub', `지금 평가액의 ${pct(I(x).ttmYield)}`)); }, { detail: true });
+      add('최근 1년 배당금', (x, td) => { td.textContent = money(state.initial * I(x).ttm); td.appendChild(el('span', 'sub', `지금 평가액의 ${pct(I(x).ttmYield)}`)); });
       add('평균 배당률 (연)', (x, td) => { td.textContent = pct(I(x).avgYield); td.appendChild(el('span', 'sub', `첫해 ${money(state.initial * I(x).firstYear)}`)); });
       add('CAGR (평가액, 연복리)', x => pct(x.st.cagr), { hl: true });
       add('CAGR (평가액 + 받은 배당)', (x, td) => { td.textContent = pct(I(x).wealthCagr); td.appendChild(el('span', 'sub', '배당을 현금으로 모아 둔 경우(이자 없음)')); });
@@ -383,21 +413,79 @@
       if (!(m.mdd < 0)) { td.textContent = '–'; return; }
       if (m.recMonths != null) { td.textContent = dur(m.recMonths); td.appendChild(el('span', 'sub', `고점부터 ${dur(m.months)} (하락 ${dur(m.fallMonths)})`)); }
       else { td.textContent = '아직 회복 전'; td.classList.add('neg'); td.appendChild(el('span', 'sub', m.sinceTrough > 0 ? `저점 후 ${dur(m.sinceTrough)} 지남` : '마지막 달이 저점')); }
-    }, { detail: true });
+    });
     add('최장 회복 기간 (전고점 회복까지)', (x, td) => {
       const u = x.st.uw;
       if (!u.months) { td.textContent = '없음'; return; }
       td.textContent = dur(u.months) + (u.ongoing ? '+' : '');
       td.appendChild(el('span', 'sub', `${u.startLabel} → ${u.ongoing ? '진행 중' : u.endLabel}`));
     }, { hl: true });
-    add('표준편차 (연)', x => pct(x.st.stdev), { detail: true });
-    add('최고 연도', x => x.st.best ? `${spct(x.st.best.ret)} (${x.st.best.year})` : '–', { detail: true });
+    add('표준편차 (연)', x => pct(x.st.stdev));
+    add('최고 연도', x => x.st.best ? `${spct(x.st.best.ret)} (${x.st.best.year})` : '–');
     add('최악 연도', (x, td) => { if (!x.st.worst) return '–'; td.textContent = `${spct(x.st.worst.ret)} (${x.st.worst.year})`; if (x.st.worst.ret < 0) td.classList.add('neg'); });
     add('샤프 비율', x => num(x.st.sharpe));
-    add('소르티노 비율', x => num(x.st.sortino), { detail: true });
-    add('칼마 비율 (CAGR÷MDD)', x => num(x.st.calmar), { detail: true });
-    if (state.bench && known(state.bench)) add(`${state.bench} 상관계수`, x => num(x.st.corr), { detail: true });
-    add('상승한 달 비율', x => pct(x.st.posMonths, 1), { detail: true });
+    add('소르티노 비율', x => num(x.st.sortino));
+    add('칼마 비율 (CAGR÷MDD)', x => num(x.st.calmar));
+    if (state.bench && known(state.bench)) add(`${state.bench} 상관계수`, x => num(x.st.corr));
+    add('상승한 달 비율', x => pct(x.st.posMonths, 1));
+  }
+
+  /* ---------- v8: results at a glance ---------- */
+  /* the growth line on a log scale, with the worst fall (peak -> trough) drawn in red */
+  function sparkline(x) {
+    const v = x.res.vals, n = v.length, m = x.st.mddInfo, W = 160, H = 46, pad = 3;
+    const step = Math.max(1, Math.floor(n / 150)); const idx = [];
+    for (let t = 0; t < n; t += step) idx.push(t);
+    if (idx[idx.length - 1] !== n - 1) idx.push(n - 1);
+    if (m.mdd < 0) for (const k of [m.peak, m.trough]) if (!idx.includes(k)) idx.push(k);
+    idx.sort((a, b) => a - b);
+    let lo = Infinity, hi = -Infinity; for (const t of idx) { const y = Math.log(v[t]); if (y < lo) lo = y; if (y > hi) hi = y; }
+    const X = t => (n <= 1 ? 0 : t / (n - 1) * W), Y = t => pad + (hi - lo < 1e-9 ? (H - 2 * pad) / 2 : (hi - Math.log(v[t])) / (hi - lo) * (H - 2 * pad));
+    const pts = ts => ts.map(t => X(t).toFixed(1) + ',' + Y(t).toFixed(1)).join(' ');
+    const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': `${x.name} 자산 곡선` + (m.mdd < 0 ? `. 빨간 부분이 가장 크게 떨어진 ${m.peakLabel}–${m.troughLabel}` : '') });
+    const line = svg('polyline', { points: pts(idx), fill: 'none', 'stroke-width': 1.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }, root);
+    line.style.stroke = x.color;
+    if (m.mdd < 0) {
+      const fall = svg('polyline', { points: pts(idx.filter(t => t >= m.peak && t <= m.trough)), fill: 'none', 'stroke-width': 2.6, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke' }, root);
+      fall.style.stroke = 'var(--neg)';
+    }
+    return root;
+  }
+  /* one card per portfolio: final amount, CAGR, worst fall, longest time under water, and one plain sentence */
+  function renderHero() {
+    const host = $('#hero'), when = $('#hero-when'); if (!host) return; host.innerHTML = '';
+    if (!state.last) { when.textContent = ''; if ($('#msg').hidden) host.appendChild(el('p', 'empty', '비중 합계가 100%인 포트폴리오가 생기면 여기에 결과가 나와요. ‘입력’ 탭에서 티커와 비중을 넣어 주세요.')); return; }
+    const { s, e, series } = state.last, init = state.initial;
+    when.textContent = `${BT.label(s)} – ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 처음 ${money(init)}` + (state.div ? ' · 배당은 현금으로 받기' : ' · 배당 재투자') +
+      (state.real ? ' · 물가 반영(지금 돈 가치)' : '') + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    for (const x of series) {
+      const st = x.st, m = st.mddInfo, u = st.uw;
+      const card = el('div', 'hc' + (x.bench ? ' bench' : '')); card.dataset.key = x.key;
+      const top = el('div', 'hc-top'); const k = el('span', 'key'); k.style.background = x.color;
+      top.append(k, el('span', 'nm', x.bench ? state.bench : x.name)); if (x.bench) top.appendChild(el('span', 'bt', '비교 기준'));
+      card.appendChild(top);
+      const main = el('div', 'hc-main');
+      main.appendChild(el('div', 'hc-amt', money(init * st.final)));
+      if (!x.bench) { const sp = el('div', 'hc-spark'); sp.appendChild(sparkline(x)); main.appendChild(sp); }
+      card.appendChild(main);
+      const from = el('div', 'hc-from');
+      if (state.div) from.append('평가액(배당 제외) · 받은 배당 ', el('b', null, money(init * st.income.total)), ' 따로');
+      else from.append('처음 넣은 돈 ', el('b', null, money(init)), ' 기준');
+      card.appendChild(from);
+      const kv = el('div', 'hc-kv');
+      const cell = (lab, val, neg, sub) => { const d = el('div'); d.append(el('span', null, lab), el('b', neg ? 'neg' : null, val)); if (sub) d.appendChild(el('i', null, sub)); kv.appendChild(d); };
+      cell(state.div ? '연 수익률(평가액)' : '연 수익률', pct(st.cagr, 1), st.cagr < 0);
+      cell('최대 낙폭', mpct1(st.mdd), st.mdd < 0);
+      cell('최장 회복', u.months ? dur(u.months) + (u.ongoing ? '+' : '') : '없음', false, u.months ? `${u.startLabel}–${u.ongoing ? '진행 중' : u.endLabel}` : null);
+      card.appendChild(kv);
+      if (!x.bench) {
+        const note = el('p', 'hc-note');
+        if (m.mdd < 0) note.append('가장 크게 떨어진 때 ', el('b', null, `${m.peakLabel} → ${m.troughLabel}`), m.recLabel ? ` · ${m.recLabel}에 고점 회복` : ' · 아직 고점 회복 전');
+        else note.textContent = '분석 기간에 고점보다 떨어진 달이 없어요.';
+        card.appendChild(note);
+      }
+      host.appendChild(card);
+    }
   }
 
   /* series name with its colour key (table row header) */
@@ -465,17 +553,22 @@
       tb.appendChild(tr);
     });
     t.appendChild(tb);
-    // phones: one block per period, so the period is always written right above its numbers
-    const tbm = el('tbody');
+    // phones: pick one period, then every portfolio for it in a table that fits the screen
+    if (!cols[state.trailJ] || !cols[state.trailJ].ok) state.trailJ = cols.findIndex(c => c.ok);
+    const pick = $('#trail-pick'); pick.innerHTML = '';
     cols.forEach((c, j) => {
-      const hr = el('tr', 'ph'); const h0 = el('th'); h0.scope = 'colgroup';
-      h0.append(el('span', 'gname', name(c)), el('span', 'when', c.ok ? `${c.start}–${c.end}` : '분석 기간이 짧아 계산 안 함'));
-      hr.appendChild(h0);
-      if (c.ok) { hr.appendChild(el('th', null, 'CAGR')); hr.appendChild(el('th', null, 'MDD')); } else h0.colSpan = 3;
-      tbm.appendChild(hr);
-      if (!c.ok) return;
-      series.forEach((x, i) => { const tr = el('tr'); tr.append(seriesTh(x), cagrCell(x, vals[i][j]), mddCell(x, vals[i][j])); tbm.appendChild(tr); });
+      const b = el('button', 'chip', c.Y === 'full' ? '전체' : `${c.Y}년`); b.type = 'button'; b.setAttribute('aria-pressed', j === state.trailJ ? 'true' : 'false');
+      if (!c.ok) { b.disabled = true; b.title = '분석 기간이 짧아 계산하지 않았어요'; }
+      b.addEventListener('click', () => { state.trailJ = j; renderTrailing(); });
+      pick.appendChild(b);
     });
+    const j = state.trailJ, c = cols[j];
+    $('#trail-when').textContent = `${name(c)} · ${c.start}–${c.end}`;
+    const hm = el('thead'), hr = el('tr');
+    hr.append(el('th', null, '포트폴리오'), el('th', null, `${c.Y === 'full' ? '전체' : c.Y + '년'} CAGR`), el('th', null, `${c.Y === 'full' ? '전체' : c.Y + '년'} MDD`));
+    hm.appendChild(hr); tm.appendChild(hm);
+    const tbm = el('tbody');
+    series.forEach((x, i) => { const tr = el('tr'); tr.append(seriesTh(x), cagrCell(x, vals[i][j]), mddCell(x, vals[i][j])); tbm.appendChild(tr); });
     tm.appendChild(tbm);
   }
 
@@ -739,7 +832,9 @@
   }
   function updatePickerState() {
     document.querySelectorAll('#o-picker .tchip').forEach(c => c.setAttribute('aria-pressed', state.optSel.has(c.dataset.t) ? 'true' : 'false'));
-    $('#o-count').textContent = `${state.optSel.size}개 선택 / 전체 ${Object.keys(DATA.assets).length}개`;
+    $('#o-count').textContent = `${state.optSel.size}개 / 전체 ${Object.keys(DATA.assets).length}개`;
+    const sel = [...state.optSel].filter(known);
+    $('#o-sel-sum').textContent = sel.length ? listShort(sel, 10) : '고른 자산이 없어요. 눌러서 고르세요.';
     if (state.last) { computeTrend(); renderTrend(); }
     markOptStale();
   }
@@ -791,12 +886,18 @@
     } else if (state.opt && !optBusy) { $('#o-run').classList.remove('attn'); updateOptStatus(); }
   }
   ['#o-step', '#o-max'].forEach(id => $(id).addEventListener('change', () => markOptStale()));
+  /* the folded optimizer criteria, readable without opening them */
+  function renderCritSum() {
+    const uw = +$('#o-uw').value || 0, lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
+    $('#o-crit-sum').textContent = `비중 ${fmtW(+$('#o-step').value)} 단위 · 자산별 최대 ${fieldNum('#o-max', 100)}% · 내 기준 MDD ${lo}~${hi}% · 회복 기간 ${uw ? dur(uw) + ' 이내' : '제한 없음'}`;
+  }
+  ['#o-step', '#o-max', '#o-lo', '#o-hi', '#o-uw'].forEach(id => { $(id).addEventListener('input', renderCritSum); $(id).addEventListener('change', renderCritSum); });
   $('#o-max').addEventListener('input', () => renderElig());
 
   async function runOpt() {
     const st = $('#o-status');
     if (optBusy) return;
-    if (!state.last) { st.textContent = '분석 기간이 아직 정해지지 않았어요. 위 포트폴리오 중 하나 이상을 비중 합계 100%로 입력해 주세요.'; return; }
+    if (!state.last) { st.textContent = '분석 기간이 아직 정해지지 않았어요. ‘입력’ 탭의 포트폴리오 중 하나 이상을 비중 합계 100%로 넣어 주세요.'; return; }
     const tickers = [...state.optSel].filter(known);
     if (!tickers.length) { st.textContent = '대상 자산을 1개 이상 골라 주세요.'; return; }
     const lo = +$('#o-lo').value || 0, hi = fieldNum('#o-hi', 100);
@@ -864,7 +965,7 @@
     if (!pos || pos === 'recent') for (const Y of HZ) out.push({ id: 'r' + Y, pos: 'recent', years: Y, i0: e - Y * 12 + 1, i1: e });
     if (!pos || pos === 'old') for (const Y of HZ) {
       const w = { id: 'o' + Y, pos: 'old', years: Y, i0: s, i1: s + Y * 12 - 1 };
-      if (w.i1 > e) { w.reason = `분석 기간(${BT.label(s)}~${BT.label(e)})이 ${Y}년보다 짧아요. 위 ‘기간과 규칙’에서 시작 시점을 앞당기면 계산돼요.`; w.i0 = w.i1 = -1; }
+      if (w.i1 > e) { w.reason = `분석 기간(${BT.label(s)}~${BT.label(e)})이 ${Y}년보다 짧아요. ‘입력 › 기간과 금액’에서 시작 시점을 앞당기면 계산돼요.`; w.i0 = w.i1 = -1; }
       out.push(w);
     }
     return out;
@@ -958,8 +1059,8 @@
       const b = el('button', 'btn ghost sm', `포트폴리오 ${pi + 1}`); b.type = 'button';
       b.addEventListener('click', () => {
         state.ports[pi] = { name, rows: items.map(([t, w]) => ({ t, w: String(+(w * 100).toFixed(2)) })) };
-        renderPorts(); schedule(true); b.textContent = `포트폴리오 ${pi + 1}에 적용됨`;
-        if (state.layout === 'tabs') toast(`‘${name}’을 포트폴리오 ${pi + 1}에 넣었어요. 결과는 ‘2 결과’ 탭에서 볼 수 있어요.`);
+        state.portCur = pi; renderPorts(); schedule(true); b.textContent = `포트폴리오 ${pi + 1}에 적용됨`;
+        if (state.layout === 'tabs') toast(`‘${name}’${eul(name)} 포트폴리오 ${pi + 1}에 넣었어요. 결과는 ‘결과’ 탭에서 볼 수 있어요.`);
         goTo('h-ports');
       });
       ap.appendChild(b);
@@ -1408,7 +1509,7 @@
     const hit = o.tickers.some(t => BT.isAdjusted(t));
     if (!state.trend.on || !hit) {
       o.resAdj = null; o.adjKey = adjKeyNow(); state.optView = 'actual';
-      $('#o-adj-note').textContent = !state.trend.on ? '추세 보정이 꺼져 있어요. 위 ‘추세 유지 보정’ 패널에서 켤 수 있어요.' : '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.';
+      $('#o-adj-note').textContent = !state.trend.on ? '추세 보정이 꺼져 있어요. ‘점검 › 추세 유지 보정’에서 켤 수 있어요.' : '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.';
       $('#o-adj-rerun').hidden = true; renderAdjCompare(); renderOptResults(); return;
     }
     if (o.key !== optKey()) {
@@ -1426,7 +1527,7 @@
     const universeHit = o.tickers.some(t => BT.isAdjusted(t));
     if (!state.trend.on || !universeHit) {
       state.optView = 'actual';
-      st.textContent = state.trend.on ? '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.' : '추세 보정이 꺼져 있어요(위 ‘추세 유지 보정’ 패널).';
+      st.textContent = state.trend.on ? '대상 자산 중 급등으로 보정한 종목이 없어 보정 전후 결과가 같아요.' : '추세 보정이 꺼져 있어요(‘점검 › 추세 유지 보정’).';
       renderAdjCompare(); return;
     }
     optBusy = true; $('#o-run').disabled = true; $('#o-adj-rerun').disabled = true;
@@ -1563,7 +1664,7 @@
   }
   function renderPosNote() {
     const n = $('#o-pos-note'); if (!n) return;
-    n.textContent = state.optPos === 'old' ? `분석 시작(${state.last ? BT.label(state.last.s) : '–'})부터 10·20·30년 구간이에요. 시작 시점은 ‘기간과 규칙’에서 바꿀 수 있어요.` : `분석 종료(${state.last ? BT.label(state.last.e) : '–'})까지의 10·20·30년 구간이에요.`;
+    n.textContent = state.optPos === 'old' ? `분석 시작(${state.last ? BT.label(state.last.s) : '–'})부터 10·20·30년 구간이에요. 시작 시점은 ‘입력 › 기간과 금액’에서 바꿀 수 있어요.` : `분석 종료(${state.last ? BT.label(state.last.e) : '–'})까지의 10·20·30년 구간이에요.`;
   }
   document.querySelectorAll('#o-pos button').forEach(b => b.addEventListener('click', () => setOptPos(b.dataset.p)));
 
@@ -1717,7 +1818,10 @@
     };
   }
   function loadLocal() { const a = lsRead(); if (a === null) { SV.lsOK = false; return; } SV.items = a.map(x => Object.assign(cleanItem(x) || {}, { id: x.id })).filter(x => x.rows); }
-  function flashSaved(msg) { const m = $('#sv-msg'); m.textContent = msg; clearTimeout(flashSaved.t); flashSaved.t = setTimeout(() => { m.textContent = ''; }, 4000); }
+  function flashSaved(msg) {
+    const m = $('#sv-msg'); m.textContent = msg; clearTimeout(flashSaved.t); flashSaved.t = setTimeout(() => { m.textContent = ''; }, 4000);
+    if (!isShown(m)) toast(msg);   // the saved list is folded or on another tab: say it where it can be seen
+  }
   function toLocal(note) {
     if (SV.unsub) { try { SV.unsub(); } catch (_) {} }
     SV.unsub = null; SV.col = null; SV.mode = 'local'; loadLocal(); renderSaved(); if (note) flashSaved(note);
@@ -1727,7 +1831,7 @@
     if (!item) { flashSaved('비중 합계가 100%인 포트폴리오만 저장할 수 있어요.'); return false; }
     if (SV.mode === 'account' && SV.col) {
       for (let tryN = 0; tryN < 2; tryN++) {
-        try { await SV.col.doc(newId()).set(item); flashSaved(`‘${item.name}’을 내 계정에 저장했어요.`); return true; }
+        try { await SV.col.doc(newId()).set(item); flashSaved(`‘${item.name}’${eul(item.name)} 내 계정에 저장했어요.`); return true; }
         catch (e) {
           const code = e && e.code;
           if (code === 'quota_exceeded') { flashSaved('저장 공간이 꽉 찼어요. 오래된 항목을 지운 뒤 다시 저장해 주세요.'); return false; }
@@ -1738,7 +1842,7 @@
     }
     item.id = newId(); SV.items.unshift(item);
     if (!lsWrite(SV.items)) SV.lsOK = false;
-    renderSaved(); flashSaved(SV.lsOK ? `‘${item.name}’을 이 기기에 저장했어요.` : '이 브라우저는 저장을 막고 있어 창을 닫으면 사라져요. 내보내기로 보관하세요.');
+    renderSaved(); flashSaved(SV.lsOK ? `‘${item.name}’${eul(item.name)} 이 기기에 저장했어요.` : '이 브라우저는 저장을 막고 있어 창을 닫으면 사라져요. 내보내기로 보관하세요.');
     return true;
   }
   async function deleteItem(id) {
@@ -1817,8 +1921,8 @@
     if (b.dataset.act === 'load') {
       const pi = +b.dataset.p;
       state.ports[pi] = { name: it.name, rows: it.rows.map(r => ({ t: r.t, w: String(r.w) })) };
-      renderPorts(); schedule(true);
-      flashSaved(`‘${it.name}’을 포트폴리오 ${pi + 1}에 불러왔어요.` + ((it.snap && it.snap.rule && it.snap.rule !== state.rebal) ? ` 저장할 때 리밸런싱은 ${REBAL_TXT[it.snap.rule]}이었어요.` : '') +
+      state.portCur = pi; renderPorts(); schedule(true);
+      flashSaved(`‘${it.name}’${eul(it.name)} 포트폴리오 ${pi + 1}에 불러왔어요.` + ((it.snap && it.snap.rule && it.snap.rule !== state.rebal) ? ` 저장할 때 리밸런싱은 ${REBAL_TXT[it.snap.rule]}이었어요.` : '') +
         ((it.snap && it.snap.cagr != null && !!it.snap.div !== state.div) ? ` 저장한 수치는 배당 ${it.snap.div ? '현금 수령' : '재투자'} 기준이에요.` : ''));
       goTo('h-ports');
     } else if (b.dataset.act === 'code') {
@@ -1929,7 +2033,7 @@
   }
   function savePortCard(pi, btn) {
     const p = state.ports[pi], info = portInfo(p);
-    if (!info.ok) { flashSaved('비중 합계를 100%로 맞춘 뒤 저장할 수 있어요.'); document.getElementById('h-saved').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+    if (!info.ok) { flashSaved('비중 합계를 100%로 맞춘 뒤 저장할 수 있어요.'); return; }
     const x = state.last && state.last.series.find(s => s.key === 'p' + pi);
     const snap = x ? { cagr: x.st.cagr, mdd: x.st.mdd, uw: x.st.uw.months, ong: x.st.uw.ongoing, from: BT.label(state.last.s), to: BT.label(state.last.e), real: state.real, rule: state.rebal,
       div: state.div, dy: x.st.income ? x.st.income.ttmYield : null, adj: !!(state.last.adj && usesAdjusted(x.tickers)) } : null;
@@ -2097,13 +2201,14 @@
     const hits = adjHits(), show = on && !!state.last;
     $('#dm-banner').hidden = !show;
     if (show) $('#dm-banner-txt').textContent = hits.length ? `보정 종목 ${hits.map(t => `${t} ${trendTxt(t)}`).join(', ')}. 성과 요약·차트·기간별 표·롤링·구간별 점검이 모두 이 데이터 기준이에요.` : '포트폴리오에 보정한 종목이 없어 결과가 실제 데이터와 같아요.';
-    for (const id of ['h-sum', 'h-risk', 'h-charts', 'h-trail', 'h-roll', 'h-period']) {
+    for (const id of ['h-hero', 'h-sum', 'h-risk', 'h-charts', 'h-trail', 'h-mdd', 'h-roll', 'h-annual', 'h-period']) {
       const h = document.getElementById(id); if (!h) continue;
       let m = h.querySelector('.adj-mark');
       if (show && hits.length) { if (!m) { m = el('span', 'adj-mark', '보정 데이터'); m.style.marginLeft = '8px'; h.appendChild(m); } }
       else if (m) m.remove();
     }
-    $('#set-sum').textContent = `데이터 ${state.ext ? '상장 이전까지 확장' : 'ETF 상장 이후만'} · ${state.real ? '물가 반영(실질)' : '명목'} · 배당 ${state.div ? '현금으로 받기' : '재투자'}. 이 설정은 ‘자세히’ 보기에서 바꿀 수 있어요.`;
+    // what the folded 'advanced settings' are set to, readable without opening it
+    $('#adv-sum').textContent = `벤치마크 ${state.bench && known(state.bench) ? state.bench : '없음'} · ${on ? '추세 보정 데이터' : '실제 데이터'} · ${state.ext ? '상장 전 확장' : 'ETF 상장 이후만'} · ${state.real ? '물가 반영' : '물가 미반영'} · 배당 ${state.div ? '현금으로 받기' : '재투자'}`;
   }
   function setDataAdj(on) {
     if (on && !state.trend.on) { state.trend.on = true; $('#tr-on').checked = true; }
@@ -2162,9 +2267,9 @@
     const { series } = state.last, R = series.map(riskOf); state.riskData = R;
     const thead = el('thead'), hr = el('tr'); headRow(hr, series, '지표'); thead.appendChild(hr); t.appendChild(thead);
     const tb = el('tbody'); t.appendChild(tb);
-    const sep = (txt, detail) => { const tr = el('tr', 'sep'); const th = el('th', null, txt); th.colSpan = series.length + 1; tr.appendChild(th); if (detail) tr.setAttribute('data-detail', ''); tb.appendChild(tr); };
+    const sep = txt => { const tr = el('tr', 'sep'); const th = el('th', null, txt); th.colSpan = series.length + 1; tr.appendChild(th); tb.appendChild(tr); };
     const row = (label, hint, vals, fmt, better, opts = {}) => {
-      const tr = el('tr'); if (opts.detail) tr.setAttribute('data-detail', ''); if (opts.hl) tr.className = 'hl';
+      const tr = el('tr'); if (opts.hl) tr.className = 'hl';
       const th = el('th', null, label); if (hint) th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
       const ok = vals.filter(v => v != null && isFinite(v));
       const best = better && ok.length > 1 ? (better === 'hi' ? Math.max(...ok) : Math.min(...ok)) : null;
@@ -2181,21 +2286,21 @@
     const has10 = R.some(r => r.r10);
     sep('수익 — 시작·끝 시점에 덜 좌우되는 10년 구간 성적');
     row('보통의 10년 CAGR', '10년 구간 중앙값', R.map(r => r.r10 ? r.r10.med : null), P1, 'hi', { na: '기간 부족' });
-    row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족', detail: true });
+    row('나쁜 10년 CAGR', '10년 구간 하위 10%', R.map(r => r.r10 ? r.r10.p10 : null), P1, 'hi', { na: '기간 부족' });
     sep('위험 — 모든 하락의 깊이·기간·횟수');
     row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값', R.map(r => r.r10 ? r.r10.mddMed : null), M1, 'hi', { na: '기간 부족' });
     row('평균 낙폭', '매달 고점 대비 평균', R.map(r => -r.pain), M1, 'hi');
-    row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo', { detail: true });
-    row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo', { detail: true });
-    row('10% 넘는 하락', '횟수', R.map(r => r.n10), (td, v, i) => { td.textContent = `${v}번`; td.appendChild(el('span', 'sub', `10년에 ${(v / R[i].years * 10).toFixed(1)}번`)); }, 'lo', { detail: true });
+    row('울서 지수', '낙폭의 깊이 × 기간, 낮을수록 좋음', R.map(r => r.ui), (td, v) => { td.textContent = (v * 100).toFixed(1) + '%'; }, 'lo');
+    row('고점보다 10% 넘게 빠져 있던 기간', '전체 기간 중', R.map(r => r.deep), (td, v, i) => { td.textContent = pctm(v, 0); td.appendChild(el('span', 'sub', `${monthsTxt(Math.round(v * R[i].n))}`)); }, 'lo');
+    row('10% 넘는 하락', '횟수', R.map(r => r.n10), (td, v, i) => { td.textContent = `${v}번`; td.appendChild(el('span', 'sub', `10년에 ${(v / R[i].years * 10).toFixed(1)}번`)); }, 'lo');
     sep('수익 ÷ 위험');
     row('마틴 비율', '(CAGR − 현금 수익) ÷ 울서 지수', R.map(r => r.martin), (td, v) => { td.textContent = num(v); }, 'hi', { hl: true });
-    row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
-    row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi', { detail: true });
+    row('(참고) 샤프 비율', '오르내림(변동성) 기준', series.map(x => x.st.sharpe), (td, v) => { td.textContent = num(v); }, 'hi');
+    row('(참고) 칼마 비율', 'CAGR ÷ MDD, 가장 큰 한 번 기준', R.map(r => r.calmar), (td, v) => { td.textContent = num(v); }, 'hi');
     sep('한 번의 폭락에 얼마나 좌우되나');
     row('가장 큰 하락', '= 전체 기간 MDD', R.map(r => r.eps[0] ? r.eps[0].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[0]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '하락 없음' });
     row('두 번째로 큰 하락', '따로 일어난 하락', R.map(r => r.eps[1] ? r.eps[1].depth : null), (td, v, i) => { M1(td, v); const e = R[i].eps[1]; td.appendChild(el('span', 'sub', `${e.pkL} → ${e.trL}`)); }, 'hi', { na: '없음' });
-    row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음', detail: true });
+    row('큰 하락 5개 평균', '−5% 넘는 하락 중 깊은 순', R.map(r => r.top5), (td, v, i) => { M1(td, v); td.appendChild(el('span', 'sub', `${R[i].top.length}개 평균`)); }, 'hi', { na: '−5% 넘는 하락 없음' });
     row('가장 큰 하락의 비중', '전체 낙폭(울서 지수) 중', R.map(r => r.eps[0] ? r.eps[0].share : null), (td, v) => { td.textContent = pctm(v, 0); const [c, txt] = shareTag(v); const w = el('span', 'tagrow'); w.appendChild(el('span', c, txt)); td.appendChild(w); }, null, { na: '하락 없음' });
     if (!has10) { const tr = el('tr'); const td = el('td', 'na', '분석 기간이 10년보다 짧아 ‘10년 구간’ 지표는 비워 뒀어요.'); td.colSpan = series.length + 1; td.style.textAlign = 'left'; tr.appendChild(td); tb.appendChild(tr); }
   }
@@ -2237,11 +2342,12 @@
     const t = $('#t-mdd'), note = $('#mdd-note'); t.innerHTML = ''; note.textContent = '';
     if (!state.last || !state.riskData) return;
     const { s, e, series } = state.last, R = state.riskData, n = e - s + 1;
-    const thead = el('thead'), hr = el('tr'); headRow(hr, series, 'MDD 종류 (어느 구간에서 쟀나)'); thead.appendChild(hr); t.appendChild(thead);
+    const thead = el('thead'), hr = el('tr'); headRow(hr, series, 'MDD 종류 · 잰 구간'); thead.appendChild(hr); t.appendChild(thead);
     const tb = el('tbody'); t.appendChild(tb);
-    const row = (label, hint, fill, opts = {}) => {
-      const tr = el('tr'); if (opts.hl) tr.className = 'hl'; if (opts.detail) tr.setAttribute('data-detail', '');
-      const th = el('th', null, label); th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
+    /* label, the window it was measured over (always shown), and a longer note (hidden on a phone) */
+    const row = (label, win, hint, fill, opts = {}) => {
+      const tr = el('tr'); if (opts.hl) tr.className = 'hl';
+      const th = el('th'); th.appendChild(el('span', 'ml', label)); if (win) th.appendChild(el('span', 'mw', win)); if (hint) th.appendChild(el('span', 'hint', hint)); tr.appendChild(th);
       series.forEach((x, i) => { const td = cellFor(el('td'), x); fill(td, x, i); tr.appendChild(td); });
       tb.appendChild(tr);
     };
@@ -2251,15 +2357,15 @@
       if (sub) td.appendChild(el('span', 'sub', sub));
     };
     const when = m => (m.mdd < 0 ? `${m.peakLabel} → ${m.troughLabel}` : '낙폭 없음');
-    row('전체 기간 MDD', `${BT.label(s)}–${BT.label(e)} 전체에서 가장 크게 떨어진 한 번 · 성과 요약의 MDD`, (td, x) => M(td, x.st.mddInfo.mdd, when(x.st.mddInfo)), { hl: true });
+    row('전체 기간 MDD', `${BT.label(s)}–${BT.label(e)}`, '분석 기간 전체에서 가장 크게 떨어진 한 번 · 한눈에 보기의 최대 낙폭', (td, x) => M(td, x.st.mddInfo.mdd, when(x.st.mddInfo)), { hl: true });
     const rec = [10, 20].map(Y => ({ Y, j: YEARS.indexOf(Y), ok: Y * 12 <= n }));
-    rec.forEach(({ Y, j, ok }) => row(`최근 ${Y}년 MDD`, ok ? `${BT.label(e - Y * 12 + 1)}–${BT.label(e)}만 새로 시작해 계산 · 기간별 표` : `분석 기간이 ${Y}년보다 짧아 계산 안 함`, (td, x) => {
+    rec.forEach(({ Y, j, ok }) => row(`최근 ${Y}년 MDD`, ok ? `${BT.label(e - Y * 12 + 1)}–${BT.label(e)}` : '기간 부족', ok ? `그 ${Y}년만 새로 시작해 계산 · 최근 N년 성과 표` : `분석 기간이 ${Y}년보다 짧아 계산하지 않았어요`, (td, x) => {
       const v = ok ? x.trail[j] : null; if (!v || !v.ok) { M(td, null); return; }
       M(td, v.mdd, when(v.mddInfo));
     }));
-    row('10년 보유 시 최악 MDD', '모든 10년 구간(1개월 간격) 중 가장 깊은 값 · 롤링 표', (td, x, i) => { const r = R[i].r10; if (!r) { M(td, null); return; } M(td, r.mddWorst, `${r.mddWorstWin} 구간`); }, { detail: true });
-    row('보통의 10년 MDD', '모든 10년 구간 MDD의 중앙값 · 수익과 위험', (td, x, i) => { const r = R[i].r10; M(td, r ? r.mddMed : null); });
-    row('평균 낙폭', '매달 직전 고점보다 얼마나 아래 있었나의 평균 · 수익과 위험', (td, x, i) => M(td, -R[i].pain));
+    row('10년 보유 시 최악', '모든 10년 구간 중', '1개월 간격으로 잡은 모든 10년 구간의 MDD 중 가장 깊은 값 · 롤링 CAGR 표', (td, x, i) => { const r = R[i].r10; if (!r) { M(td, null); return; } M(td, r.mddWorst, `${r.mddWorstWin} 구간`); });
+    row('보통의 10년 MDD', '10년 구간 중앙값', '모든 10년 구간 MDD의 중앙값 · 수익과 위험', (td, x, i) => { const r = R[i].r10; M(td, r ? r.mddMed : null); });
+    row('평균 낙폭', '매달의 평균', '매달 직전 고점보다 얼마나 아래 있었나의 평균 · 수익과 위험', (td, x, i) => M(td, -R[i].pain));
     // one plain sentence for the first portfolio
     const x = series[0], m = x.st.mddInfo, R0 = R[0];
     if (!(m.mdd < 0)) { note.textContent = `${x.name}: 분석 기간에 떨어진 달이 없어 MDD가 0%예요.`; return; }
@@ -2497,14 +2603,14 @@
     };
     root.addEventListener('pointermove', ev => { const c = cellAt(ev); if (c) show(c, ev); else hide(); });
     root.addEventListener('pointerleave', hide);
-    root.addEventListener('click', ev => { const c = cellAt(ev); if (!c) return; setPcRange(c.a, c.b, true); const sec = $('#pc-custom-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+    root.addEventListener('click', ev => { const c = cellAt(ev); if (!c) return; setPcRange(c.a, c.b, true); goTo('pc-custom-sec', 'nearest'); });
     root.style.cursor = 'pointer';
     // legend: swatches from best to worst
     lg.appendChild(el('div', 'ttl', HEAT[metric].ttl));
     const nB = HEAT[metric].edges.length + 1, counts = new Array(nB).fill(0);
     for (const c of H.cells) counts[heatBin(metric, metric === 'cagr' ? c.cagr : c.mdd)]++;
     for (let k = nB - 1; k >= 0; k--) { const row = el('div', 'hl-row'); const i = el('i'); i.style.background = heatFill(metric, k); row.append(i, el('span', null, heatLabel(metric, k))); if (!counts[k]) { row.style.opacity = '0.45'; row.title = '이 색에 해당하는 구간이 없어요'; } lg.appendChild(row); }
-    $('#pc-heat-note').textContent = '칸 하나 = 시작 연도 1월부터 끝 연도 12월까지 보유한 결과. 대각선은 그해 1년, 오른쪽 위 끝은 전체 기간이에요. 칸을 누르면 아래에서 그 구간을 자세히 봐요.' + (metric === 'mdd' ? ` 내 기준 MDD 상한은 ${Math.round(+$('#o-hi').value || 30)}%예요.` : '');
+    $('#pc-heat-note').textContent = '칸 하나 = 시작 연도 1월부터 끝 연도 12월까지 보유한 결과. 대각선은 그해 1년, 오른쪽 위 끝은 전체 기간이에요. 칸을 누르면 아래 ‘직접 고른 구간’에서 그 구간을 따로 계산해요.' + (metric === 'mdd' ? ` 내 기준 MDD 상한은 ${Math.round(+$('#o-hi').value || 30)}%예요.` : '');
   }
   document.querySelectorAll('#pc-metric button').forEach(b => b.addEventListener('click', () => { state.pc.metric = b.dataset.m; drawHeat(); }));
   /* ---- a window of your choice ---- */
@@ -2585,23 +2691,28 @@
   }
   $('#o-hi').addEventListener('change', () => { if (state.last) renderPeriod(); });
 
-  /* ---------- simple / full view and the section bar ---------- */
-  const VIEW_KEY = 'etf-backtester.view.v1';
-  function readView() { try { return window.localStorage.getItem(VIEW_KEY) === 'simple'; } catch (_) { return false; } }
-  function setSimple(on, save) {
-    state.simple = !!on;
-    document.documentElement.classList.toggle('simple', state.simple);
-    $('#v-simple').setAttribute('aria-pressed', state.simple ? 'true' : 'false');
-    $('#v-full').setAttribute('aria-pressed', state.simple ? 'false' : 'true');
-    if (save) { try { window.localStorage.setItem(VIEW_KEY, state.simple ? 'simple' : 'full'); } catch (_) {} }
-    if (!state.simple) requestAnimationFrame(() => { drawCharts(); drawFrontier(); drawHeat(); });   // panels that were hidden had no width
-    if (state.simple && state.layout === 'tabs' && state.tab === 'g-ref') showTab('g-setup');
-    maybeRunDeferredOpt();
-    markNav();
+  /* ---------- v8: folded sections ('고급' and the like), each remembered per device ---------- */
+  const FOLD_KEY = 'etf-backtester.folds.v1';
+  const foldEls = () => [...document.querySelectorAll('details[data-fold]')];
+  function foldsRead() { try { const o = JSON.parse(window.localStorage.getItem(FOLD_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; } catch (_) { return {}; } }
+  function foldsSave() { const o = {}; foldEls().forEach(d => { if (d.open) o[d.dataset.fold] = 1; }); try { window.localStorage.setItem(FOLD_KEY, JSON.stringify(o)); } catch (_) {} }
+  let foldRedrawT = null;
+  function initFolds() {
+    const saved = foldsRead();
+    foldEls().forEach(d => {
+      d.open = !!saved[d.dataset.fold];
+      d.addEventListener('toggle', () => {
+        // charts drawn while folded had no width
+        if (d.open && d.querySelector('.chart-box')) { clearTimeout(foldRedrawT); foldRedrawT = setTimeout(() => { drawCharts(); drawFrontier(); drawHeat(); }, 30); }
+        foldsSave();
+      });
+    });
+    try { window.localStorage.removeItem('etf-backtester.view.v1'); } catch (_) {}   // the v7 simple/full switch is gone
   }
-  $('#v-simple').addEventListener('click', () => setSimple(true, true));
-  $('#v-full').addEventListener('click', () => setSimple(false, true));
-  $('#to-full').addEventListener('click', () => { setSimple(false, true); if (state.layout === 'tabs') showTab('g-opt', { user: true }); else goTo('g-opt'); });
+  /* open every fold around an element (a jump target inside a closed fold would be invisible) */
+  function openFoldsAround(t) { for (let d = t && t.closest('details'); d; d = d.parentElement ? d.parentElement.closest('details') : null) d.open = true; }
+  $('#fold-open-all').addEventListener('click', () => { document.querySelectorAll('details.fold').forEach(d => { d.open = true; }); toast('접힌 항목을 모두 펼쳤어요.'); });
+  $('#fold-close-all').addEventListener('click', () => { document.querySelectorAll('details.fold').forEach(d => { d.open = false; }); toast('접힌 항목을 모두 접었어요.'); });
   const reduceMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll('#tb-nav a, #bnav a').forEach(a => a.addEventListener('click', ev => {
     ev.preventDefault();
@@ -2628,15 +2739,14 @@
   function readLayout() { try { return window.localStorage.getItem(LAYOUT_KEY) === 'page' ? 'page' : 'tabs'; } catch (_) { return 'tabs'; } }
   const paneOf = g => document.querySelector(`.pane[data-g="${g}"]`);
   const redrawVisible = () => requestAnimationFrame(() => { drawCharts(); drawFrontier(); drawHeat(); });
-  /* the optimizer is heavy: run it once its panel can be seen (full view, and its tab open when using tabs) */
+  /* the optimizer is heavy: run it once its tab is open (or at once on the one-page layout) */
   function maybeRunDeferredOpt() {
-    if (!state.optDeferred || state.simple) return;
+    if (!state.optDeferred) return;
     if (state.layout === 'tabs' && state.tab !== 'g-opt') return;
     state.optDeferred = false; setTimeout(runOpt, 60);
   }
   function showTab(g, opts = {}) {
     if (!TAB_IDS.includes(g)) g = 'g-setup';
-    if (state.simple && g === 'g-ref') g = 'g-setup';
     state.tab = g;
     document.documentElement.dataset.tab = g;
     if (state.layout === 'tabs') {
@@ -2662,28 +2772,30 @@
   $('#lay-tabs').addEventListener('click', () => setLayout('tabs', true));
   $('#lay-page').addEventListener('click', () => setLayout('page', true));
   document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) showTab(b.dataset.go, { user: true }); });
-  /* jump to an element, opening its tab first when needed */
+  /* jump to an element, opening its tab and any fold around it first */
   function goTo(id, block) {
     const t = document.getElementById(id); if (!t) return;
     if (state.layout === 'tabs') { const p = t.closest('.pane'); if (p && !p.classList.contains('on')) showTab(p.dataset.g, { keepScroll: true }); }
+    openFoldsAround(t);
     requestAnimationFrame(() => t.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: block || 'start' }));
   }
   let toastT = null;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200); }
-  /* a compact preview of the results right under the portfolio cards (tabs) */
+  /* a small table of the results right under the portfolio cards (tabs), so edits show their effect at once */
   function renderQuickRes() {
     const host = $('#qr-body'); if (!host) return; host.innerHTML = '';
     if (!state.last) { $('#qr-when').textContent = ''; host.appendChild(el('p', 'small muted', '비중 합계가 100%인 포트폴리오가 생기면 여기에서 바로 결과를 보여줘요.')); return; }
     const { s, e, series } = state.last;
-    $('#qr-when').textContent = `${BT.label(s)} ~ ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 초기 ${money(state.initial)}` + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    $('#qr-when').textContent = `${BT.label(s)} – ${BT.label(e)} · ${monthsTxt(e - s + 1)} · 처음 ${money(state.initial)}` + (state.last.adj ? ' · 추세 보정 데이터' : '');
+    const t = el('table', 'qr-t'), th = el('thead'), hr = el('tr');
+    ['포트폴리오', '연 수익률', '최대 낙폭', '최종 금액'].forEach(h => hr.appendChild(el('th', null, h))); th.appendChild(hr); t.appendChild(th);
+    const tb = el('tbody');
     for (const x of series) {
-      const card = el('div', 'qr-item');
-      const nm = el('div', 'qr-name'); const k = el('span', 'key'); k.style.background = x.color; nm.append(k, el('span', null, x.name)); card.appendChild(nm);
-      const kv = el('div', 'qr-kv');
-      const cell = (lab, val, neg) => { const d = el('div'); d.append(el('span', null, lab), el('b', neg ? 'neg' : null, val)); kv.appendChild(d); };
-      cell('CAGR', pct(x.st.cagr, 1), x.st.cagr < 0); cell('MDD (전체 기간)', mpct1(x.st.mdd), x.st.mdd < 0); cell('최종 금액', fmtMoneyShort(state.initial * x.st.final));
-      card.appendChild(kv); host.appendChild(card);
+      const tr = el('tr'); tr.appendChild(seriesTh(x));
+      tr.append(el('td', x.st.cagr < 0 ? 'neg' : null, pct(x.st.cagr, 1)), el('td', x.st.mdd < 0 ? 'neg' : null, mpct1(x.st.mdd)), el('td', null, fmtMoneyShort(state.initial * x.st.final)));
+      tb.appendChild(tr);
     }
+    t.appendChild(tb); const w = el('div', 'tbl-wrap'); w.appendChild(t); host.appendChild(w);
   }
   let navRaf = 0;
   window.addEventListener('scroll', () => { if (navRaf) return; navRaf = requestAnimationFrame(() => { navRaf = 0; markNav(); }); }, { passive: true });
@@ -2692,12 +2804,12 @@
   state.optDeferred = true;   // runs once its panel can be seen (see maybeRunDeferredOpt)
   state.layout = readLayout();
   { const h = (location.hash || '').slice(1); state.tab = TAB_IDS.includes(h) ? h : 'g-setup'; }
-  setSimple(readView(), false);
+  initFolds();
   setLayout(state.layout, false);
   renderPorts();
   recompute();
   validPorts().forEach(p => p.info.tickers.forEach(t => state.optSel.add(t)));
-  renderPicker(); buildLife(); fillLife(); renderCritLine(); renderWalk(); renderEraCompare();
+  renderPicker(); buildLife(); fillLife(); renderCritLine(); renderCritSum(); renderWalk(); renderEraCompare();
   initSaved();
   maybeRunDeferredOpt();
   markNav();
