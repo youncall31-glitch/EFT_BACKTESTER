@@ -83,7 +83,8 @@ body{background:var(--paper);color:var(--ink);font-family:var(--ff);font-size:14
 button,input,select,textarea{font:inherit;color:inherit}
 a{color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
-.wrap{max-width:1480px;margin:0 auto;padding-left:max(clamp(16px,2.4vw,32px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,2.4vw,32px),env(safe-area-inset-right,0px));padding-block:20px 48px}
+:root{--gut-l:max(clamp(16px,2.4vw,32px),env(safe-area-inset-left,0px));--gut-r:max(clamp(16px,2.4vw,32px),env(safe-area-inset-right,0px))}
+.wrap{max-width:1480px;margin:0 auto;padding-left:var(--gut-l);padding-right:var(--gut-r);padding-block:20px 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
 
 /* 머리글 */
@@ -624,25 +625,29 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
 .fold-b>.desc:first-child{margin-top:0}
 .fold-b>.toolbar{margin-bottom:10px}
 
-/* 휴대폰·태블릿: 아래 탭으로 입력·결과·자세히를 한 화면씩 */
+/* 휴대폰·태블릿: 제목 바로 아래 탭(스크롤하면 위에 붙음)으로 입력·결과·자세히를 한 화면씩 */
 .tabbar{display:none}
 @media (max-width:1099.98px){
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
-    padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-    background:color-mix(in srgb,var(--sheet) 92%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--rule-2)}
-  .tabbar button{display:grid;grid-template-columns:22px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;min-width:0;min-height:46px;padding:5px 10px;border:0;border-radius:10px;background:transparent;color:var(--ink-2);cursor:pointer}
-  .tabbar svg{grid-row:1/3;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .tabbar .tb-l{font-size:14px;font-weight:600;line-height:1.2}
-  .tabbar small{font-size:11px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-variant-numeric:tabular-nums}
+  .tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:4px;
+    margin:0 calc(-1 * var(--gut-r)) 14px calc(-1 * var(--gut-l));padding-left:var(--gut-l);padding-right:var(--gut-r);
+    background:var(--paper);border-bottom:1px solid var(--rule-2);box-shadow:0 6px 12px -10px rgba(0,0,0,.3)}
+  .tabbar button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;padding:7px 6px 6px;
+    border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:var(--ink-2);cursor:pointer;text-align:center}
+  .tabbar .tb-l{font-size:15px;font-weight:700;line-height:1.25}
+  .tabbar small{max-width:100%;font-size:11.5px;line-height:1.3;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
   .tabbar small.bad{color:var(--seal);font-weight:600}
   .tabbar small.good{color:var(--good);font-weight:600}
-  .tabbar button[aria-pressed="true"]{background:var(--accent-wash);color:var(--accent)}
-  .tabbar button[aria-pressed="true"] .tb-l{color:var(--accent)}
-  .wrap{padding-bottom:104px}
+  .tabbar button[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent);background:color-mix(in srgb,var(--accent-wash) 55%,transparent)}
+  .tabbar button:focus-visible{outline-offset:-3px}
+  .top{margin-bottom:0;border-bottom:0}
   body[data-tab="result"] #inputs,body[data-tab="detail"] #inputs{display:none}
   body[data-tab="input"] #results{display:none}
   body[data-tab="result"] #paneDetail,body[data-tab="detail"] #paneResult{display:none}
   body[data-tab="input"] .lede,body[data-tab="detail"] .lede,body[data-tab="detail"] .banner{display:none}
+  body[data-tab="input"] .banner [data-act="startMine"]{display:none}
+  /* 탭 막대가 위에 붙어 있으니 입력 요약 띠는 붙이지 않음(탭에 결과가 보임) */
+  .mini{position:static;box-shadow:none}
+  .inputs .sec,.card,.cover{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 66px)}
 }
 @media (min-width:1100px){.btn.go{display:none}}
 
@@ -675,21 +680,90 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
 @media (pointer:coarse){.in .ro{padding:9px 9px;font-size:16px}}
 .item .sub .mini-in{flex-wrap:wrap;max-width:100%;min-width:0}
 
+/* v8: 간단·고급 버전 */
+.top-r{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.modesw{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2)}
+.modesw .lbl{color:var(--muted)}
+.modesw .seg{background:var(--sheet)}
+.modesw .seg button{padding:5px 14px;font-size:13px;font-weight:600}
+@media (pointer:coarse){.modesw .seg button{padding:8px 16px;font-size:14px}}
+body[data-mode="simple"] .pro-only{display:none!important}
+body:not([data-mode="simple"]) .simple-only{display:none!important}
+body[data-mode="simple"] #paneDetail{display:none!important}
+body[data-mode="simple"] .item.acc>.idt{display:none}
+body[data-mode="simple"] .cv .seal{display:none}
+.upsell{background:var(--sheet);border:1px dashed var(--rule-2);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.upsell p{margin:0;font-size:13px;color:var(--ink-2);max-width:68ch}
+
+/* 처음 화면: 버전 고르기 */
+.intro{display:none}
+body.choosing .intro{display:block;padding:8px 0 24px}
+body.choosing .tabbar,body.choosing .banner,body.choosing .layout,body.choosing .foot,body.choosing .top-r{display:none!important}
+body.choosing .top{border-bottom:0}
+.intro h2{font-family:var(--ff-display);font-weight:700;font-size:clamp(20px,4.6vw,26px);margin:6px 0 14px;text-wrap:balance}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;max-width:920px}
+.pick{display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:left;cursor:pointer;min-width:0;
+  background:var(--sheet);border:1px solid var(--rule-2);border-top:5px solid var(--pk,var(--accent));border-radius:var(--r);padding:16px 18px 18px;color:var(--ink);font:inherit}
+.pick[data-pick="simple"]{--pk:var(--t2)}
+.pick[data-pick="pro"]{--pk:var(--accent)}
+.pick:hover{border-color:var(--pk);box-shadow:0 8px 20px -14px rgba(0,0,0,.45)}
+.pick:focus-visible{outline:2px solid var(--pk);outline-offset:3px}
+.pk-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
+.pk-t{font-family:var(--ff-display);font-weight:700;font-size:22px;line-height:1.25;color:var(--pk)}
+.pk-tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:color-mix(in srgb,var(--pk) 14%,var(--sheet));color:var(--pk)}
+.pk-d{font-size:14.5px;line-height:1.6;color:var(--ink)}
+.pk-l{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:6px}
+.pk-l span{position:relative;padding-left:16px}
+.pk-l span::before{content:"";position:absolute;left:3px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--pk)}
+.pk-go{margin-top:auto;align-self:stretch;text-align:center;padding:12px 14px;border-radius:9px;background:var(--pk);color:var(--sheet);font-weight:700;font-size:15px}
+.intro-n{margin:14px 0 0;font-size:12.5px;color:var(--muted);max-width:72ch}
+
 </style>
 </head>
 <body>
-<script>try{var u=JSON.parse(localStorage.getItem('retire120.ui')||'null');document.body.setAttribute('data-tab',(u&&u.tab)||'result');}catch(e){document.body.setAttribute('data-tab','result');}</script>
+<script>(function(){var b=document.body,u=null;try{u=JSON.parse(localStorage.getItem('retire120.ui')||'null');}catch(e){u=null;}u=u||{};b.setAttribute('data-tab',u.tab||'result');if(u.mode==='simple'||u.mode==='pro')b.setAttribute('data-mode',u.mode);else b.classList.add('choosing');})();</script>
 <div class="wrap">
   <header class="top">
     <div class="top-t">
       <h1><small>국민연금·연금저축·IRP 세금과 건강보험료까지</small>120세 은퇴자금 계산기</h1>
       <p class="lede">오늘 물가로 적은 생활비와 국민연금, 계좌별 세금·건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금을 계산해요.</p>
     </div>
-    <div class="status busy" id="status" role="status" aria-live="polite"><i></i><span>계산 중…</span></div>
+    <div class="top-r">
+      <div class="modesw" role="group" aria-label="화면 버전">
+        <span class="lbl">버전</span>
+        <span class="seg"><button type="button" data-setmode="simple" aria-pressed="false">간단</button><button type="button" data-setmode="pro" aria-pressed="false">고급</button></span>
+      </div>
+      <div class="status busy" id="status" role="status" aria-live="polite"><i></i><span>계산 중…</span></div>
+    </div>
   </header>
 
+  <section class="intro" id="intro" aria-labelledby="introH">
+    <h2 id="introH">어떤 버전으로 시작할까요?</h2>
+    <div class="picks">
+      <button class="pick" type="button" data-pick="simple">
+        <span class="pk-h"><span class="pk-t">간단 버전</span><span class="pk-tag">처음이라면 추천</span></span>
+        <span class="pk-d">나이, 은퇴 후 생활비, 모은 돈만 넣으면 은퇴 자금이 충분한지, 매년 얼마를 더 모아야 하는지 쉬운 말로 알려 줘요.</span>
+        <span class="pk-l"><span>꼭 필요한 칸만 보여요. 수익률·세금 설정은 기본값으로 계산해요.</span><span>결과는 충분한지 판정, 필요한 돈, 할 일만 한 화면에.</span></span>
+        <span class="pk-go">간단 버전으로 시작</span>
+      </button>
+      <button class="pick" type="button" data-pick="pro">
+        <span class="pk-h"><span class="pk-t">고급 버전</span><span class="pk-tag">세금·건보료까지 꼼꼼히</span></span>
+        <span class="pk-d">계좌별 수익률과 세금, 연도별 납입, 퇴직연금 연봉 흐름, 은퇴 후 일하기와 계산 가정까지 직접 정하고, 숫자가 어떻게 나왔는지 모두 확인해요.</span>
+        <span class="pk-l"><span>모든 설정 칸을 쓸 수 있어요.</span><span>‘자세히’ 화면: 해마다 꺼낼 돈·세금·건보료, 인출 순서 비교, 연도별 표, 계산 검증.</span></span>
+        <span class="pk-go">고급 버전으로 시작</span>
+      </button>
+    </div>
+    <p class="intro-n">처음에는 예시 가구 숫자가 들어 있어요. 버전은 화면 위에서 언제든 바꿀 수 있고, 넣은 숫자는 그대로 이어져요. 입력값은 이 브라우저에만 저장돼요.</p>
+  </section>
+
+  <nav class="tabbar" id="tabbar" aria-label="화면 바꾸기">
+    <button type="button" data-tab="input" aria-pressed="false"><span class="tb-l">입력</span><small id="tbInput">내 숫자 넣기</small></button>
+    <button type="button" data-tab="result" aria-pressed="false"><span class="tb-l">결과</span><small id="tbResult">계산 중</small></button>
+    <button class="pro-only" type="button" data-tab="detail" aria-pressed="false"><span class="tb-l">자세히</span><small>표·검증</small></button>
+  </nav>
+
   <div class="banner" id="banner" hidden>
-    <span class="sp"><b>예시 가구</b>로 계산한 결과예요. 입력 칸을 우리 집 숫자로 바꾸면 바로 다시 계산되고, 입력값은 이 브라우저에만 저장돼요.</span>
+    <span class="sp">지금은 <b>예시 가구</b> 숫자로 계산하고 있어요. 우리 집 숫자로 바꾸면 바로 다시 계산되고, 입력값은 이 브라우저에만 저장돼요.</span>
     <span class="banner-b">
       <button class="btn pri" type="button" data-act="startMine">내 숫자 넣기</button>
       <button class="btn" type="button" data-act="blank" data-confirm="입력을 모두 지웁니다. 한 번 더 누르세요">빈 양식으로 시작</button>
@@ -712,10 +786,10 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
       <details class="sec opt" id="secInc" style="--hue:var(--t4)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">연금 외 수입</span><span class="sd">주택연금·임대료처럼 국민연금 말고 들어오는 돈</span><span class="ss" id="ssInc"></span></span></summary><div class="sb" id="inc"></div></details>
       <details class="sec opt" id="secHealth" style="--hue:var(--t7)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">집과 건강보험</span><span class="sd">집이 있으면 건강보험료 계산에 필요해요</span><span class="ss" id="ssHealth"></span></span></summary><div class="sb" id="health"></div></details>
 
-      <h2 class="grp"><span>고급 설정</span><small>잘 모르면 그대로 두세요</small></h2>
-      <details class="sec opt" id="secBasic" style="--hue:var(--t8)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">계산 가정</span><span class="sd">물가, 투자 수익률, 몇 살까지 계산할지</span><span class="ss" id="ssBasic"></span></span></summary><div class="sb" id="basic"></div></details>
-      <details class="sec opt" id="secWork" style="--hue:var(--t5)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">은퇴 후 일하기</span><span class="sd">은퇴 뒤 버는 돈, 연금계좌 꺼내기 미루기</span><span class="ss" id="ssWork"></span></span></summary><div class="sb" id="work"></div></details>
-      <details class="sec opt" id="secSave" style="--hue:var(--t8)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">저장·불러오기</span><span class="sd">다른 기기에서 이어 쓰거나 처음으로 되돌리기</span><span class="ss">이 브라우저에 자동 저장</span></span></summary><div class="sb" id="save"></div></details>
+      <h2 class="grp pro-only"><span>고급 설정</span><small>잘 모르면 그대로 두세요</small></h2>
+      <details class="sec opt pro-only" id="secBasic" style="--hue:var(--t8)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">계산 가정</span><span class="sd">물가, 투자 수익률, 몇 살까지 계산할지</span><span class="ss" id="ssBasic"></span></span></summary><div class="sb" id="basic"></div></details>
+      <details class="sec opt pro-only" id="secWork" style="--hue:var(--t5)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">은퇴 후 일하기</span><span class="sd">은퇴 뒤 버는 돈, 연금계좌 꺼내기 미루기</span><span class="ss" id="ssWork"></span></span></summary><div class="sb" id="work"></div></details>
+      <details class="sec opt pro-only" id="secSave" style="--hue:var(--t8)"><summary><span class="tab" aria-hidden="true"></span><span class="sh"><span class="st">저장·불러오기</span><span class="sd">다른 기기에서 이어 쓰거나 처음으로 되돌리기</span><span class="ss">이 브라우저에 자동 저장</span></span></summary><div class="sb" id="save"></div></details>
 
       <button class="btn pri go" type="button" data-go="result">결과 보기</button>
     </aside>
@@ -755,7 +829,11 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
           </div>
         </details>
 
-        <button class="btn go" type="button" data-go="detail">숫자가 어떻게 나왔는지 자세히 보기</button>
+        <button class="btn go pro-only" type="button" data-go="detail">숫자가 어떻게 나왔는지 자세히 보기</button>
+        <div class="upsell simple-only">
+          <p>해마다 꺼낼 돈과 세금·건보료 계산 근거, 인출 순서 비교, 연도별 표, 계산 검증은 고급 버전에서 볼 수 있어요. 넣은 숫자는 그대로 이어져요.</p>
+          <button class="btn" type="button" data-setmode="pro" data-go="detail">고급 버전으로 자세히 보기</button>
+        </div>
       </div>
 
       <div class="pane" id="paneDetail" aria-label="자세히">
@@ -870,26 +948,11 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
         <section class="card">
           <details class="assume" id="assume"><summary>계산 가정과 한계</summary><div id="assumeBody"></div></details>
         </section>
-        <p class="foot">이 계산기는 2026년 세법·건강보험 기준으로 만든 추정 도구이며 투자·세무 자문이 아닙니다. 실제 세금과 보험료는 개인 사정과 법 개정에 따라 달라지니 큰 결정 전에는 세무사·국민연금공단·건강보험공단에서 확인하세요.</p>
       </div>
     </main>
   </div>
+  <p class="foot">이 계산기는 2026년 세법·건강보험 기준으로 만든 추정 도구이며 투자·세무 자문이 아닙니다. 실제 세금과 보험료는 개인 사정과 법 개정에 따라 달라지니 큰 결정 전에는 세무사·국민연금공단·건강보험공단에서 확인하세요.</p>
 </div>
-
-<nav class="tabbar" id="tabbar" aria-label="화면 바꾸기">
-  <button type="button" data-tab="input" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4.5L19.5 9 15 4.5 4 15.5z"/><path d="M13 6.5l4.5 4.5"/></svg>
-    <span class="tb-l">입력</span><small id="tbInput">내 숫자 넣기</small>
-  </button>
-  <button type="button" data-tab="result" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 17a8.5 8.5 0 1 1 17 0"/><path d="M12 17l4.5-5.5"/><path d="M3.5 20.5h17"/></svg>
-    <span class="tb-l">결과</span><small id="tbResult">계산 중</small>
-  </button>
-  <button type="button" data-tab="detail" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="17.5" cy="16.5" r="3"/><path d="M19.7 18.7l2 2"/></svg>
-    <span class="tb-l">자세히</span><small>표·검증</small>
-  </button>
-</nav>
 
 <script>
 function RetirementEngine() {
@@ -2591,7 +2654,7 @@ function RetirementEngine() {
     const t = bn.querySelector('.sp');
     if (t) t.innerHTML = state.edited
       ? '<b>예시 가구</b> 숫자를 고치는 중이에요. 우리 집에 없는 항목은 ×로 지우고, 처음부터 넣고 싶으면 ‘빈 양식으로 시작’을 누르세요.'
-      : '<b>예시 가구</b>로 계산한 결과예요. 입력 칸을 우리 집 숫자로 바꾸면 바로 다시 계산되고, 입력값은 이 브라우저에만 저장돼요.';
+      : '지금은 <b>예시 가구</b> 숫자로 계산하고 있어요. 우리 집 숫자로 바꾸면 바로 다시 계산되고, 입력값은 이 브라우저에만 저장돼요.';
   }
   function rerender(which) {
     const aid = document.activeElement && document.activeElement.id;
@@ -2901,12 +2964,32 @@ function RetirementEngine() {
   function saveUi() { clearTimeout(uiT); uiT = setTimeout(() => { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (e) { /* 저장 불가 환경 */ } }, 300); }
   const mqWide = window.matchMedia('(min-width: 1100px)');
   const TABS = ['input', 'result', 'detail'];
+  const MODES = ['simple', 'pro'];
+  const isSimple = () => document.body.dataset.mode === 'simple';
+  function applyMode() {
+    const m = MODES.includes(ui.mode) ? ui.mode : null;
+    if (m) document.body.dataset.mode = m; else delete document.body.dataset.mode;
+    document.body.classList.toggle('choosing', !m);
+    $$('.modesw [data-setmode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.setmode === m)));
+  }
+  function setMode(m) {
+    if (!MODES.includes(m)) return;
+    const was = ui.mode;
+    ui.mode = m; saveUi(); applyMode();
+    if (m === 'simple' && document.body.dataset.tab === 'detail') setTab('result', 'top');
+    if (was !== m && lastMain && !mqWide.matches) renderAssets(lastMain);
+  }
+  // 간단 버전에서 숨긴 곳(고급 설정·자세히)으로 가야 하면 고급 버전으로 바꿈
+  const needsPro = el => !!(el.closest('#paneDetail') || el.closest('.pro-only') || (el.closest('.item.acc') && el.closest('.idt')));
+  // 위에 붙는 탭 막대 높이(휴대폰)
+  const barH = () => { const tb = $('#tabbar'); return tb && tb.offsetHeight && getComputedStyle(tb).position === 'sticky' ? tb.offsetHeight : 0; };
   const tabScroll = {};
   const smooth = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
   const paneOf = t => (t === 'input' ? $('#inputs') : t === 'result' ? $('#paneResult') : $('#paneDetail'));
   // how: 'restore'(그 탭에서 보던 곳) · 'top'(그 화면 맨 위) · 'none'(스크롤은 호출한 쪽에서)
   function setTab(t, how) {
     if (!TABS.includes(t)) t = 'result';
+    if (t === 'detail' && isSimple()) t = 'result';
     const prev = document.body.dataset.tab;
     if (prev && prev !== t && !mqWide.matches) tabScroll[prev] = window.scrollY;
     document.body.dataset.tab = t;
@@ -2915,12 +2998,13 @@ function RetirementEngine() {
     if (prev !== t && lastMain && t !== 'input' && !mqWide.matches) { renderAssets(lastMain); if ($('#cardFlow').open) renderFlow(lastMain); if ($('#cardSpend').open) renderSpend(lastMain); }
     if (how === 'none') return;
     if (mqWide.matches) { if (how === 'top') paneOf(t).scrollIntoView({ block: 'start', behavior: smooth() }); return; }
-    const top = Math.max(0, paneOf(t).getBoundingClientRect().top + window.scrollY - 8);
+    const top = Math.max(0, paneOf(t).getBoundingClientRect().top + window.scrollY - barH() - 8);
     window.scrollTo(0, how === 'top' ? top : (tabScroll[t] != null ? tabScroll[t] : 0));
   }
   // 카드나 입력 구역을 펼치고 그 자리로 이동(필요하면 탭도 바꿈)
   function openCard(id) {
     const c = document.getElementById(id); if (!c) return;
+    if (isSimple() && needsPro(c)) setMode('pro');
     const t = c.closest('#paneDetail') ? 'detail' : c.closest('#inputs') ? 'input' : 'result';
     if (c.tagName === 'DETAILS') c.open = true;
     setTab(t, 'none');
@@ -2928,6 +3012,15 @@ function RetirementEngine() {
   }
   document.addEventListener('click', e => {
     if (!e.target.closest) return;
+    const pk = e.target.closest('[data-pick]');
+    if (pk) {
+      setMode(pk.dataset.pick); setTab('input', 'none');
+      const f = $('#secFamily'); if (f) f.open = true;
+      window.scrollTo(0, 0);
+      return;
+    }
+    const sm = e.target.closest('[data-setmode]');
+    if (sm) { setMode(sm.dataset.setmode); if (!sm.dataset.go) return; }
     const tb = e.target.closest('#tabbar [data-tab]');
     if (tb) { setTab(tb.dataset.tab, document.body.dataset.tab === tb.dataset.tab ? 'top' : 'restore'); return; }
     const g = e.target.closest('[data-go]');
@@ -2985,6 +3078,7 @@ function RetirementEngine() {
       }
       case 'del': { const list = state[b.dataset.list]; const i = list.findIndex(x => x.id === b.dataset.id); if (i >= 0) list.splice(i, 1); afterEdit(b.dataset.list === 'children' ? 'kids' : b.dataset.list === 'expenses' ? 'exp' : b.dataset.list === 'incomes' ? 'inc' : b.dataset.list === 'loans' ? 'loan' : 'acc'); break; }
       case 'openAccMore': {
+        if (isSimple()) setMode('pro');
         const id = b.dataset.id, d = document.querySelector(`.idt[data-key="acc:${id}"]`); if (!d) break;
         moreOpen['acc:' + id] = true; schedOpen[id] = true; d.open = true;
         const sc = d.querySelector('.sched'); if (sc) sc.open = true;
@@ -3661,7 +3755,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       ${nums}
       ${todo}
       <div class="note">${notes.map(esc).join('<br>')}</div>
-      <div class="cv-foot">${fin ? verifyBadge(R) : ''}<span class="cv-tax">평생 세금 <b>${won(b.reqTpv, { short: true })}</b> · 건보료 <b>${won(b.reqHpv, { short: true })}</b> <span class="muted">(오늘 돈, 추천 순서로 꺼낼 때)</span></span></div>`;
+      <div class="cv-foot">${fin ? verifyBadge(R) : ''}<span class="cv-tax">평생 세금 <b>${won(b.reqTpv, { short: true })}</b> · 건보료 <b>${won(b.reqHpv, { short: true })}</b> <span class="muted">(오늘 돈, 세금·건보료가 가장 적은 순서로 꺼낼 때)</span></span></div>`;
   }
 
   // 차트
@@ -4107,7 +4201,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     if (X && X.work && X.work.length) {
       const ok0 = X.work.find(w => w.ok);
       const w5 = X.work.find(w => w.years === 5), w0 = X.work.find(w => w.years === 0);
-      if (ok0 && ok0.years > 0) tips.push({ tone: 'good', title: `은퇴 후 ${ok0.years}년만 더 일하면 바닥나지 않음`, body: `월 ${ko(X.workMonthly)}만원(세후)을 ${ok0.years}년 버는 동안 계좌 인출이 미뤄져 ${m.endAge}세까지 버팁니다. 기간별 결과는 ‘자세히’의 ‘은퇴를 늦추거나 더 일하면’에서 볼 수 있습니다.` });
+      if (ok0 && ok0.years > 0) tips.push({ tone: 'good', title: `은퇴 후 ${ok0.years}년만 더 일하면 바닥나지 않음`, body: `월 ${ko(X.workMonthly)}만원(세후)을 ${ok0.years}년 버는 동안 계좌 인출이 미뤄져 ${m.endAge}세까지 버팁니다. 기간별 결과는 고급 버전 ‘자세히’의 ‘은퇴를 늦추거나 더 일하면’에서 볼 수 있습니다.` });
       else if (!ok0 && w5 && w0) tips.push({ tone: 'info', title: `일을 5년 더 하면 필요자금 ${won(w0.required - w5.required, { short: true })} 감소`, body: `월 ${ko(X.workMonthly)}만원으로 5년 일하면 바닥나는 시점이 ${w0.failYear - m.birth[0]}세에서 ${w5.ok ? m.endAge + '세 이후' : (w5.failYear - m.birth[0]) + '세'}로 늦춰집니다. 일하는 동안 직장 건강보험에 가입하면 지역 건보료(재산분 포함)도 줄어듭니다.` });
     }
     if (num(state.penDeferAge) > 0) tips.push({ tone: 'info', title: `연금계좌는 ${num(state.penDeferAge)}세부터 꺼내도록 계산`, body: '그 전에는 예금·일반계좌·ISA를 먼저 쓰고 연금저축·IRP·퇴직연금은 그대로 불려 둡니다. 다른 돈이 모자라는 해에만 예외로 꺼냅니다. 70세가 넘으면 연금소득세율도 5.5%에서 4.4%로 낮아집니다.' });
@@ -4291,6 +4385,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   // 처음 화면: 입력 구역·결과 카드 펼침 상태와 탭(휴대폰은 처음에 결과부터)
   $$('.sec').forEach(d => { const v = ui.sec[d.id]; d.open = v != null ? !!v : (mqWide.matches && d.id === 'secFamily'); });
   $$('.fold').forEach(d => { d.open = !!ui.fold[d.dataset.fold]; });
+  applyMode();
   setTab(ui.tab || 'result', 'none');
   renderInputs();
   compute();
