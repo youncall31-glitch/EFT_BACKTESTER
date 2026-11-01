@@ -1,0 +1,66 @@
+  <div class="pane" data-g="g-sum" id="pane-sum">
+  <div class="gsec" id="g-sum"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-sum"/></svg><div class="grp-tx"><span class="g-eye">기본 · 2단계</span><h2 class="grp-t">핵심 요약</h2><p class="grp-d">포트폴리오의 CAGR·MDD, 기간이 바뀌어도 비슷했는지(정합성), 운이나 과최적화는 아닌지, 그리고 AI가 추천하는 비중을 한 화면에서 봐요.</p></div></div>
+  <div class="ctx" id="ctx-sum" role="group" aria-label="지금 설정"></div>
+  <nav class="sum-nav" aria-label="요약 바로가기">
+    <button type="button" data-goto="sum-1"><i>1</i>CAGR·MDD</button>
+    <button type="button" data-goto="sum-2"><i>2</i>정합성</button>
+    <button type="button" data-goto="sum-3"><i>3</i>과최적화</button>
+    <button type="button" data-goto="sum-4"><i>4</i>AI 추천</button>
+  </nav>
+
+  <section class="panel scard" aria-labelledby="h-sum-1" id="sum-1">
+    <div class="sc-h"><span class="sc-n">1</span><div><h2 id="h-sum-1">CAGR · MDD</h2><p class="sc-q">해마다 얼마나 불었고, 가장 크게 얼마나 떨어졌나</p></div></div>
+    <p class="small muted" id="sum-when"></p>
+    <div class="chips sum-q" id="quick3" role="group" aria-label="기간 빠르게 바꾸기"></div>
+    <div class="chart-box" id="c-sum-bf"></div>
+    <details class="more"><summary>숫자로 보기 (최종 금액·최장 회복)</summary><div class="sk-grid" id="sum-kpi"></div></details>
+    <div class="sc-more"><button class="btn ghost sm" type="button" data-goto="sec-hero">결과 자세히 (차트·최근 10~30년·MDD 구분)</button></div>
+  </section>
+
+  <section class="panel scard" aria-labelledby="h-sum-2" id="sum-2">
+    <div class="sc-h"><span class="sc-n">2</span><div><h2 id="h-sum-2">정합성 — 기간이 바뀌어도 비슷했나</h2><p class="sc-q">같은 비중을 다른 시기에 들고 있었다면 CAGR·MDD가 얼마나 달랐나</p></div></div>
+    <h3 class="sc-sub">예측 가능성 <span class="small muted">— 언제 시작해도 결과가 비슷했나 (0~100)</span></h3>
+    <div class="chart-box" id="c-sum-score"></div>
+    <details class="more"><summary>포트폴리오별 설명 보기</summary><div class="sv-list" id="sum-cons"></div></details>
+    <h3 class="sc-sub">기간별 CAGR · MDD</h3>
+    <p class="help">같은 색 점들이 가로로 멀리 떨어질수록 기간에 따라 결과가 달랐어요.</p>
+    <div class="legend" id="lg-sum-per"></div>
+    <div class="chart-box" id="c-sum-per"></div>
+    <div class="sc-sub-row"><h3 class="sc-sub">아무 때나 시작했다면 — 범위</h3><div class="seg-toggle" id="sum-y" role="group" aria-label="보유 기간"><button type="button" data-y="3" aria-pressed="false">3년</button><button type="button" data-y="5" aria-pressed="false">5년</button><button type="button" data-y="10" aria-pressed="true">10년</button></div></div>
+    <p class="help">막대가 짧을수록 언제 시작해도 비슷했어요. 굵은 막대 하위 10%~상위 10%, 눈금 중앙값, 가는 선 최저~최고.</p>
+    <div class="chart-box" id="c-sum-rng"></div>
+    <div class="sc-more"><button class="btn ghost sm" type="button" data-goto="sec-disp">구간 산포 자세히 (산포도·표)</button><button class="btn ghost sm" type="button" data-goto="sec-period">시기별 판정 (고급)</button></div>
+  </section>
+
+  <section class="panel scard" aria-labelledby="h-sum-3" id="sum-3">
+    <div class="sc-h"><span class="sc-n">3</span><div><h2 id="h-sum-3">과최적화 — 운이나 고르기 때문은 아닌가</h2><p class="sc-q">내 포트폴리오는 운 점검 4가지로, AI가 고르는 방식은 과최적화 확률로 봐요</p></div></div>
+    <h3 class="sc-sub">운 점검 <span class="small muted">— ✓ 통과 · ! 주의 (칸에 마우스를 올리면 값)</span></h3>
+    <div id="sum-luck-grid" class="lgrid-wrap"></div>
+    <details class="more"><summary>항목별 설명 보기</summary><div class="sv-list" id="sum-luck"></div></details>
+    <div class="sum-pbo" id="sum-pbo"></div>
+    <div class="sc-more"><button class="btn ghost sm" type="button" data-goto="m-12">지표 설명</button><button class="btn ghost sm" type="button" data-goto="o-walk-sec">과최적화 점검 — 직전 10·20년으로 고른 비중의 다음 성과 (고급)</button></div>
+  </section>
+
+  <section class="panel scard" aria-labelledby="h-sum-4" id="sum-4">
+    <div class="sc-h"><span class="sc-n">4</span><div><h2 id="h-sum-4">AI 추천 — 내 종목 · 내 조건으로 오래 들고 갈 포트폴리오</h2><p class="sc-q">고른 종목만으로, 감당할 수 있는 낙폭 안에서 비중을 바꾸지 않고 오래 들고 가기 좋은 조합</p></div></div>
+    <div class="ai-ctl">
+      <div class="field ai-tk"><span class="lbl">대상 종목</span><div class="chips" id="sum-tk"></div><button class="btn ghost sm" type="button" data-goto="fold-assets">종목 바꾸기</button></div>
+      <div class="field"><label for="sum-cap">감당할 최대 낙폭 (MDD)</label><select id="sum-cap"></select></div>
+      <div class="field"><label for="sum-uw">회복 기간 한도</label><select id="sum-uw"></select></div>
+    </div>
+    <p class="small muted" id="sum-ai-st" aria-live="polite"></p>
+    <div class="progress" id="sum-prog" hidden aria-hidden="true"><i></i></div>
+    <div class="row"><button class="btn" type="button" id="sum-run" hidden>AI 추천 계산하기</button></div>
+    <div id="sum-ai"></div>
+    <div id="sum-map-wrap" hidden>
+      <h3 class="sc-sub">모든 비중 조합 중 어디쯤인가</h3>
+      <p class="help">회색 점 = 비중 조합 하나 · 빨간 영역 = 감당 한도 밖 · 네모 = 내 포트폴리오</p>
+      <div class="legend" id="lg-sum-map"></div>
+      <div class="chart-box" id="c-sum-map"></div>
+    </div>
+    <div class="sc-more"><button class="btn ghost sm" type="button" data-goto="sec-trust-opt">추천 근거 자세히 (고급)</button><button class="btn ghost sm" type="button" data-goto="sec-fix">MDD 한도별 최고 CAGR 표 (고급)</button></div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-setup">← 입력</button><button class="btn" type="button" data-go="g-results">결과 자세히 →</button></nav>
+  </div>
+

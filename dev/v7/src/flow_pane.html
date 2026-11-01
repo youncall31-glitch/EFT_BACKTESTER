@@ -1,0 +1,116 @@
+  <div class="pane" data-g="g-flow" id="pane-flow">
+  <div class="gsec" id="g-flow"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-flow"/></svg><div class="grp-tx"><h2 class="grp-t">적립·인출</h2><p class="grp-d">매달 넣고 빼는 돈과 세금까지 넣어, 실제로 손에 남는 돈을 봐요.</p></div></div>
+  <div class="ctx" id="ctx-flow" role="group" aria-label="지금 설정"></div>
+
+  <section class="panel" aria-labelledby="h-fl-set" id="sec-fl-set">
+    <div class="panel-head"><h2 id="h-fl-set">넣고 빼는 계획</h2><p class="help">포트폴리오·기간·리밸런싱·통화·물가·배당 처리는 입력 탭 설정을 그대로 써요. 돈은 매달 초에 넣고 빼요.</p></div>
+    <div class="fl-pre"><span class="lbl">예시로 채우기</span><div class="chips" id="fl-presets" role="group" aria-label="예시 계획"></div></div>
+    <div class="fl-grid">
+      <fieldset class="fl-box">
+        <legend>넣는 돈</legend>
+        <div class="field"><label for="fl-init" id="fl-init-l">처음 넣는 돈</label><input id="fl-init" type="number" min="1" step="1000" inputmode="numeric"><p class="amt-hint" id="fl-init-h"></p></div>
+        <div class="field"><span class="lbl" id="fl-cf-l">넣는 때</span><div class="seg-toggle" id="fl-cf" role="group" aria-labelledby="fl-cf-l"><button type="button" data-v="N" aria-pressed="false">안 넣음</button><button type="button" data-v="M" aria-pressed="true">매달</button><button type="button" data-v="Y" aria-pressed="false">매년 초</button></div><p class="help" id="fl-cf-note"></p></div>
+        <div class="field" id="fl-c-f"><label for="fl-c" id="fl-c-l">매달 넣는 돈</label><input id="fl-c" type="number" min="0" step="100" inputmode="numeric"><p class="amt-hint" id="fl-c-h"></p></div>
+        <div class="fl-two" id="fl-cg-f">
+          <div class="field"><label for="fl-cg">해마다 늘리기 (%)</label><input id="fl-cg" type="number" step="0.5" inputmode="decimal"></div>
+          <div class="field"><label for="fl-cm">넣는 기간</label>
+            <select id="fl-cm"><option value="auto">인출 전까지 (없으면 끝까지)</option><option value="5">처음 5년</option><option value="10">처음 10년</option><option value="15">처음 15년</option><option value="20">처음 20년</option><option value="25">처음 25년</option><option value="30">처음 30년</option><option value="40">처음 40년</option></select>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="fl-box">
+        <legend>빼서 쓰는 돈</legend>
+        <div class="choice slim" role="radiogroup" aria-label="인출 방식">
+          <label class="opt"><input type="radio" name="flw" value="none"><span><b>빼지 않음</b></span></label>
+          <label class="opt"><input type="radio" name="flw" value="fixed"><span><b>매달 정한 금액</b><small>생활비처럼 일정하게</small></span></label>
+          <label class="opt"><input type="radio" name="flw" value="pct"><span><b>평가액의 일정 비율</b><small>바닥나지 않지만 금액이 오르내림</small></span></label>
+        </div>
+        <div class="field" id="fl-w-f"><label for="fl-w" id="fl-w-l">매달 빼는 돈</label><input id="fl-w" type="number" min="0" step="100" inputmode="numeric"><p class="amt-hint" id="fl-w-h"></p></div>
+        <div class="field" id="fl-wp-f"><label for="fl-wp">연 인출률 (%)</label><input id="fl-wp" type="number" min="0" step="0.5" inputmode="decimal"><p class="help">해마다 그때 평가액의 이 비율을 12개월에 나눠 빼요.</p></div>
+        <div class="field" id="fl-ws-f"><label for="fl-ws">빼기 시작</label>
+          <select id="fl-ws"><option value="0">처음부터</option><option value="5">5년 뒤</option><option value="10">10년 뒤</option><option value="15">15년 뒤</option><option value="20">20년 뒤</option><option value="25">25년 뒤</option><option value="30">30년 뒤</option></select>
+        </div>
+        <label class="toggle" for="fl-wi" id="fl-wi-f"><input id="fl-wi" type="checkbox"><span id="fl-wi-txt">해마다 물가만큼 빼는 돈을 늘려요(같은 생활비를 유지).</span></label>
+      </fieldset>
+      <fieldset class="fl-box">
+        <legend id="fl-tax-lbl">세금</legend>
+        <div class="choice slim" role="radiogroup" aria-labelledby="fl-tax-lbl">
+          <label class="opt"><input type="radio" name="flt" value="none"><span><b>세금 빼고 보기</b><small>세전 금액 그대로</small></span></label>
+          <label class="opt"><input type="radio" name="flt" value="us"><span><b>미국 상장 ETF 직접 (일반 계좌)</b><small>배당 15.4% · 매매 차익 연 250만 원 넘는 부분 22%</small></span></label>
+          <label class="opt"><input type="radio" name="flt" value="kr"><span><b>국내 상장 해외 ETF (일반 계좌)</b><small>배당·매매 차익 15.4%, 팔 때마다</small></span></label>
+          <label class="opt"><input type="radio" name="flt" value="pen"><span><b>연금저축·IRP</b><small>굴리는 동안 세금 없음, 받을 때 연금소득세</small></span></label>
+        </div>
+        <div class="fl-rates" id="fl-rates">
+          <div class="field" data-tax="us"><label for="fl-td">배당 세율 (%)</label><input id="fl-td" type="number" min="0" max="60" step="0.1" inputmode="decimal"></div>
+          <div class="field" data-tax="us"><label for="fl-tc">양도 세율 (%)</label><input id="fl-tc" type="number" min="0" max="60" step="0.1" inputmode="decimal"></div>
+          <div class="field" data-tax="us"><label for="fl-tded">연 공제 (만 원)</label><input id="fl-tded" type="number" min="0" step="50" inputmode="numeric"></div>
+          <div class="field" data-tax="kr"><label for="fl-tk">배당소득세율 (%)</label><input id="fl-tk" type="number" min="0" max="60" step="0.1" inputmode="decimal"></div>
+          <div class="field" data-tax="pen"><label for="fl-tp">연금소득세율 (%)</label><input id="fl-tp" type="number" min="0" max="60" step="0.1" inputmode="decimal"><p class="help">55~69세 5.5%, 70~79세 4.4%, 80세 이상 3.3%</p></div>
+        </div>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-fl-res" id="sec-fl-res">
+    <div class="hero-head"><h2 id="h-fl-res">계획대로 했다면</h2><p class="hero-when" id="fl-when"></p><div id="fl-msg" class="notice" hidden></div></div>
+    <div class="hero-cards" id="fl-cards"></div>
+    <dl class="terms">
+      <div><dt>내 돈 수익률 (IRR)</dt><dd>언제 얼마를 넣고 뺐는지까지 반영한, 내 통장 기준 연 수익률</dd></div>
+      <div><dt>시간가중 수익률</dt><dd>넣고 뺀 금액과 상관없이 포트폴리오 자체가 낸 연 수익률</dd></div>
+      <div><dt>원금</dt><dd>지금까지 넣은 돈에서 뺀 돈을 뺀 금액</dd></div>
+    </dl>
+    <div class="fl-chart">
+      <div class="chart-title"><h3>평가액과 원금</h3>
+        <div class="seg-toggle" id="fl-ax" role="group" aria-label="세로축"><button type="button" data-v="lin" aria-pressed="true">일반</button><button type="button" data-v="log" aria-pressed="false">로그</button></div>
+      </div>
+      <p class="help">점선은 넣은 돈에서 뺀 돈을 뺀 원금이에요. 선이 점선보다 위에 있으면 번 돈이에요.</p>
+      <div class="legend" id="lg-fl"></div>
+      <div class="chart-box" id="c-fl"></div>
+    </div>
+  </section>
+
+  <details class="panel fold" data-fold="f-years" id="sec-fl-years">
+    <summary><span class="fold-h"><span class="fold-t">연도별 표</span></span><span class="fold-d">해마다 넣은 돈·뺀 돈·배당·세금과 연말 평가액, CSV로 저장</span></summary>
+    <div class="fold-body">
+      <div class="sub-head"><div class="chips" id="fl-port" role="group" aria-label="표에 보여줄 포트폴리오"></div><button class="btn ghost sm" type="button" id="fl-csv">CSV 저장</button></div>
+      <div class="tbl-wrap"><table id="t-fl" class="fltbl"></table></div>
+      <p class="small muted">*는 일부 달만 들어간 해예요. 그해 수익률은 넣고 뺀 돈을 뺀 시간가중 수익률이고, 세금은 낸 달에 넣었어요.</p>
+    </div>
+  </details>
+
+  <section class="panel" aria-labelledby="h-acc" id="sec-acc">
+    <div class="panel-head"><h2 id="h-acc">적립하면 얼마나 모일까</h2><p class="help">위 계획의 처음 넣는 돈과 매달(또는 매년 초) 넣는 돈을, 과거의 모든 시작 시점에서 정한 기간만큼 넣었다면 얼마가 모였는지 보여줘요. 운이 나빴을 때와 좋았을 때의 범위를 함께 봐요. 인출은 빼고, 세금 설정은 그대로 써요.</p></div>
+    <div class="rt-set">
+      <div class="field"><label for="acc-y">적립 기간</label><select id="acc-y"><option value="5">5년</option><option value="10">10년</option><option value="15">15년</option><option value="20">20년</option><option value="25">25년</option><option value="30">30년</option></select></div>
+      <p class="help rt-help acc-help" id="acc-help"></p>
+    </div>
+    <p class="small muted" id="acc-status" aria-live="polite"></p>
+    <div class="tbl-wrap"><table id="t-acc" class="rttbl acctbl"></table></div>
+    <div class="rt-chart">
+      <div class="chart-title"><h3>시작 시점별 모인 돈</h3></div>
+      <p class="help">가로축은 적립을 시작한 달, 세로축은 적립 기간이 끝났을 때 모인 돈(세금 설정을 고르면 모두 팔고 세금 낸 뒤)이에요. 점선은 넣은 돈 합계예요.</p>
+      <div class="legend" id="lg-acc"></div>
+      <div class="chart-box" id="c-acc"></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-rt" id="sec-rt">
+    <div class="panel-head"><h2 id="h-rt">은퇴 인출 점검</h2><p class="help">과거 어느 달에 은퇴했더라도 돈이 버텼을까요? 처음 넣는 돈에서 첫해 일정 비율을 빼고, 해마다 물가만큼 늘려 빼는 계획을 과거의 모든 시작 달로 돌려 봐요.</p></div>
+    <div class="rt-set">
+      <div class="field"><label for="rt-y">인출 기간</label><select id="rt-y"><option value="10">10년</option><option value="20">20년</option><option value="25">25년</option><option value="30">30년</option><option value="40">40년</option></select></div>
+      <div class="field"><label for="rt-r">첫해 인출률 (%)</label><input id="rt-r" type="number" min="0" max="25" step="0.25" inputmode="decimal"></div>
+      <p class="help rt-help">처음 넣는 돈·세금·리밸런싱·통화는 위와 같아요. 고른 자산의 데이터가 있는 모든 달을 시작으로 써요.</p>
+    </div>
+    <p class="small muted" id="rt-status" aria-live="polite"></p>
+    <div class="tbl-wrap"><table id="t-rt" class="rttbl"></table></div>
+    <div class="rt-chart">
+      <div class="chart-title"><h3>시작 달별 남은 돈</h3></div>
+      <p class="help">가로축은 은퇴를 시작한 달, 세로축은 인출 기간이 끝났을 때 남은 돈이에요. 0에 닿은 곳은 중간에 바닥난 시작이에요.</p>
+      <div class="legend" id="lg-rt"></div>
+      <div class="chart-box" id="c-rt"></div>
+    </div>
+  </section>
+
+  <nav class="pane-nav tabs-only" aria-label="단계 이동"><button class="btn ghost" type="button" data-go="g-results">← 결과</button><button class="btn" type="button" data-go="g-checks">점검 보기 →</button></nav>
+  </div>
+

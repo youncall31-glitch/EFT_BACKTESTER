@@ -3,3 +3,4 @@ dev/tests/test.html
 dev/tests/shots/
 __pycache__/
 dev/tests/*.png
+dev/v7/out/

@@ -1,6 +1,35 @@
 # dev/ — ETF 포트폴리오 백테스터 원본과 작업 안내
 
-이 폴더에는 앱을 고치고 다시 만드는 데 필요한 원본이 모두 들어 있어요. 저장소 맨 위의 `index.html`(GitHub Pages 사이트)은 이 폴더의 파일로 다시 만들어집니다. 새 대화(새 작업 공간)에서 이어서 작업할 때 이 문서부터 읽으면 돼요.
+## 지금 사이트에 올라간 버전: v10.0 (2026-11-02) — `dev/v7/`
+
+저장소 맨 위 `index.html`(GitHub Pages)은 이제 **`dev/v7/`** 에서 만들어요. claude.ai 아티팩트 ‘ETF 포트폴리오 백테스터 v7’(https://claude.ai/artifact/TfjeYzdnojy4eyv3B1Huuy)과 같은 페이지예요. 이전 앱(아래 v8, https://claude.ai/artifact/BeK8aVBu8VRYs3fgJFZBSj)은 그대로 두고, 그 페이지를 바탕으로 기능을 더한 새 앱이에요. 같은 설정이면 CAGR · MDD 등 핵심 숫자는 이전 앱과 같아요(`dev/v7/tests/snap.py`로 확인).
+
+화면 구성: 1 내 포트폴리오(투자 방식 · 금액 · 기간 · 그 밖의 설정) → 2 백테스트 결과(성과 · 차트 · 하락과 회복 · 방어 규칙 · 연도별) → 3 검증(판정 카드 · 2·5·10·20·30년 편차 · 상관성 · 근거 자료) → 4 AI 추천(추천 비중 · 결과와 검증 · 고를 때 안 쓴 기간 점검) · 더보기(적립·세금 · 도움말).
+
+| 위치 | 내용 |
+|---|---|
+| `v7/base.html` | 바탕이 된 이전 앱 페이지(v8, 2026-10-16) 그대로 |
+| `v7/build.py` | `base.html`에 고칠 내용을 차례로 덧대 `v7/out/etf-backtester.html`(아티팩트용)을 만듦. 끝부분 `exec(... build_vXX.py)` 줄이 버전 순서 |
+| `v7/src/build_v71.py` ~ `build_v100.py` | 버전별 화면 · 문구 · CSS 수정 |
+| `v7/src/*.js`, `*.html` | 더한 계산과 화면 코드(적립 · 세금 · 원화, 신뢰도 지표, 하락과 회복, 방어 규칙, 편차 · 상관성, AI 검증 등) |
+| `v7/data/kr.json` | 원/달러 환율 · 한국 소비자물가(월간). 만든 스크립트와 원본 텍스트 포함 |
+| `v7/site.py` | `out/etf-backtester.html`로 사이트(`../index.html`, `sw.js` 캐시 이름, `manifest.webmanifest` 설명)를 만듦. `VERSION`을 올려야 설치형 앱에 새 버전이 반영돼요 |
+| `v7/tests/` | `snap.py`(v6 · v8 앱과 숫자 비교, 기준 파일 `v6_*.json`), 화면 · 기능 점검 스크립트 |
+| `v7/exp/` | 연금 · 하락 대응 실험 스크립트(참고용) |
+
+다시 만들고 올리는 순서:
+1. `dev/v7/src/`에 `build_vXX.py`를 더하거나 고치고, `dev/v7/build.py` 끝에 `exec` 줄을 추가
+2. `python3 dev/v7/build.py && python3 dev/v7/site.py` (`site.py`의 `VERSION`을 먼저 올림)
+3. 숫자 확인: `V6DEF=1`로 이전 예시 포트폴리오를 쓴 빌드를 만들어 `tests/snap.py`로 `v6_*.json`과 비교(테스트 스크립트 안의 파일 경로는 작업 공간에 맞게 고쳐 써요)
+4. 아티팩트에 `out/etf-backtester.html` 다시 게시, `main`에 푸시
+
+---
+
+## 이전 앱(v8, 2026-10-16) 안내 — `dev/src/`
+
+아래는 이전 앱의 원본과 작업 안내예요. 지금 사이트 페이지는 위 `dev/v7/`에서 만들지만, 이전 앱을 고치거나 되돌릴 때를 위해 남겨 둬요.
+
+이 폴더에는 앱을 고치고 다시 만드는 데 필요한 원본이 모두 들어 있어요. (v8까지는) 저장소 맨 위의 `index.html`(GitHub Pages 사이트)을 이 폴더의 파일로 만들었어요. 새 대화(새 작업 공간)에서 이어서 작업할 때 이 문서부터 읽으면 돼요.
 
 - 앱 주소: claude.ai 아티팩트 https://claude.ai/artifact/BeK8aVBu8VRYs3fgJFZBSj · GitHub Pages https://youncall31-glitch.github.io/EFT_BACKTESTER/
 - 작업 기록: claude.ai 프로젝트 'Back test'의 문서 `claude/etf-backtester-notes.md` (버전별 변경, 검증한 숫자, 되돌리기 방법)
