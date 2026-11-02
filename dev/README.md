@@ -1,6 +1,6 @@
 # dev/ — ETF 포트폴리오 백테스터 원본과 작업 안내
 
-## 지금 사이트에 올라간 버전: v10.1 (2026-11-02) — `dev/v7/`
+## 지금 사이트에 올라간 버전: v10.2 (2026-11-02) — `dev/v7/`
 
 저장소 맨 위 `index.html`(GitHub Pages)은 이제 **`dev/v7/`** 에서 만들어요. claude.ai 아티팩트 ‘ETF 포트폴리오 백테스터 v7’(https://claude.ai/artifact/TfjeYzdnojy4eyv3B1Huuy)과 같은 페이지예요. 이전 앱(아래 v8, https://claude.ai/artifact/BeK8aVBu8VRYs3fgJFZBSj)은 그대로 두고, 그 페이지를 바탕으로 기능을 더한 새 앱이에요. 같은 설정이면 CAGR · MDD 등 핵심 숫자는 이전 앱과 같아요(`dev/v7/tests/snap.py`로 확인).
 
@@ -13,6 +13,7 @@
 | `v7/src/build_v71.py` ~ `build_v100.py` | 버전별 화면 · 문구 · CSS 수정 |
 | `v7/src/*.js`, `*.html` | 더한 계산과 화면 코드(적립 · 세금 · 원화, 신뢰도 지표, 하락과 회복, 방어 규칙, 편차 · 상관성, AI 검증 등) |
 | `v7/data/kr.json` | 원/달러 환율 · 한국 소비자물가(월간). 만든 스크립트와 원본 텍스트 포함 |
+| `v7/data/us10y.json` | 미국 10년 국채 금리(연준 H.15 월평균, 1953.04~2026.09, github.com/datasets/bond-yields-us-10y) |
 | `v7/site.py` | `out/etf-backtester.html`로 사이트(`../index.html`, `sw.js` 캐시 이름, `manifest.webmanifest` 설명)를 만듦. `VERSION`을 올려야 설치형 앱에 새 버전이 반영돼요 |
 | `v7/tests/` | `snap.py`(v6 · v8 앱과 숫자 비교, 기준 파일 `v6_*.json`), 화면 · 기능 점검 스크립트 |
 | `v7/exp/` | 연금 · 하락 대응 실험 스크립트(참고용) |

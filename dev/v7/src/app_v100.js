@@ -9,7 +9,7 @@
     const W = Math.max(280, host.clientWidth || 600), wide = W >= 760, rowH = wide ? 30 : 26, lab = wide ? 150 : 96, gap = 18;
     const P = [
       { k: 'c', t: 'CAGR', s: '길수록 좋아요', v: st => st.cagr, f: st => pct(st.cagr, 1), up: true },
-      { k: 'm', t: 'MDD', s: '짧을수록 좋아요 · 괄호는 그 하락의 회복 기간', v: st => -st.mdd, f: st => `${mpct1(st.mdd)}${st.mddInfo && st.mddInfo.mdd < 0 ? ` (${mddRecTx(st).replace('회복 ', '')})` : ''}`, up: false },
+      { k: 'm', t: 'MDD', s: '짧을수록 좋아요 · 괄호는 그 하락의 회복 기간', v: st => -st.mdd, f: st => `${mpct1(st.mdd)}${st.mddInfo && st.mddInfo.mdd < 0 ? ` (${dur(st.mddInfo.months)}${st.mddInfo.recovery < 0 ? '+' : ''})` : ''}`, up: false },
       { k: 'u', t: '최장 회복', s: '짧을수록 좋아요 · 고점 되찾기까지 가장 긴 기간', v: st => st.uw.months, f: st => uwTx(st.uw.months, st.uw.ongoing), up: false }
     ];
     const cols = wide ? 3 : 1, pw = wide ? (W - lab - gap * 2) / 3 : W - lab, ph = 34 + rows.length * rowH + 6;
