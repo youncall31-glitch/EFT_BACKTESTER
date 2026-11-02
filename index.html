@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v10.3-2026-11-02">
+<meta name="app-version" content="v10.4-2026-11-02">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1129,6 +1129,12 @@ select, input[type="text"], input[type="number"] { min-height: 40px; border-radi
 #rl-how-x { margin: 10px 0; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--focus) 6%, transparent); }
 #rl-how-x .rl-h { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; }
 #rl-how-x .key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+
+/* v10.4 */
+.rl-as th, .rl-as td { white-space: normal !important; vertical-align: top; font-size: 12.5px; padding: 6px 8px; text-align: left; font-family: var(--font-sans); }
+.rl-as td.num { text-align: right; font-weight: 700; white-space: nowrap !important; }
+.rl-as tbody th { white-space: nowrap !important; }
+.rl-as { width: 100%; min-width: 0 !important; }
 @media (max-width: 520px) { .rl2 th, .rl2 td { padding: 6px 4px; font-size: 12.5px; } .rl2 .rl2-r td b { font-size: 13px; } }
 
 
@@ -1503,9 +1509,14 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v10.3</span><span class="upd-d">2026.11.02</span><span class="upd-t">현실적인 CAGR · MDD · 회복 기간을 표 하나로, AI 추천도 그 기준으로</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v10.4</span><span class="upd-d">2026.11.02</span><span class="upd-t">현실적인 기대 수익률을 과거 데이터로 자동으로 정해요</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v10.4 · 2026.11.02</dt>
+          <dd><ul>
+            <li>현실적인 기대치의 기대 수익률을 직접 넣지 않고 과거 데이터로 정해요: 채권 = 지금 10년 국채 금리(과거 ‘살 때 금리 → 그 뒤 10년’ 관계), 주식 = 지금 금리 + 과거 미국 주식(SPY)이 10년 금리보다 더 번 몫, 금 = 지금 금리 + 과거 금(GLD)이 더 번 몫. 각 값을 어떻게 정했는지 표로 보여줘요.</li>
+            <li>AI 추천 ‘다음 기간 점검’에서는 고를 때까지의 데이터로만 이 몫을 계산해요(미래를 엿보지 않게).</li>
+          </ul></dd>
           <dt>v10.3 · 2026.11.02</dt>
           <dd><ul>
             <li>3 검증 ‘현실적인 기대치’를 판정 카드 바로 아래로 옮기고 표 하나로 단순화: 포트폴리오마다 과거 백테스트 줄과 현실적으로(지금 금리 기준) 줄 — CAGR · MDD · 회복 기간</li>
@@ -1682,7 +1693,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
         </dl>
       </div>
     </details>
-    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.3</span></h1>
+    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.4</span></h1>
     <p class="lede">ETF와 비중을 넣으면 과거에 돈이 얼마나 불었고, 가장 크게 얼마나 떨어졌는지 보여줘요. 미국 상장 ETF <span id="n-assets">50</span>개의 월간 데이터(<span id="span-range">1972.01 – 2026.09</span>)로 계산하고, 예시 포트폴리오 세 개를 채워 두었어요. 원화 기준으로도 보고, ‘적립·세금’ 탭에서 매년 초 넣는 돈과 세금까지 넣어 볼 수 있어요. 과거 데이터로 본 결과라 앞으로의 수익을 보장하지 않아요.</p>
   </header>
 
@@ -1990,28 +2001,25 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
     <div class="rl-say" id="rl-say"></div>
     <div id="rl-tbl"></div>
     <p class="small muted" id="rl-note"></p>
-    <details class="more rl-how" id="rl-how"><summary>어떻게 계산했나요? — 자세한 설명 · 가정 바꾸기 · 근거 그래프</summary>
+    <details class="more rl-how" id="rl-how"><summary>어떻게 계산했나요? — 자세한 설명 · 기대 수익률 근거 · 그래프</summary>
       <h3 class="sc-sub">계산 방법</h3>
       <ol class="rl-steps">
         <li><b>과거 백테스트 줄</b> — 이 계산기의 백테스트 결과 그대로예요. MDD 아래 작은 글씨는 그 하락에서 회복하기까지 걸린 기간, 회복 기간은 고점을 되찾기까지 가장 오래 걸린 때예요.</li>
         <li><b>왜 다시 계산하나</b> — 채권은 ‘살 때 금리’만큼 번다고 보면 거의 맞아요(아래 점 그래프). 1982~2020년에는 미국 10년 국채 금리가 15%대에서 1% 아래까지 내려가 채권 값이 덤으로 올랐는데, 금리가 이미 내려온 지금은 이 덤이 되풀이되기 어려워요. 그래서 채권이 많은 포트폴리오일수록 과거 평균이 앞으로보다 높게 나와요.</li>
-        <li><b>현실적인 CAGR</b> — 종목마다 기대 수익률을 정해요. 채권 = 지금 10년 국채 금리, 단기 채권 = 금리와 현금의 중간, 회사채 +1%p, 하이일드 +2.5%p, 주식 7%, 금 · 원자재 3%, 현금 = 지금 단기국채 금리. 이것을 비중대로 섞고, 과거의 출렁임(변동성)과 종목끼리 같이 움직이는 정도(상관)로 분산 효과를 반영해요.<br><span class="mono small">기대 CAGR ≈ Σ 비중 × (종목 기대 + 변동성²/2) − 포트폴리오 변동성²/2</span></li>
+        <li><b>현실적인 CAGR</b> — 종목마다 기대 수익률을 정해요. 채권 = 지금 10년 국채 금리, 단기 채권 = 금리와 현금의 중간, 회사채 +1%p, 하이일드 +2.5%p, 현금 = 지금 단기국채 금리. 주식과 금은 과거 데이터로 정해요: 지금 금리 + 과거에 10년 국채 금리보다 해마다 더 번 몫(아래 표). 직접 넣을 값은 없어요. 이것을 비중대로 섞고, 과거의 출렁임(변동성)과 종목끼리 같이 움직이는 정도(상관)로 분산 효과를 반영해요.<br><span class="mono small">기대 CAGR ≈ Σ 비중 × (종목 기대 + 변동성²/2) − 포트폴리오 변동성²/2</span></li>
         <li><b>현실적인 MDD · 회복 기간</b> — 과거 실제 월별 움직임을 12개월씩 묶어 무작위로 이어 붙여, 앞으로 N년(기본 20년)을 700번 만들어요. 출렁임과 위기의 모양은 과거 그대로이고, 종목마다 평균만 위 기대 수익률로 옮겼어요. 매년 처음 비중으로 리밸런싱해요. 700번 중 가운데가 ‘약’, 나쁜 쪽 10%가 ‘나쁘면’, CAGR의 ‘나쁘면 · 좋으면’은 하위 · 상위 10%예요.</li>
         <li><b>기간 차이</b> — 과거 MDD는 전체 기간(수십 년) 중 최악이고, 현실 MDD는 앞으로 N년 동안의 값이에요. 기간이 짧을수록 큰 위기를 덜 만나 얕게 나오니, 은퇴 자금이라면 20~30년으로 보세요.</li>
-        <li><b>한계</b> — 예측이 아니라 가정을 넣은 계산이에요. 주식 7% · 금 3%는 흔히 쓰는 장기 가정이고 아래에서 바꿀 수 있어요. 과거에 없던 종류의 위기는 모의실험에도 없어요. 물가를 뺀 계산(실질)을 켜면 모든 가정에서 물가 2.5%를 빼요.</li>
+        <li><b>한계</b> — 예측이 아니라 가정을 넣은 계산이에요. 주식의 ‘과거에 더 번 몫’에는 1970~80년대보다 지금 주가가 이익에 비해 훨씬 비싸진 몫도 섞여 있어, 앞으로는 이보다 낮을 수 있어요(주식 기대가 1%p 낮으면 60/40 기대 CAGR은 약 0.6%p 낮아져요). 과거에 없던 종류의 위기는 모의실험에도 없어요. 물가를 뺀 계산(실질)을 켜면 모든 가정에서 물가 2.5%를 빼요.</li>
       </ol>
-      <div id="rl-how-x"></div>
+            <h3 class="sc-sub">기대 수익률 — 과거 데이터로 자동으로 정해요</h3>
+      <div id="rl-assume"></div>
+      <p class="small muted" id="rl-bond-note"></p>
       <div class="inbar">
-        <div class="in-h"><span class="in-tag">입력</span><b>가정 바꾸기 — 바꾸면 위 표와 AI 추천이 다시 계산돼요</b></div>
+        <div class="in-h"><span class="in-tag">입력</span><b>보는 방법만 고르면 돼요</b></div>
         <div class="in-row"><span class="in-l">따라가 볼 포트폴리오</span><div class="chips" id="rl-port" role="group" aria-label="볼 포트폴리오"></div></div>
-        <div class="rl-in">
-          <div class="field"><label for="rl-bond">채권 기대 (%)</label><input id="rl-bond" type="number" step="0.1" inputmode="decimal"><p class="help">기본값 = 지금 미국 10년 국채 금리</p></div>
-          <div class="field"><label for="rl-eq">주식 기대 (%)</label><input id="rl-eq" type="number" step="0.5" inputmode="decimal"><p class="help">연 수익률 가정 · 기본 7%</p></div>
-          <div class="field"><label for="rl-gold">금 · 원자재 기대 (%)</label><input id="rl-gold" type="number" step="0.5" inputmode="decimal"><p class="help">기본 3% (물가 수준)</p></div>
-          <div class="field"><label for="rl-h">모의실험 기간</label><select id="rl-h"><option value="10">10년</option><option value="20">20년</option><option value="30">30년</option></select><p class="help"><button class="btn ghost sm" type="button" id="rl-reset">기본값으로</button></p></div>
-        </div>
-        <p class="small muted" id="rl-bond-note"></p>
+        <div class="in-row"><label class="in-l" for="rl-h">모의실험 기간</label><select id="rl-h"><option value="10">10년</option><option value="20">20년</option><option value="30">30년</option></select></div>
       </div>
+      <div id="rl-how-x"></div>
       <h3 class="sc-sub">과거 CAGR vs 현실적인 기대 — 앞으로의 범위</h3>
       <div class="chart-box" id="c-rl-exp"></div>
       <h3 class="sc-sub">시기별로 보면</h3>
@@ -9595,11 +9603,11 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     });
   })();
 
-  /* ======================= v10.3: realistic CAGR · MDD · recovery — one simple table, the how-to folded; the same numbers drive the AI pick ======================= */
+  /* ======================= v10.4: realistic CAGR · MDD · recovery — assumptions set from the data (no typing): bond = the yield now, stocks · gold = the yield now + their past premium over it ======================= */
   const Y10 = JSON.parse(document.getElementById('us10y-data').textContent);
   const y10At = k => { const [y, m] = BT.ym(k); const i = y * 12 + (m - 1) - (Y10.y0 * 12 + Y10.m0 - 1); return i >= 0 && i < Y10.v.length ? Y10.v[i] / 100 : null; };
   const RL_ERAS = [['1972~1981', 1972, 1981, '금리 상승 · 고물가'], ['1982~1999', 1982, 1999, '금리 하락'], ['2000~2009', 2000, 2009, '닷컴 · 금융위기'], ['2010~2020', 2010, 2020, '저금리'], ['2021~', 2021, 2100, '금리 상승']];
-  state.rl = { pi: null, eq: 7.0, gold: 3.0, bond: null, H: 20 };
+  state.rl = { pi: null, H: 20 };
   state.aiCrit = 'real';
   const RL_INFL = 0.025;
   const mIdx = (y, m) => { for (let k = 0; k < 1200; k++) { const [yy, mm] = BT.ym(k); if (yy === y && mm === m) return k; if (yy > y) return null; } return null; };
@@ -9621,11 +9629,28 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   function rlRng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   const rfAt = k => { const RC = BT.rfCum(); return RC[k + 1] && RC[k] ? Math.pow(RC[k + 1] / RC[k], 12) - 1 : 0.03; };
   /* the assumptions at month k: bond = the 10-year yield then (or what the user typed, for the last month), stocks · gold as typed, cash = the T-bill rate then */
-  function rlAssume(k) {
-    const R = state.rl, L = state.last, last = L && k === L.e;
-    const y = y10At(k), bond = last && R.bond != null ? R.bond / 100 : (y != null ? y : 0.04), infl = BT.isReal() ? RL_INFL : 0;
-    return { eq: R.eq / 100 - infl, gold: R.gold / 100 - infl, bond: bond - infl, cash: rfAt(k) - infl, y };
+  /* premiums over the 10-year yield, measured only on data up to month k (so the walk-forward check never peeks), in nominal dollars */
+  const premCache = new Map();
+  function rlPrem(k) {
+    if (premCache.has(k)) return premCache.get(k);
+    const one = t => withUnit(false, () => {
+      let s, e; try { [s, e] = BT.commonRange([t], 'full'); } catch (err) { return null; }
+      e = Math.min(e, k); if (!(e - s >= 120)) return null;
+      const res = BT.backtest([t], [1], s, e, 'N', false), cg = Math.pow(res.vals[res.n] / res.vals[0], 12 / res.n) - 1;
+      let ys = 0, yn = 0; for (let q = s; q <= e; q++) { const y = y10At(q); if (y != null) { ys += y; yn++; } }
+      if (!yn) return null;
+      const out = { t, s, e, cg, y: ys / yn, p: cg - ys / yn };
+      if (t === 'IEF') { const v = res.vals; let d = 0, c = 0; for (let q = 0; q + 120 <= res.n; q++) { const y = y10At(s + q); if (y == null) continue; d += Math.pow(v[q + 120] / v[q], 0.1) - 1 - y; c++; } out.gap = c ? d / c : null; out.nGap = c; }
+      return out;
+    }, 'USD');
+    const out = { eq: one('SPY'), gold: one('GLD'), bond: one('IEF') };
+    premCache.set(k, out); return out;
   }
+  function rlAssume(k) {
+    const y0 = y10At(k), y = y0 != null ? y0 : 0.04, P = rlPrem(k), infl = BT.isReal() ? RL_INFL : 0;
+    return { eq: y + (P.eq ? P.eq.p : 0.05) - infl, gold: y + (P.gold ? P.gold.p : 0) - infl, bond: y - infl, cash: rfAt(k) - infl, y: y0, P };
+  }
+  const ppS = v => `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(1)}%p`;
   function rlTarget(c, sig, A) {
     if (c === 'cash') return A.cash; if (c === 'short') return (A.cash + A.bond) / 2; if (c === 'bond') return A.bond; if (c === 'ig') return A.bond + 0.01; if (c === 'hy') return A.bond + 0.025; if (c === 'gold') return A.gold; if (c === 'cc') return A.eq - 0.01;
     if (c === 'lev') { const se = 0.16; return 3 * (A.eq + se * se / 2) - 2 * A.cash - 0.009 - sig * sig / 2; }
@@ -9700,27 +9725,36 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     }
     t.appendChild(bd); const w = el('div', 'tbl-wrap rl2-w'); w.appendChild(t); return w;
   }
-  const rlNote = () => { const A = rlAssume(state.last ? state.last.e : 0), R = state.rl; return `현실적으로 = 지금 10년 국채 금리 ${(R.bond != null ? R.bond : (A.y || 0.04) * 100).toFixed(2)}% · 주식 ${R.eq}% · 금 ${R.gold}% 가정${BT.isReal() ? `(물가 ${RL_INFL * 100}% 뺌)` : ''}으로 앞으로 ${R.H}년을 700번 모의실험 — ‘약’ = 가운데, ‘나쁘면’ = 나쁜 10%`; };
+  const rlNote = () => { const A = rlAssume(state.last ? state.last.e : 0); return `현실적으로 = 지금 10년 국채 금리 ${((A.y || 0.04) * 100).toFixed(2)}%에서 과거 데이터로 정한 기대 수익률(채권 ${pct(A.bond, 1)} · 주식 ${pct(A.eq, 1)} · 금 ${pct(A.gold, 1)}${BT.isReal() ? `, 물가 ${RL_INFL * 100}% 뺌` : ''})로 앞으로 ${state.rl.H}년을 700번 모의실험 — ‘약’ = 가운데, ‘나쁘면’ = 나쁜 10%`; };
+  /* how each assumption was set, from the data */
+  function rlAssumeTable(A, L) {
+    const P = A.P, t = el('table', 'rl-as'), hd = el('tr'); ['', '기대 수익률', '어떻게 정했나'].forEach(x => hd.appendChild(el('th', null, x))); const th = el('thead'); th.appendChild(hd); t.appendChild(th);
+    const bd = el('tbody'), row = (k, v, how) => { const tr = el('tr'); tr.append(el('th', null, k), el('td', 'num', v), el('td', null, how)); bd.appendChild(tr); };
+    const yTx = ((A.y || 0.04) * 100).toFixed(2) + '%';
+    row('채권', pct(A.bond, 1), `지금 10년 국채 금리 ${yTx} 그대로.` + (P.bond && P.bond.gap != null ? ` 과거 ${P.bond.nGap}개 시작 달에서 IEF의 그 뒤 10년 수익은 살 때 금리보다 평균 ${ppS(P.bond.gap)}였는데, 이건 금리가 계속 내려간 시기의 덤이라 빼요.` : ''));
+    row('주식', pct(A.eq, 1), P.eq ? `지금 금리 ${yTx} + 과거 미국 주식(SPY ${BT.label(P.eq.s)}~${BT.label(P.eq.e)} CAGR ${pct(P.eq.cg, 1)})이 같은 기간 평균 10년 금리(${pct(P.eq.y, 1)})보다 해마다 더 번 몫 ${ppS(P.eq.p)}. 모든 주식 ETF에 같이 써요(한 종목의 짧은 과거는 운이 크게 섞여서).` : '데이터 없음 → 금리 + 5%p');
+    row('금 · 원자재', pct(A.gold, 1), P.gold ? `지금 금리 + 과거 금(GLD ${BT.label(P.gold.s)}~${BT.label(P.gold.e)} CAGR ${pct(P.gold.cg, 1)})이 평균 10년 금리(${pct(P.gold.y, 1)})보다 더 번 몫 ${ppS(P.gold.p)}` : '데이터 없음 → 금리와 같게');
+    row('현금', pct(A.cash, 1), '지금 미국 단기국채 금리');
+    row('그 밖', '', `단기 채권 = 금리와 현금의 중간 · 회사채 = 채권 +1%p · 하이일드 = 채권 +2.5%p · 커버드콜 = 주식 −1%p · 3배 레버리지 = 주식 기대의 3배에서 빌린 돈 비용 · 보수 · 출렁임 손실을 뺀 값` + (BT.isReal() ? ` · 물가를 뺀 계산이라 모두 ${RL_INFL * 100}%를 뺐어요` : ''));
+    t.appendChild(bd); const w = el('div', 'tbl-wrap'); w.appendChild(t); return w;
+  }
   (function buildRl() {
     $('#rl-port').addEventListener('click', e => { const b = e.target.closest('button[data-p]'); if (!b) return; state.rl.pi = +b.dataset.p; renderReal(); });
-    const on = () => { const R = state.rl; R.eq = numIn('#rl-eq', 7); R.gold = numIn('#rl-gold', 3); R.bond = numIn('#rl-bond', R.bond == null ? 4 : R.bond); R.H = +$('#rl-h').value || 20; renderReal(false); rlAI(); };
-    ['#rl-eq', '#rl-gold', '#rl-bond'].forEach(s => $(s).addEventListener('change', on));
-    $('#rl-h').addEventListener('change', on);
-    $('#rl-reset').addEventListener('click', () => { state.rl.bond = null; state.rl.eq = 7; state.rl.gold = 3; state.rl.H = 20; renderReal(); rlAI(); });
+    $('#rl-h').addEventListener('change', () => { state.rl.H = +$('#rl-h').value || 20; renderReal(false); rlAI(); });
   })();
   const rlAI = () => { if (state.opt && state.opt.trust && typeof sumPick === 'function') sumPick(true); };
   function renderReal(full = true) {
     const host = $('#rl-say'); if (!host) return;
-    host.innerHTML = ''; $('#rl-port').innerHTML = ''; $('#rl-tbl').innerHTML = ''; $('#rl-bond-note').textContent = ''; $('#rl-how-x').innerHTML = '';
+    host.innerHTML = ''; $('#rl-port').innerHTML = ''; $('#rl-tbl').innerHTML = ''; $('#rl-bond-note').textContent = ''; $('#rl-how-x').innerHTML = ''; $('#rl-assume').innerHTML = '';
     state.rlRes = null;
     const L = state.last, vp = validPorts(); if (!L || !vp.length) { drawReal(); return; }
     const R = state.rl; if (R.pi == null || !vp.find(p => p.i === R.pi)) R.pi = vp[0].i;
     for (const p of vp) { const b = el('button', 'chip'); b.type = 'button'; b.dataset.p = p.i; b.setAttribute('aria-pressed', p.i === R.pi ? 'true' : 'false'); const k = el('span', 'key'); k.style.background = PCOL[p.i]; b.append(k, document.createTextNode(' ' + p.name)); $('#rl-port').appendChild(b); }
     const yNow = y10At(L.e), cash = rfAt(L.e);
-    if (R.bond == null) R.bond = yNow != null ? Math.round(yNow * 10000) / 100 : 4;
-    $('#rl-eq').value = R.eq; $('#rl-gold').value = R.gold; $('#rl-bond').value = R.bond; $('#rl-h').value = String(R.H);
+    $('#rl-h').value = String(R.H);
     $('#rl-bond-note').textContent = yNow != null ? `${BT.label(L.e)} 미국 10년 국채 금리(월평균) ${(yNow * 100).toFixed(2)}% · 현금(미국 단기국채) ${(cash * 100).toFixed(2)}%` : '';
     const A = rlAssume(L.e);
+    $('#rl-assume').appendChild(rlAssumeTable(A, L));
     const series = L.series.filter(x => !x.bench), x = series.find(s => s.key === 'p' + R.pi) || series[0];
     // the realistic line for every portfolio
     const exp = series.map(s => Object.assign({ s, hist: s.st.cagr }, rlSim(s.tickers, s.weights, L.s, L.e, L.adj, A, R.H)));
@@ -9764,7 +9798,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
       ol.appendChild(el('li', null, `종목별 기대 수익률: ${x.tickers.map((tk, j) => `${tk}(${RL_CLS[E.cls[j]]}) ${pct(E.tgt[j], 1)}`).join(' · ')}`));
       ol.appendChild(el('li', null, `비중대로 섞으면 ${pct(x.tickers.reduce((a, tk, j) => a + x.weights[j] / x.weights.reduce((p, q) => p + q, 0) * E.tgt[j], 0), 1)} → 출렁임과 분산 효과를 반영하면 기대 CAGR 약 ${pct(E.gExp, 1)}`));
       ol.appendChild(el('li', null, `앞으로 ${R.H}년 모의실험 700번: CAGR 하위 10% ${pct(E.c10, 1)} · 가운데 ${pct(E.c50, 1)} · 상위 10% ${pct(E.c90, 1)}, MDD 가운데 ${mpct1(E.m50)} · 나쁜 10% ${mpct1(E.m10)}, 회복 가운데 ${yrTx(E.u50)} · 나쁜 10% ${yrTx(E.u90)}, 손실로 끝날 확률 ${pct(E.loss, 0)}`));
-      if (best && exBest != null) ol.appendChild(el('li', null, `확인용: 과거 전체 CAGR ${pct(x.st.cagr, 1)} 중 가장 좋았던 ${best.nm}(${best.why}${best.ya != null ? `, 10년 금리 ${(best.ya * 100).toFixed(1)}% → ${(best.yb * 100).toFixed(1)}%` : ''})에 연 ${pct(best.st.cagr, 1)}. 이 시기를 빼면 연 ${pct(exBest, 1)}로, 현실 기대치(${pct(E.gExp, 1)})와 비슷한 쪽으로 내려와요.`));
+      if (best && exBest != null) ol.appendChild(el('li', null, `확인용: 과거 전체 CAGR ${pct(x.st.cagr, 1)} 중 가장 좋았던 ${best.nm}(${best.why}${best.ya != null ? `, 10년 금리 ${(best.ya * 100).toFixed(1)}% → ${(best.yb * 100).toFixed(1)}%` : ''})에 연 ${pct(best.st.cagr, 1)}. 이 시기를 빼면 연 ${pct(exBest, 1)}예요(현실 기대치 ${pct(E.gExp, 1)}와 견줘 보세요).`));
       hx.appendChild(ol);
     }
     drawReal();
