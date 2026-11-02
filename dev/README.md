@@ -1,6 +1,6 @@
 # dev/ — ETF 포트폴리오 백테스터 원본과 작업 안내
 
-## 지금 사이트에 올라간 버전: v10.0 (2026-11-02) — `dev/v7/`
+## 지금 사이트에 올라간 버전: v10.1 (2026-11-02) — `dev/v7/`
 
 저장소 맨 위 `index.html`(GitHub Pages)은 이제 **`dev/v7/`** 에서 만들어요. claude.ai 아티팩트 ‘ETF 포트폴리오 백테스터 v7’(https://claude.ai/artifact/TfjeYzdnojy4eyv3B1Huuy)과 같은 페이지예요. 이전 앱(아래 v8, https://claude.ai/artifact/BeK8aVBu8VRYs3fgJFZBSj)은 그대로 두고, 그 페이지를 바탕으로 기능을 더한 새 앱이에요. 같은 설정이면 CAGR · MDD 등 핵심 숫자는 이전 앱과 같아요(`dev/v7/tests/snap.py`로 확인).
 

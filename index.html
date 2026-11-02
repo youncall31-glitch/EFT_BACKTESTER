@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v10.0-2026-11-02">
+<meta name="app-version" content="v10.1-2026-11-02">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1471,9 +1471,11 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v10.0</span><span class="upd-d">2026.10.30</span><span class="upd-t">회복 기간을 CAGR · MDD와 함께, 하락과 회복은 그래프 하나로</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v10.1</span><span class="upd-d">2026.11.02</span><span class="upd-t">리밸런싱과 매년 적립을 같은 달 초(기본 3월)에 해요</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v10.1 · 2026.11.02</dt>
+          <dd><ul><li>리밸런싱과 매년 적립을 같은 날에: ‘리밸런싱 · 적립 시점’을 고르면(기본 3월 초) 매년 리밸런싱과 매년 넣는 돈이 모두 그 달 초에 이뤄져요. 반기 · 분기 리밸런싱도 그 달을 기준으로 6 · 3개월마다. 이전처럼 계산하려면 1월 초를 고르면 돼요(1월 초 = 12월 말 리밸런싱).</li></ul></dd>
           <dt>v10.0 · 2026.10.30</dt>
           <dd><ul>
             <li>CAGR · MDD 옆에 회복 기간을 함께: 성과 한눈에 막대(CAGR · MDD · 최장 회복), 기간 편차의 ‘회복’ 보기, AI 비교표, 추세 보정 비교표, 다음 기간 점검</li>
@@ -1636,7 +1638,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
         </dl>
       </div>
     </details>
-    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.0</span></h1>
+    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.1</span></h1>
     <p class="lede">ETF와 비중을 넣으면 과거에 돈이 얼마나 불었고, 가장 크게 얼마나 떨어졌는지 보여줘요. 미국 상장 ETF <span id="n-assets">50</span>개의 월간 데이터(<span id="span-range">1972.01 – 2026.09</span>)로 계산하고, 예시 포트폴리오 세 개를 채워 두었어요. 원화 기준으로도 보고, ‘적립·세금’ 탭에서 매년 초 넣는 돈과 세금까지 넣어 볼 수 있어요. 과거 데이터로 본 결과라 앞으로의 수익을 보장하지 않아요.</p>
   </header>
 
@@ -1647,7 +1649,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
     <div class="panel-head"><h2 id="h-style">투자 방식 · 금액 · 기간</h2><p class="help">어떻게, 얼마로, 언제부터 투자했다고 볼지 정해요. 모든 탭이 이 설정으로 계산해요.</p></div>
     <div class="styles" role="radiogroup" aria-labelledby="h-style">
       <label class="sty"><input type="radio" name="sty" value="lump"><span class="sty-ic" aria-hidden="true">●</span><span class="sty-tx"><b>한 번에 넣기</b><small>거치식 · 처음에 넣고 그대로 둬요</small></span></label>
-      <label class="sty"><input type="radio" name="sty" value="Y"><span class="sty-ic" aria-hidden="true">▮ ▮ ▮</span><span class="sty-tx"><b>매년 초 적립</b><small>처음 넣는 돈 + 해마다 1월에 넣는 돈</small></span></label>
+      <label class="sty"><input type="radio" name="sty" value="Y"><span class="sty-ic" aria-hidden="true">▮ ▮ ▮</span><span class="sty-tx"><b>매년 초 적립</b><small id="sty-y-sub">처음 넣는 돈 + 해마다 3월 초에 넣는 돈</small></span></label>
     </div>
     <div class="sty-amt">
       <div class="field"><label for="st-init" id="st-init-l">처음 넣는 돈</label><input id="st-init" type="number" min="1" step="1000" inputmode="numeric"><p class="amt-hint" id="st-init-h"></p></div>
@@ -1680,7 +1682,12 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
           <option value="B">밴드 (5%p 또는 상대 25% 이탈 시)</option>
           <option value="N">안 함 (매수 후 보유)</option>
         </select>
-        <p class="help">정해진 때마다 처음 비중으로 되돌려요. 잘 모르면 ‘매년’.</p>
+        <p class="help">정해진 때마다 처음 비중으로 되돌려요. 잘 모르면 ‘매년’. 시점은 아래에서 정해요.</p>
+      </div>
+      <div class="field">
+        <label for="anchor">리밸런싱 · 매년 적립 시점</label>
+        <select id="anchor"><option value="0">1월 초</option><option value="1">2월 초</option><option value="2">3월 초</option><option value="3">4월 초</option><option value="4">5월 초</option><option value="5">6월 초</option><option value="6">7월 초</option><option value="7">8월 초</option><option value="8">9월 초</option><option value="9">10월 초</option><option value="10">11월 초</option><option value="11">12월 초</option></select>
+        <p class="help">매년 리밸런싱과 매년 넣는 돈이 모두 이 달 초에 이뤄져요. 반기 · 분기도 이 달부터 6 · 3개월마다예요.</p>
       </div>
     </div>
     </div>
@@ -2096,7 +2103,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
   </div>
 
   <div class="pane" data-g="g-flow" id="pane-flow">
-  <div class="gsec" id="g-flow"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-flow"/></svg><div class="grp-tx"><span class="g-eye">더보기</span><h2 class="grp-t">적립·세금</h2><p class="grp-d">처음 넣는 돈에 더해 해마다 1월에 넣으면 얼마나 모이는지, 세금과 원화 환율까지 빼면 손에 얼마가 남는지 봐요.</p></div></div>
+  <div class="gsec" id="g-flow"><svg class="ic gsec-ic" aria-hidden="true"><use href="#i-flow"/></svg><div class="grp-tx"><span class="g-eye">더보기</span><h2 class="grp-t">적립·세금</h2><p class="grp-d">처음 넣는 돈에 더해 해마다 정한 달 초에 넣으면 얼마나 모이는지, 세금과 원화 환율까지 빼면 손에 얼마가 남는지 봐요.</p></div></div>
   <nav class="jump" aria-label="이 탭 바로가기"><span class="jump-l">바로가기</span><button type="button" class="jchip" data-goto="sec-fl-set">① 계획 세우기</button><button type="button" class="jchip" data-goto="sec-fl-res">② 계획대로 했다면</button><button type="button" class="jchip" data-goto="sec-fl-years">연도별 표</button><button type="button" class="jchip" data-goto="sec-acc">③ 얼마나 모일까</button></nav>
   <div class="ctx" id="ctx-flow" role="group" aria-label="지금 설정"></div>
 
@@ -2298,7 +2305,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
       <details class="faq-i" data-fold="m-3">
         <summary>리밸런싱과 기간</summary>
         <ul>
-          <li>정기 리밸런싱은 달력 기준입니다. 매년은 12월 말, 반기는 6·12월 말, 분기는 3·6·9·12월 말에 목표 비중으로 되돌립니다.</li>
+          <li>정기 리밸런싱은 달력 기준입니다. ‘리밸런싱 · 매년 적립 시점’에서 고른 달 초(기본 3월 초 = 2월 말 종가)에 매년 목표 비중으로 되돌리고, 반기는 그 달부터 6개월마다, 분기는 3개월마다예요. 매년 적립도 같은 날 넣어요. 1월 초를 고르면 이전 버전(12월 말)과 같아요.</li>
           <li>밴드는 매월 말 확인해 어느 자산이든 목표 대비 5%p(큰 비중) 또는 상대 25%(작은 비중) 넘게 벗어나면 전체를 되돌립니다.</li>
           <li>기간별 성과(10~30년)는 종료 시점에서 거꾸로 N년 구간을 목표 비중으로 새로 시작한 독립 백테스트입니다.</li>
           <li>여러 포트폴리오는 모두 같은 기간으로 계산합니다. 자산의 데이터가 늦게 시작하면 시작 시점이 자동으로 뒤로 밀립니다.</li>
@@ -2369,7 +2376,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
           <li><b>국내 상장 해외 ETF(일반 계좌)</b>: 분배금과 매도 차익에 팔 때마다 15.4%, 손실과 차익을 서로 빼 주지 않습니다(환노출형 가정, 과표기준가와 실제 차익의 차이는 무시).</li>
           <li><b>연금저축·IRP</b>: 굴리는 동안 세금이 없고, 뺄 때 연금소득세(기본 5.5%)를 냅니다. 납입 세액공제, 연 1,500만 원 넘는 수령의 과세 방식, 중도 인출 세율(16.5%)은 반영하지 않아요. 마지막 금액도 연금으로 받는다고 보고 같은 세율을 뗍니다.</li>
           <li>세율과 공제는 2026년 기준값이고 바꿀 수 있어요. 과거 시점에도 같은 세법을 적용해 비교하기 쉽게 했습니다. 금융소득 종합과세(연 2,000만 원 초과), 건강보험료, 거래 비용은 반영하지 않아요.</li>
-          <li><b>매년 초 적립</b>은 해마다 1월 초에 넣어요. 분석 시작 달이 1월이면 첫해에도 처음 넣는 돈과 함께 넣고, ‘해마다 늘리기’는 해가 바뀔 때마다 적용해요. <b>적립하면 얼마나 모일까</b>는 같은 계획(인출 없음)을 고른 자산의 데이터가 있는 모든 시작 달(매년 초 적립이면 모든 1월)에서 정한 기간만큼 돌린 결과예요. 넣은 돈은 처음 넣는 돈과 적립금의 합(물가 반영이면 시작 시점 돈의 가치)이에요.</li>
+          <li><b>매년 초 적립</b>은 해마다 리밸런싱과 같은 달 초(기본 3월)에 넣어요. 분석 시작 달이 그 달이면 첫해에도 처음 넣는 돈과 함께 넣고, ‘해마다 늘리기’는 해가 바뀔 때마다 적용해요. <b>적립하면 얼마나 모일까</b>는 같은 계획(인출 없음)을 고른 자산의 데이터가 있는 모든 시작 달(매년 초 적립이면 모든 1월)에서 정한 기간만큼 돌린 결과예요. 넣은 돈은 처음 넣는 돈과 적립금의 합(물가 반영이면 시작 시점 돈의 가치)이에요.</li>
           <li><b>은퇴 인출 점검</b>은 처음 넣는 돈에서 첫해 인출률만큼을 12개월에 나눠 빼고 해마다 물가만큼 늘리는 계획을, 고른 자산의 데이터가 있는 모든 시작 달로 돌립니다. 남은 돈은 시작 시점 돈의 가치이고, ‘모든 시작에서 버틴 인출률’은 0.1%p 단위로 찾은 값이에요.</li>
         </ul>
       </details>
@@ -2966,13 +2973,14 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
   }
 
   /* rebalance after month index m (global) ? */
+  let ANCHOR = 2;   // v10.1: month (0 = Jan) whose start is the yearly rebalancing and deposit date
   function calRebal(m, rule) {
-    const mo = m % 12; // 0 = Jan
+    const mo = (m % 12 - ((ANCHOR + 11) % 12) + 12) % 12; // 0 = the month that ends just before the anchor month
     switch (rule) {
       case 'M': return true;
-      case 'Q': return mo === 2 || mo === 5 || mo === 8 || mo === 11;
-      case 'S': return mo === 5 || mo === 11;
-      case 'A': return mo === 11;
+      case 'Q': return mo % 3 === 0;
+      case 'S': return mo % 6 === 0;
+      case 'A': return mo === 0;
       default: return false;
     }
   }
@@ -3638,8 +3646,8 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
       let V = 0; for (let j = 0; j < k; j++) V += h[j];
       if (depleted < 0) {
         // 1. money in at the start of the month, bought at the target weights
-        if (cAmt > 0 && t < cMonths && (!cYear || m % 12 === 0)) {   // yearly: at the start of each January
-          const c = cAmt * (sc ? pl[t] : 1) * Math.pow(1 + cGrow, cYear ? Math.floor(m / 12) - y0 : Math.floor(t / 12));
+        if (cAmt > 0 && t < cMonths && (!cYear || m % 12 === ANCHOR)) {   // yearly: at the start of the anchor month (rebalancing date)
+          const c = cAmt * (sc ? pl[t] : 1) * Math.pow(1 + cGrow, cYear ? Math.floor((m - ANCHOR) / 12) - Math.floor((o.i0 - ANCHOR) / 12) : Math.floor(t / 12));
           for (let j = 0; j < k; j++) { const b = c * w[j]; h[j] += b; basis[j] += toK(b, m - 1); }
           V += c; netIn += c; sIn += re(c, t); if (R) { R.cin[t] = re(c, t); R.cf[t] -= re(c, t); }
         }
@@ -4032,7 +4040,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
 
   root.BT = { init, addAsset, label, ym, idxOf, avail, commonRange, backtest, stats, trailing, rolling, drawdowns, annual, hasIncome,
     uwInfo, setReal, trendScan, setTrendAdjust, isAdjusted, adjSnapshot, LEV, hasCPI: () => !!CPI, isReal: () => REAL, cpiAt: i => (CPI ? CPI[i] : 0), optimizeHorizons, optSelect, optPoint, optFront, optPlan: planHorizon, optPlanWin: planWindow, countCompositions, has, get NM() { return NM; }, get D() { return D; }, rfCum: () => RFCUM,
-    setCur, getCur: () => CUR, hasFX: () => !!KFX, fxLevel: m => (KLV ? KLV[m + 1] : null), flowSim, flowStarts, safeRate, keepPlan, keepPick, sharpeTest, bootstrap, trustScan, trustPick, pboCalc, guardSim };
+    setCur, getCur: () => CUR, hasFX: () => !!KFX, fxLevel: m => (KLV ? KLV[m + 1] : null), flowSim, flowStarts, safeRate, keepPlan, keepPick, sharpeTest, bootstrap, trustScan, trustPick, pboCalc, guardSim, setAnchor: a => { ANCHOR = ((a % 12) + 12) % 12; }, getAnchor: () => ANCHOR };
 })(typeof window !== 'undefined' ? window : globalThis);
 if (typeof module !== 'undefined') module.exports = globalThis.BT;
 
@@ -4915,7 +4923,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
   }
   function optKey() {
     const l = state.last; if (!l) return '';
-    return [l.s, l.e, state.rebal, state.ext, state.real + state.cur, [...state.optSel].sort().join(','), $('#o-step').value, $('#o-max').value].join('|');
+    return [l.s, l.e, state.rebal, BT.getAnchor(), state.ext, state.real + state.cur, [...state.optSel].sort().join(','), $('#o-step').value, $('#o-max').value].join('|');
   }
 
   /* ticker picker: every supported ticker as a toggle chip, grouped like the ticker list */
@@ -7034,7 +7042,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     $('#fl-init-h').textContent = amtHint(state.initial);
     $('#fl-c-h').textContent = amtHint(FL.cf === 'Y' ? FL.cy : FL.c) + (FL.cf === 'Y' && FL.cy > 0 ? ` · 한 달에 ${state.cur === 'KRW' ? krwTxt(FL.cy / 12) : '$' + Math.round(FL.cy / 12).toLocaleString('en-US')} 꼴` : '');
     $('#fl-c-l').textContent = `${FL.cf === 'Y' ? '매년 초' : '매달'} 넣는 돈 (${curUnit()})`;
-    $('#fl-cf-note').textContent = FL.cf === 'Y' ? '해마다 1월 초에 넣어요. 시작 달이 1월이면 첫해에도 처음 넣는 돈과 함께 넣어요.' : FL.cf === 'N' ? '처음 넣는 돈만 넣어요(거치식).' : '';
+    $('#fl-cf-note').textContent = FL.cf === 'Y' ? `해마다 ${BT.getAnchor() + 1}월 초(리밸런싱과 같은 날)에 넣어요. 시작 달이 ${BT.getAnchor() + 1}월이면 첫해에도 처음 넣는 돈과 함께 넣어요.` : FL.cf === 'N' ? '처음 넣는 돈만 넣어요(거치식).' : '';
     $('#fl-c-f').hidden = FL.cf === 'N'; $('#fl-cg-f').hidden = FL.cf === 'N';
     syncStyleUI();
     $('#fl-w-h').textContent = amtHint(FL.w);
@@ -7328,7 +7336,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const L = state.last, Lm = FL.accY * 12, st = $('#acc-status'), yearly = FL.cf === 'Y';
     const amt = (FL.cf === 'Y' ? FL.cy : FL.cf === 'M' ? FL.c : 0);
     $('#acc-help').textContent = `처음 ${money(state.initial)}` + (amt > 0 ? ` + ${yearly ? '매년 초' : '매달'} ${money(amt)}${FL.cg ? `(해마다 +${FL.cg}%)` : ''}` : '') + ` · ${FL.accY}년 동안 넣기만 하고 빼지 않음 · ${TAX_TXT[FL.tax]}` + (state.real ? ' · 금액은 시작 시점 돈의 가치' : '');
-    const starts = []; for (let s = L.cs; s + Lm - 1 <= L.ce; s++) if (!yearly || s % 12 === 0) starts.push(s);
+    const starts = []; for (let s = L.cs; s + Lm - 1 <= L.ce; s++) if (!yearly || s % 12 === BT.getAnchor()) starts.push(s);
     if (!starts.length) {
       $('#t-acc').innerHTML = ''; $('#c-acc').innerHTML = ''; $('#lg-acc').innerHTML = ''; state.acc = null;
       st.textContent = `고른 자산의 데이터(${BT.label(L.cs)}~${BT.label(L.ce)})가 ${FL.accY}년보다 짧아요. 적립 기간을 줄여 보세요.`; accBusy = false; return;
@@ -7733,7 +7741,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     ['#st-init', '#st-c', '#st-w'].forEach(id => { $(id).step = state.cur === 'KRW' ? '100000' : '100'; });
     $('#st-note').textContent = s === 'lump' ? '처음에 한 번 넣고 그대로 두는 방식이에요. 결과 탭의 숫자가 이 방식이에요.'
       : s === 'M' ? '처음 넣는 돈에 더해 매달 초에 넣어요. 결과 탭 맨 위와 적립·세금 탭에서 모인 돈을 보여줘요.'
-      : s === 'Y' ? '처음 넣는 돈에 더해 해마다 1월 초에 넣어요. 결과 탭 맨 위와 적립·세금 탭에서 모인 돈을 보여줘요.'
+      : s === 'Y' ? `처음 넣는 돈에 더해 해마다 ${BT.getAnchor() + 1}월 초(리밸런싱과 같은 날)에 넣어요. 결과 탭 맨 위와 적립·세금 탭에서 모인 돈을 보여줘요.`
       : s === 'wd' ? (FL.wm === 'pct' ? `처음 넣는 돈에서 해마다 평가액의 ${FL.wp}%를 나눠 빼요. 비율은 적립·세금 탭에서 바꿔요.` : '처음 넣는 돈에서 매달 빼 쓰고, 해마다 물가만큼 늘려요. 은퇴 인출 점검도 함께 봐요.')
       : '세부 계획은 적립·세금 탭에서 바꿔요.';
   }
@@ -9478,6 +9486,27 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     const host = $('#c-sum-bf'); if (!host) return;
     tripleBars(host, S.rows.map(({ x }) => ({ key: x.key, name: sumName(x), color: x.color, st: x.st, faded: x.bench })));
   }
+
+
+  /* v10.1: one date for rebalancing and the yearly deposit */
+  const ANCHOR_KEY = 'etf-backtester-v7.anchor.v1';
+  function anchorTxt() {
+    const a = BT.getAnchor(), M = k => ((a + k) % 12) + 1;
+    REBAL_TXT.A = `매년(${M(0)}월 초)`; REBAL_TXT.S = `반기(${M(0)}·${M(6)}월 초)`; REBAL_TXT.Q = `분기(${[0, 3, 6, 9].map(M).join('·')}월 초)`;
+    const r = $('#rebal'); if (r) for (const o of r.options) { if (o.value === 'A') o.textContent = `매년 (${M(0)}월 초)`; if (o.value === 'S') o.textContent = `반기 (${M(0)}·${M(6)}월 초)`; if (o.value === 'Q') o.textContent = `분기 (${[0, 3, 6, 9].map(M).join('·')}월 초)`; }
+    const sub = $('#sty-y-sub'); if (sub) sub.textContent = `처음 넣는 돈 + 해마다 ${M(0)}월 초에 넣는 돈`;
+    $('#anchor').value = String(a);
+  }
+  (function initAnchor() {
+    let a = null; try { a = window.localStorage.getItem(ANCHOR_KEY); } catch (_) {}
+    if (a != null && /^\d+$/.test(a)) BT.setAnchor(+a);
+    anchorTxt();
+    $('#anchor').addEventListener('change', e => {
+      BT.setAnchor(+e.target.value); try { window.localStorage.setItem(ANCHOR_KEY, String(BT.getAnchor())); } catch (_) {}
+      anchorTxt(); recompute(); syncStyleUI(); markOptStale(); aiAuto();
+      toast(`리밸런싱과 매년 적립을 ${BT.getAnchor() + 1}월 초로 바꿔 다시 계산했어요.`);
+    });
+  })();
 
   /* ---------- boot ---------- */
   state.optDeferred = true;   // runs once its panel can be seen (see maybeRunDeferredOpt)
