@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ETF 백테스터">
-<meta name="app-version" content="v10.4-2026-11-02">
+<meta name="app-version" content="v10.5-2026-11-03">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1130,6 +1130,9 @@ select, input[type="text"], input[type="number"] { min-height: 40px; border-radi
 #rl-how-x .rl-h { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; }
 #rl-how-x .key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
 
+/* v10.5 */
+.rl-bt > summary { font-weight: 700; }
+.rl-bt-say { font-weight: 600; }
 /* v10.4 */
 .rl-as th, .rl-as td { white-space: normal !important; vertical-align: top; font-size: 12.5px; padding: 6px 8px; text-align: left; font-family: var(--font-sans); }
 .rl-as td.num { text-align: right; font-weight: 700; white-space: nowrap !important; }
@@ -1509,9 +1512,11 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
 <div class="wrap">
   <header class="hdr" id="top">
     <details class="upd" id="upd">
-      <summary><span class="upd-v">v10.4</span><span class="upd-d">2026.11.02</span><span class="upd-t">현실적인 기대 수익률을 과거 데이터로 자동으로 정해요</span><span class="more"></span></summary>
+      <summary><span class="upd-v">v10.5</span><span class="upd-d">2026.11.03</span><span class="upd-t">현실 기대치가 과거에 얼마나 맞았는지 예측 vs 실제로 봐요</span><span class="more"></span></summary>
       <div class="upd-body">
         <dl>
+          <dt>v10.5 · 2026.11.03</dt>
+          <dd><ul><li>3 검증 › 현실적인 기대치에 ‘이 방법은 과거에 얼마나 맞았나’: 1980년대 후반부터 분기마다 그 시점까지의 데이터만으로 현실 기대치(CAGR · MDD · 회복 기간)를 계산하고, 실제 그 뒤 10년과 비교한 산점도 · 오차 표. 과거 백테스트 숫자를 그대로 믿었을 때와도 비교해요.</li></ul></dd>
           <dt>v10.4 · 2026.11.02</dt>
           <dd><ul>
             <li>현실적인 기대치의 기대 수익률을 직접 넣지 않고 과거 데이터로 정해요: 채권 = 지금 10년 국채 금리(과거 ‘살 때 금리 → 그 뒤 10년’ 관계), 주식 = 지금 금리 + 과거 미국 주식(SPY)이 10년 금리보다 더 번 몫, 금 = 지금 금리 + 과거 금(GLD)이 더 번 몫. 각 값을 어떻게 정했는지 표로 보여줘요.</li>
@@ -1693,7 +1698,7 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
         </dl>
       </div>
     </details>
-    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.4</span></h1>
+    <h1>ETF 포트폴리오 백테스터 <span class="h1-v">v10.5</span></h1>
     <p class="lede">ETF와 비중을 넣으면 과거에 돈이 얼마나 불었고, 가장 크게 얼마나 떨어졌는지 보여줘요. 미국 상장 ETF <span id="n-assets">50</span>개의 월간 데이터(<span id="span-range">1972.01 – 2026.09</span>)로 계산하고, 예시 포트폴리오 세 개를 채워 두었어요. 원화 기준으로도 보고, ‘적립·세금’ 탭에서 매년 초 넣는 돈과 세금까지 넣어 볼 수 있어요. 과거 데이터로 본 결과라 앞으로의 수익을 보장하지 않아요.</p>
   </header>
 
@@ -2001,6 +2006,20 @@ td.best .tscore { box-shadow: 0 0 0 2px currentColor; }
     <div class="rl-say" id="rl-say"></div>
     <div id="rl-tbl"></div>
     <p class="small muted" id="rl-note"></p>
+    <details class="more rl-bt" id="rl-bt"><summary>이 방법은 과거에 얼마나 맞았나? — 예측 vs 실제 (미래를 안 보고)</summary>
+      <p class="help">과거의 분기마다 <b>그 시점까지의 데이터만으로</b> ‘현실적으로’ 숫자를 계산했어요(그때의 10년 금리, 그때까지 주식 · 금이 금리보다 더 번 몫, 그때까지의 출렁임). 그리고 실제로 그 뒤 10년에 일어난 일과 비교해요. 점이 점선(예측 = 실제)에 가까울수록, 초록 띠 안에 많을수록 잘 맞은 거예요.</p>
+      <div class="inbar">
+        <div class="in-row"><span class="in-l">볼 값</span><div class="seg-toggle" id="rl-bt-m" role="group" aria-label="볼 값"><button type="button" data-m="c" aria-pressed="true">CAGR</button><button type="button" data-m="m" aria-pressed="false">MDD</button><button type="button" data-m="u" aria-pressed="false">회복 기간</button></div></div>
+        <div class="in-row"><span class="in-l">포트폴리오</span><div class="chips" id="rl-bt-p" role="group" aria-label="볼 포트폴리오"></div></div>
+        <label class="toggle" for="rl-bt-h"><input id="rl-bt-h" type="checkbox" checked><span>과거 백테스트 숫자를 그대로 믿었다면(회색 빈 원)도 같이 보기</span></label>
+      </div>
+      <p class="small muted" id="rl-bt-st" aria-live="polite"></p>
+      <p class="rl-bt-say" id="rl-bt-say"></p>
+      <div class="chart-box" id="c-rl-bt"></div>
+      <div id="rl-bt-tbl"></div>
+      <p class="help"><b>평균 오차</b> = 예측과 실제가 평균 얼마나 달랐나(작을수록 좋아요). <b>치우침</b> = 실제가 예측보다 평균 얼마나 높았나(+)·낮았나(−). <b>범위 적중</b> = 실제가 예측 범위 안에 든 비율(CAGR은 하위~상위 10%, MDD · 회복은 나쁜 10%보다 나음) — 기대치와 비슷하면 범위가 믿을 만해요.</p>
+      <p class="help">주의: 10년 구간이 서로 겹쳐서 점이 많아 보여도, 겹치지 않는 10년은 3~4번뿐이에요. 1990년대 · 2010년대처럼 주식이 특히 좋았던 시기가 섞여 있어 치우침이 한쪽으로 나올 수 있어요.</p>
+    </details>
     <details class="more rl-how" id="rl-how"><summary>어떻게 계산했나요? — 자세한 설명 · 기대 수익률 근거 · 그래프</summary>
       <h3 class="sc-sub">계산 방법</h3>
       <ol class="rl-steps">
@@ -9657,14 +9676,14 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     return A.eq;
   }
   /* realistic numbers for one mix: expected CAGR from the assumptions, and a 700-path block bootstrap (past monthly moves, means moved to the assumptions) */
-  function rlSim(tickers, weights, s, e, adj, A, Hy) {
+  function rlSim(tickers, weights, s, e, adj, A, Hy, PATHS) {
     const rets = tickers.map(t => BT.backtest([t], [1], s, e, 'N', adj).r), n = rets[0].length, tw = weights.reduce((a, b) => a + b, 0), w = weights.map(v => v / tw);
     const sig = rets.map(sdY), gh = rets.map(geoY), cls = tickers.map(assetClass), tgt = cls.map((c, j) => rlTarget(c, sig[j], A));
     const pr = new Float64Array(n); for (let t = 0; t < n; t++) { let q = 0; for (let j = 0; j < w.length; j++) q += w[j] * rets[j][t]; pr[t] = q; }
     const sp = sdY(pr); let ar = 0; for (let j = 0; j < w.length; j++) ar += w[j] * (tgt[j] + sig[j] * sig[j] / 2);
     const gExp = ar - sp * sp / 2, H = Hy * 12;
     const f = tgt.map((g, j) => Math.pow((1 + g) / (1 + gh[j]), 1 / 12)), sh = rets.map((r, j) => Array.from(r, x => (1 + x) * f[j] - 1));
-    const P = 700, rnd = rlRng(12345 + tickers.join('').length * 7 + Math.round(w[0] * 100)), cg = [], md = [], uw = [];
+    const P = PATHS || 700, rnd = rlRng(12345 + tickers.join('').length * 7 + Math.round(w[0] * 100)), cg = [], md = [], uw = [];
     if (n >= 24) for (let p = 0; p < P; p++) {
       let h = w.slice(), v = 1, pk = 1, mdd = 0, cur = 0, mx = 0;
       for (let t = 0; t < H;) {
@@ -9804,6 +9823,7 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
     drawReal();
   }
   function drawReal() {
+    drawRlBt();
     for (const id of ['#c-rl-era', '#c-rl-start', '#c-rl-bond', '#c-rl-sc', '#c-rl-exp', '#lg-rl-start']) { const e = $(id); if (e) e.innerHTML = ''; }
     const S = state.rlRes; if (!S) return;
     const L = state.last;
@@ -9876,6 +9896,92 @@ if (typeof module !== 'undefined') module.exports = globalThis.BT;
         const t2 = svg('text', { x: X(e.hist), y: cy - 11, 'text-anchor': 'middle' }, ax); t2.textContent = pct(e.hist, 1);
       });
     }
+  }
+  /* ======================= v10.5: was the realistic method right? — at each past quarter, predict with only the data up to then, compare with the next 10 years ======================= */
+  state.rlbt = { m: 'c', off: {}, hist: true };
+  let rlBtKey = null, rlBtRes = null, rlBtWait = false;
+  const rlBtKeyNow = () => { const L = state.last; if (!L) return null; return JSON.stringify([L.series.filter(x => !x.bench).map(s => [s.key, s.tickers, s.weights]), L.s, L.e, state.rebal, !!L.adj, BT.isReal()]); };
+  function rlBtCompute() {
+    const L = state.last, H = 120, out = [];
+    for (const s of L.series.filter(x => !x.bench)) {
+      const pts = [];
+      for (let k = L.s + 60; k + H <= L.e; k += 3) {
+        const R = rlSim(s.tickers, s.weights, L.s, k, L.adj, rlAssume(k), 10, 200);
+        const past = BT.stats(BT.backtest(s.tickers, s.weights, L.s, k, state.rebal, L.adj));
+        const act = BT.stats(BT.backtest(s.tickers, s.weights, k + 1, k + H, state.rebal, L.adj));
+        pts.push({ k, R, past, act });
+      }
+      out.push({ s, pts });
+    }
+    rlBtKey = rlBtKeyNow(); rlBtRes = out;
+  }
+  const yrsTx = m => (Math.abs(m) < 0.5 ? '0' : (m / 12).toFixed(1) + '년');
+  const RLBT = {
+    c: { t: 'CAGR', j: '과', ax: '그 뒤 10년 CAGR', pr: p => p.R.gExp, ac: p => p.act.cagr, hi: p => p.past.cagr, ok: p => p.act.cagr >= p.R.c10 && p.act.cagr <= p.R.c90, exp: 0.8, rng: '하위 10% ~ 상위 10%', f: v => pct(v, 1), d: v => `${(v * 100).toFixed(1)}%p`, band: 0.02 },
+    m: { t: 'MDD', j: '와', ax: '그 뒤 10년 MDD', pr: p => p.R.m50, ac: p => p.act.mdd, hi: p => p.past.mdd, ok: p => p.act.mdd >= p.R.m10 - 1e-9, exp: 0.9, rng: '나쁜 10%보다 덜 빠짐', f: v => mpct1(v), d: v => `${(v * 100).toFixed(1)}%p`, band: 0.05 },
+    u: { t: '회복 기간', j: '과', ax: '그 뒤 10년 안 최장 회복', pr: p => p.R.u50, ac: p => p.act.uw.months, hi: p => p.past.uw.months, ok: p => p.act.uw.months <= p.R.u90, exp: 0.9, rng: '나쁜 10%보다 짧음', f: v => yrsTx(v), d: v => yrsTx(v), band: 12 }
+  };
+  function rlBtStats(pts, M, which) {
+    const P = pts.map(p => [which === 'hist' ? M.hi(p) : M.pr(p), M.ac(p)]), n = P.length; if (!n) return null;
+    let b = 0, a = 0; for (const [x, y] of P) { b += y - x; a += Math.abs(y - x); }
+    const mx = P.reduce((s, q) => s + q[0], 0) / n, my = P.reduce((s, q) => s + q[1], 0) / n; let sxy = 0, sxx = 0, syy = 0; for (const [x, y] of P) { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; syy += (y - my) ** 2; }
+    return { n, bias: b / n, mae: a / n, r: sxx && syy ? sxy / Math.sqrt(sxx * syy) : null, hit: which === 'hist' ? null : pts.filter(M.ok).length / n };
+  }
+  (function buildRlBt() {
+    $('#rl-bt').addEventListener('toggle', () => { if ($('#rl-bt').open) drawRlBt(); });
+    $('#rl-bt-m').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; state.rlbt.m = b.dataset.m; drawRlBt(); });
+    $('#rl-bt-p').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b) return; state.rlbt.off[b.dataset.k] = !state.rlbt.off[b.dataset.k]; drawRlBt(); });
+    $('#rl-bt-h').addEventListener('change', e => { state.rlbt.hist = e.target.checked; drawRlBt(); });
+  })();
+  function drawRlBt() {
+    const host = $('#c-rl-bt'), st = $('#rl-bt-st'); if (!host) return;
+    host.innerHTML = ''; $('#rl-bt-tbl').innerHTML = ''; $('#rl-bt-say').textContent = ''; $('#rl-bt-p').innerHTML = '';
+    if (!state.last || !$('#rl-bt').open || !isShown(host)) return;
+    if (rlBtKey !== rlBtKeyNow()) {
+      st.textContent = '그 시점까지의 데이터만으로 분기마다 다시 계산하는 중… (몇 초 걸려요)';
+      if (!rlBtWait) { rlBtWait = true; setTimeout(() => { try { rlBtCompute(); } finally { rlBtWait = false; } drawRlBt(); }, 30); }
+      return;
+    }
+    const D = rlBtRes, S = state.rlbt, M = RLBT[S.m];
+    $('#rl-bt-h').checked = S.hist;
+    [...$('#rl-bt-m').querySelectorAll('button')].forEach(b => b.setAttribute('aria-pressed', b.dataset.m === S.m ? 'true' : 'false'));
+    for (const g of D) { const b = el('button', 'chip'); b.type = 'button'; b.dataset.k = g.s.key; b.setAttribute('aria-pressed', S.off[g.s.key] ? 'false' : 'true'); const k = el('span', 'key'); k.style.background = g.s.color; b.append(k, document.createTextNode(' ' + g.s.name)); $('#rl-bt-p').appendChild(b); }
+    const vis = D.filter(g => !S.off[g.s.key] && g.pts.length);
+    const first = D.find(g => g.pts.length);
+    st.textContent = first ? `예측한 시점 ${BT.label(first.pts[0].k)} ~ ${BT.label(first.pts[first.pts.length - 1].k)} · 분기마다 · 각 점 = 그 시점의 예측과 실제 그 뒤 10년` : '분석 기간이 15년보다 짧아 점검할 수 없어요. 1 포트폴리오에서 기간을 늘려 보세요.';
+    if (!vis.length) return;
+    // summary for the first visible portfolio
+    const g0 = vis[0], a = rlBtStats(g0.pts, M, 'real'), h = rlBtStats(g0.pts, M, 'hist');
+    $('#rl-bt-say').textContent = `${g0.s.name}: 현실 기대치는 실제 ${M.t}${M.j} 평균 ${M.d(a.mae)} 어긋났어요(과거 백테스트 숫자를 그대로 믿었다면 ${M.d(h.mae)}). 실제가 예측 범위(${M.rng}) 안에 든 비율은 ${pct(a.hit, 0)}로, 범위가 정확하다면 ${pct(M.exp, 0)}여야 해요.`;
+    // scatter
+    const W = Math.max(280, host.clientWidth || 600), Hh = Math.min(W, W < 520 ? 320 : 420), m = { l: 50, r: 12, t: 14, b: 34 }, iw = W - m.l - m.r, ih = Hh - m.t - m.b;
+    let lo = Infinity, hi = -Infinity;
+    for (const g of vis) for (const p of g.pts) { for (const v of [M.pr(p), M.ac(p)].concat(S.hist ? [M.hi(p)] : [])) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+    const pad = (hi - lo) * 0.06 || 1; lo -= pad; hi += pad;
+    const X = v => m.l + (v - lo) / (hi - lo) * iw, Y = v => m.t + (hi - v) / (hi - lo) * ih;
+    const root = svg('svg', { viewBox: `0 0 ${W} ${Hh}`, width: W, height: Hh, role: 'img', 'aria-label': `예측한 ${M.t}와 실제 ${M.t}` }, host), gr = svg('g', { class: 'grid' }, root), ax = svg('g', { class: 'axis' }, root);
+    const tk = S.m === 'u' ? linTicks(lo / 12, hi / 12, 5).map(v => v * 12) : linTicks(lo, hi, 5);
+    for (const v of tk) { if (v < lo || v > hi) continue; svg('line', { x1: m.l, x2: m.l + iw, y1: Y(v), y2: Y(v) }, gr); svg('line', { x1: X(v), x2: X(v), y1: m.t, y2: m.t + ih }, gr); const tx = S.m === 'u' ? (v / 12).toFixed(0) + '년' : (v * 100).toFixed(0) + '%'; svg('text', { x: m.l - 6, y: Y(v) + 3.5, 'text-anchor': 'end' }, ax).textContent = tx; svg('text', { x: X(v), y: m.t + ih + 14, 'text-anchor': 'middle' }, ax).textContent = tx; }
+    const bd = M.band, poly = svg('path', { d: `M${X(lo)},${Y(lo + bd)}L${X(hi - bd)},${Y(hi)}L${X(hi)},${Y(hi)}L${X(hi)},${Y(hi - bd)}L${X(lo + bd)},${Y(lo)}L${X(lo)},${Y(lo)}Z` }, root); poly.style.fill = 'color-mix(in srgb, var(--pos) 12%, transparent)';
+    const dg = svg('line', { x1: X(lo), y1: Y(lo), x2: X(hi), y2: Y(hi), 'stroke-dasharray': '4 3', 'stroke-width': 1.5 }, root); dg.style.stroke = 'var(--ink-2)';
+    if (S.hist) for (const g of vis) for (const p of g.pts) { const c = svg('circle', { cx: X(M.hi(p)), cy: Y(M.ac(p)), r: 2.6, 'stroke-width': 1 }, root); c.style.fill = 'none'; c.style.stroke = 'var(--muted)'; c.style.opacity = '0.6'; svg('title', null, c).textContent = `${g.s.name} · ${BT.label(p.k)} 과거 백테스트 ${M.f(M.hi(p))} → 실제 ${M.f(M.ac(p))}`; }
+    for (const g of vis) for (const p of g.pts) { const c = svg('circle', { cx: X(M.pr(p)), cy: Y(M.ac(p)), r: 3.2 }, root); c.style.fill = g.s.color; c.style.opacity = '0.75'; svg('title', null, c).textContent = `${g.s.name} · ${BT.label(p.k)}에 예측 ${M.f(M.pr(p))} → 실제 그 뒤 10년 ${M.f(M.ac(p))}`; }
+    const xl = svg('text', { x: m.l + iw, y: Hh - 3, 'text-anchor': 'end' }, ax); xl.textContent = '그 시점의 예측 →'; xl.style.fontWeight = '700';
+    const yl = svg('text', { x: m.l + 4, y: m.t + 12 }, ax); yl.textContent = `↑ 실제 ${M.ax}`; yl.style.fontWeight = '700';
+    // table: per portfolio, the realistic method vs taking the past backtest at face value
+    const t = el('table', 'rl2'), th = el('thead'), hr = el('tr'), cg = el('colgroup'); ['c0', 'c1', 'c2', 'c3'].forEach(c => cg.appendChild(el('col', c))); t.appendChild(cg);
+    ['', '평균 오차', '치우침 (실제 − 예측)', `범위 적중 (기대 ${pct(M.exp, 0)})`].forEach(x => hr.appendChild(el('th', null, x))); th.appendChild(hr); t.appendChild(th);
+    const tb = el('tbody');
+    for (const g of vis) {
+      const nr = el('tr', 'rl2-n'), nh = el('th'); nh.colSpan = 4; const k = el('span', 'key'); k.style.background = g.s.color; nh.append(k, document.createTextNode(` ${g.s.name} · 점 ${g.pts.length}개`)); nr.appendChild(nh); tb.appendChild(nr);
+      for (const [lab, wh, cls] of [['현실 기대치', 'real', 'rl2-r'], ['과거 백테스트 그대로', 'hist', 'rl2-p']]) {
+        const z = rlBtStats(g.pts, M, wh), tr = el('tr', cls); tr.appendChild(el('td', 'rl2-l', lab));
+        const sg = v => { const t = M.d(Math.abs(v)); return t === '0' || /^0\.0/.test(t) ? '0' : (v > 0 ? '+' : '−') + t; };
+        tr.append(el('td', null, M.d(z.mae)), el('td', null, sg(z.bias)), el('td', null, z.hit == null ? '–' : pct(z.hit, 0)));
+        tb.appendChild(tr);
+      }
+    }
+    t.appendChild(tb); const w = el('div', 'tbl-wrap rl2-w'); w.appendChild(t); $('#rl-bt-tbl').appendChild(w);
   }
   $('#sum-crit').addEventListener('change', e => { state.aiCrit = e.target.value === 'past' ? 'past' : 'real'; sumPick(true); });
   /* ---------- boot ---------- */

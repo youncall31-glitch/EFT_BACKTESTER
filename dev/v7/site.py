@@ -1,7 +1,7 @@
 """Make the GitHub Pages site (repository root index.html, sw.js cache name, manifest) from dev/v7/out/etf-backtester.html.
    Run after build.py:  python3 dev/v7/build.py && python3 dev/v7/site.py"""
 import pathlib, re
-VERSION = 'v10.4-2026-11-02'          # bump on every upload: it is the offline cache name, so installed apps pick up the new file
+VERSION = 'v10.5-2026-11-03'          # bump on every upload: it is the offline cache name, so installed apps pick up the new file
 R = pathlib.Path(__file__).resolve().parent
 ROOT = R.parent.parent
 h = (R / 'out' / 'etf-backtester.html').read_text()
