@@ -19,7 +19,7 @@
     const rows = shares.map(b => {
       const ww = w.map((v, j) => (isBondC(cls[j]) ? v / bw * b : v / (1 - bw) * (1 - b)));
       const tk = x.tickers.filter((_, j) => ww[j] > 1e-9), wk = ww.filter(v => v > 1e-9);
-      const R = rlSim(tk, wk, L.s, L.e, L.adj, A, state.rl.H, 500);
+      const R = rlSim(tk, wk, L.s, L.e, L.adj, A, state.rl.H, 700);
       const res = BT.backtest(tk, wk, L.s, L.e, state.rebal, L.adj), v = res.vals, n = res.n, Wm = RLMIX_Y * 12, cg = [], md = [];
       for (let k = 0; k + Wm <= n; k++) { cg.push(Math.pow(v[k + Wm] / v[k], 1 / RLMIX_Y) - 1); let pk = v[k], m = 0; for (let q = k + 1; q <= k + Wm; q++) { if (v[q] > pk) pk = v[q]; else { const d = v[q] / pk - 1; if (d < m) m = d; } } md.push(m); }
       const st = BT.stats(res);
@@ -61,7 +61,7 @@
       tb.appendChild(tr);
     }
     t.appendChild(tb); const tw = el('div', 'tbl-wrap'); tw.appendChild(t); $('#rl-mix-tbl').appendChild(tw);
-    $('#rl-mix-note').textContent = `채권(${bt})만 비중을 바꾸고, 나머지(${D.rest.join(' · ')})는 원래 비율대로 함께 늘리거나 줄였어요. ` + (F ? `‘가운데’ · ‘나쁘면’ = 앞으로 ${state.rl.H}년 모의실험 500번의 가운데 · 나쁜 10%.` : `과거 데이터를 ${RLMIX_Y}년씩 끊은 모든 구간(매달 시작, ${D.rows[0].p ? D.rows[0].p.n : 0}개)의 가운데 · 나쁜 10%. 가장 나빴던 한 번 대신 여러 구간의 분포라 한 번의 폭락에 덜 좌우돼요.`);
+    $('#rl-mix-note').textContent = `채권(${bt})만 비중을 바꾸고, 나머지(${D.rest.join(' · ')})는 원래 비율대로 함께 늘리거나 줄였어요. ` + (F ? `‘가운데’ · ‘나쁘면’ = 앞으로 ${state.rl.H}년 모의실험 700번의 가운데 · 나쁜 10%.` : `과거 데이터를 ${RLMIX_Y}년씩 끊은 모든 구간(매달 시작, ${D.rows[0].p ? D.rows[0].p.n : 0}개)의 가운데 · 나쁜 10%. 가장 나빴던 한 번 대신 여러 구간의 분포라 한 번의 폭락에 덜 좌우돼요.`);
     drawRlMix();
   }
   function drawRlMix() {
