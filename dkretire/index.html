@@ -3745,11 +3745,16 @@ function RetirementEngine() {
       const psuN = Q.psu.reduce((t, u) => t + (u.net || 0), 0), psuG = Q.psu.reduce((t, u) => t + u.gross, 0);
       const U = O.psu, px28 = num(O.price) * Math.pow(1 + g, 2028 - CY), rise = px28 / 85385 - 1, mult = rise < 0.2 ? 0 : rise < 0.4 ? 0.5 : rise < 0.6 ? 1 : rise < 0.8 ? 1.3 : rise < 1 ? 1.7 : 2;
       const psuTxt = Q.psu.length ? `<br><b>PSU</b> ${Q.psu.map(u => `${u.y}년 ${ko(Math.round(u.price))}원 × ${ko(u.shares)}주 = ${won(u.gross, { nu: true })} → 세후 <b>${won(u.net || 0, { nu: true })}</b>`).join(' · ')}. 합계 세전 ${won(psuG, { short: true })} → 세후 <b>${won(psuN, { short: true })}</b>.${U.on && num(O.price) > 0 ? ` <span class="${mult < 2 ? 'neg' : 'muted'}">참고: 회사 발표 기준으로는 2028년 10월 주가가 기준주가 85,385원보다 얼마나 올랐는지로 주식 수가 정해져요. 이 주가 가정이면 2028년 약 ${ko(Math.round(px28 / 100) * 100)}원(${rise >= 0 ? '+' : '−'}${Math.abs(Math.round(rise * 100))}%)이라 기본 수량의 ${mult}배예요${mult < 2 ? '. 최대(2배)보다 적을 수 있으니 주식 수를 확인하세요' : ''}.</span>` : ''}` : (U.on ? '<br><span class="muted">PSU: 재직 중에 받는 해가 없거나 오늘 주가가 비어 있어요.</span>' : '');
+      const yr = rows.map(x => ({ y: x.y, a: x.net1 || 0, b: x.sold[0] + x.sold[1], c: x.net3 || 0, d: x.taxBack || 0 })).filter(v => v.a + v.b + v.c + v.d > 0.5).slice(0, 16);
+      const ySum = k => yr.reduce((t, v) => t + v[k], 0), hasC = ySum('c') > 0.5, hasD = ySum('d') > 0.5, cw = v => won(v, { nu: true });
+      const yearTbl = yr.length ? `<div class="ostep"><b>해마다 현금화할 수 있는 돈</b><small>세후 · OPI2 자사주는 풀리는 해마다 판다고 봄</small></div><div class="tbl-wrap"><table class="t mini-t"><thead><tr><th class="l">연도</th><th>OPI1 현금</th><th>OPI2 자사주 매도</th>${hasC ? '<th>PSU</th>' : ''}${hasD ? '<th>환급</th>' : ''}<th>합계</th></tr></thead><tbody>${
+        yr.map(v => `<tr><td class="l">${v.y}</td><td>${cw(v.a)}</td><td>${cw(v.b)}</td>${hasC ? `<td>${cw(v.c)}</td>` : ''}${hasD ? `<td>${cw(v.d)}</td>` : ''}<td><b>${cw(v.a + v.b + v.c + v.d)}</b></td></tr>`).join('')
+      }<tr><td class="l"><b>합계</b></td><td><b>${cw(ySum('a'))}</b></td><td><b>${cw(ySum('b'))}</b></td>${hasC ? `<td><b>${cw(ySum('c'))}</b></td>` : ''}${hasD ? `<td><b>${cw(ySum('d'))}</b></td>` : ''}<td><b>${cw(ySum('a') + ySum('b') + ySum('c') + ySum('d'))}</b></td></tr></tbody></table></div>` : '';
       const lost = Q.perf.reduce((t, q) => t + (q.lost || 0), 0), lostY = Q.perf.filter(q => q.lost > 0).map(q => q.pay);
       const lastP = O.rows.reduce((mx, r) => Math.max(mx, Math.round(num(r.y, 0)), blank(r.to) ? 0 : Math.round(num(r.to, 0))), 0), endP = contribStopYear('self') - 2;
       const gapTxt = lastP && endP > lastP ? ` <span class="muted">${lastP + 1 === endP ? endP + '년' : `${lastP + 1}~${endP}년`} 실적(은퇴 전에 받는 몫)은 적지 않아 성과금 0원으로 봤어요. 받을 것 같으면 ‘+ 실적 연도 추가’로 넣으세요(끝 연도를 적으면 그 해까지 같은 값).</span>` : '';
       setD('cash:opi', (Q.perf.length ? `<div class="tbl-wrap"><table class="t mini-t"><thead><tr><th class="l">실적→받는 해</th><th>DS 영업이익</th><th>OPI1 세후</th><th>OPI2 세전 → 자사주</th><th>자사주 판 돈</th></tr></thead><tbody>${tr}</tbody></table></div>` : '') +
-        `<span>${Q.perf.length ? `${Q.perf.length}번 받는 성과금 세전 <b>${won(s1, { short: true })}</b> → 세금·보험료를 떼고 자사주를 주가 해마다 ${gTxt}로 3년에 나눠 팔면 실제로 쥐는 돈 <b>${won(sNet, { short: true })}</b>(${s1 > 0 ? Math.round(sNet / s1 * 100) : 0}%)${O.taxMode === 'settled' ? ' · 연말정산 환급 포함' : ''}. 자사주 1/3은 받는 해, 1/3은 1년 뒤, 1/3은 2년 뒤에 팔아요.` : '연봉을 넣으면 OPI가 계산돼요.'}${gapTxt}${lost > 0.5 ? ` <span class="neg">${lostY.join('·')}년에 받은 자사주 중 은퇴 때 아직 못 파는 ${won(lost, { short: true })}(받을 때 값)은 돌려준다고 봤어요.</span>` : ''}${psuTxt}</span>`);
+        `<span>${Q.perf.length ? `${Q.perf.length}번 받는 성과금 세전 <b>${won(s1, { short: true })}</b> → 세금·보험료를 떼고 자사주를 주가 해마다 ${gTxt}로 3년에 나눠 팔면 실제로 쥐는 돈 <b>${won(sNet, { short: true })}</b>(${s1 > 0 ? Math.round(sNet / s1 * 100) : 0}%)${O.taxMode === 'settled' ? ' · 연말정산 환급 포함' : ''}. 자사주 1/3은 받는 해, 1/3은 1년 뒤, 1/3은 2년 뒤에 팔아요.` : '연봉을 넣으면 OPI가 계산돼요.'}${gapTxt}${lost > 0.5 ? ` <span class="neg">${lostY.join('·')}년에 받은 자사주 중 은퇴 때 아직 못 파는 ${won(lost, { short: true })}(받을 때 값)은 돌려준다고 봤어요.</span>` : ''}${psuTxt}</span>` + yearTbl);
     } else setD('cash:opi', O.on ? '<span class="muted">받을 성과금이 없어요. 연봉과 실적 연도(은퇴 전에 받는 해)를 확인해 주세요.</span>' : '');
   }
   // 입력 옆 미리보기용 모델: ISA 만기 ‘유리한 쪽 자동’은 마지막 계산에서 고른 쪽으로(납입 한도가 그에 따라 달라짐)
@@ -4266,11 +4271,25 @@ function RetirementEngine() {
   function applyJsonText(txt) {
     const m = $('#jsonMsg');
     try {
-      const o = migrate(JSON.parse(txt));
+      const raw = JSON.parse(txt);
+      // 일부만 채우는 파일: 은퇴 후 지출 항목(기준 연도의 금액 → 항목별 물가상승률로 오늘 돈으로 바꿔 넣음). 다른 입력은 그대로 둠
+      if (raw && raw.dkretirePart && Array.isArray(raw.expenses)) {
+        const base = Math.round(num(raw.base, CY));
+        state.expenses = raw.expenses.slice(0, 30).map(x => {
+          const infl = blank(x.infl) ? '' : num(x.infl, 0), r = (infl === '' ? num(state.inflation, 2.5) : infl) / 100;
+          const today = num(x.amtYear, 0) / Math.pow(1 + r, Math.max(0, base - CY));
+          return { id: uid(), name: String(x.name || '지출').slice(0, 30), cat: ['living', 'health', 'leisure', 'housing', 'other'].indexOf(x.cat) >= 0 ? x.cat : 'other', amt: Math.round(today), unit: 'y',
+            start: { t: 'retire' }, end: x.endYear ? { t: 'year', v: Math.round(num(x.endYear, CY)) } : { t: 'end' }, every: 1, infl };
+        });
+        state.sample = false; afterEdit('all');
+        { const m2 = $('#jsonMsg'); if (m2) m2.textContent = `은퇴 후 지출 ${state.expenses.length}개 항목을 채웠습니다(다른 입력은 그대로).`; }
+        return;
+      }
+      const o = migrate(raw);
       if (!o) throw new Error('형식');
       o.sample = false; state = o; afterEdit('all');
       if (m) m.textContent = '불러왔습니다';
-    } catch (e) { if (m) m.textContent = '설정 텍스트를 읽지 못했습니다. 저장한 내용을 그대로 붙여 넣어 주세요.'; }
+    } catch (e) { try { console.warn('import', e); } catch (e2) {} if (m) m.textContent = '설정 텍스트를 읽지 못했습니다. 저장한 내용을 그대로 붙여 넣어 주세요.'; }
   }
   function importFile(el) {
     const f = el.files && el.files[0]; if (!f) return;
