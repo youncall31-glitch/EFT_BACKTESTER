@@ -980,6 +980,14 @@ body.choosing .top{border-bottom:0}
 .frow.opi>.sel.og{grid-row:2;grid-column:3;min-width:0;max-width:104px;padding-left:6px;padding-right:2px}
 .cv-tax{margin:0;padding:10px clamp(16px,2.4vw,26px);border-top:1px solid var(--rule);font-size:12.5px;line-height:1.55}
 .cv-tax .tx-b{display:inline-block;margin-right:7px;padding:1px 8px;border-radius:999px;border:1px solid currentColor;font-weight:700;font-size:11.5px;color:var(--ok,#1a7f4b)}
+/* v2: 폭락 대비 비교 */
+#mddIn{margin:4px 0 10px}
+.mdd-t td{white-space:normal;min-width:92px;vertical-align:top}
+.mdd-t td.l{min-width:150px;max-width:210px;white-space:normal}
+.mdd-t td.l .muted{font-size:11.5px;font-weight:400}
+.mdd-t td.best{background:color-mix(in srgb,var(--ok,#1a7f4b) 14%,transparent)}
+.mdd-t .neg{color:var(--seal)}
+.mdd-notes{margin-top:8px}
 </style>
 </head>
 <body>
@@ -1085,6 +1093,13 @@ body.choosing .top{border-bottom:0}
           <p class="desc" id="assetsDesc"></p>
           <div class="legend" id="assetsLegend"></div>
           <div class="chart" id="chartAssets" tabindex="0" aria-label="연도별 자산 잔액 차트. 좌우 화살표로 연도를 이동합니다."></div>
+        </section>
+
+        <section class="card" id="cardMdd" hidden>
+          <div class="card-h"><h2>은퇴 무렵에 폭락(MDD)이 오면</h2></div>
+          <p class="desc">은퇴 직전·직후에 크게 떨어지면 싼값에 팔아 생활비를 써야 해서 회복해도 돈이 모자랄 수 있어요. 대비 방법별로 얼마나 버티는지 비교해 보세요. 숫자를 바꾸면 바로 다시 계산해요.</p>
+          <div id="mddIn"></div>
+          <div id="mddOut"></div>
         </section>
 
         <section class="card" id="cardPlace">
@@ -2852,10 +2867,11 @@ function RetirementEngine() {
     opi: OPI_DEF()
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
+  const MDD_DEF = () => ({ depth: 40, recov: 5, years: 3, lead: 2, safe: 30, cut: 15 });
   const OPI_DEF = () => ({ on: false, dept: 'ds_mem', grade: 'cl', rate370: 8.875, rows: [], priceChg: -20, taxMode: 'withhold', donate: 0, stockPct: 0, leave: 'return', gradeX: 1.2, price: 190000, psu: { on: true, y: 2028, n: 3, shares: 200 }, fc: 1 });
   const opiPresetRows = key => { const P = ENG.OPI.PRESET[key] || ENG.OPI.PRESET.med; return P.op.map((op, k) => ({ id: uid(), y: 2026 + k, to: '', op, opi1: P.opi1[k], g: 'cl' })); };
   function baseAssumptions() {
-    return { v: 6, baseYear: CY, inflation: 2.5, eduInflation: 3.0, horizonAge: 120, horizonBasis: 'later', minReserve: 0, eqReturn: 7.0, bondReturn: 3.0, rebalance: true, harvest: true, penDeferAge: '', pf: PF_DEF(), flow: FLOW_DEF() };
+    return { v: 6, baseYear: CY, inflation: 2.5, eduInflation: 3.0, horizonAge: 120, horizonBasis: 'later', minReserve: 0, eqReturn: 7.0, bondReturn: 3.0, rebalance: true, harvest: true, penDeferAge: '', pf: PF_DEF(), flow: FLOW_DEF(), mdd: MDD_DEF() };
   }
   function sampleState() {
     return Object.assign(baseAssumptions(), {
@@ -3019,6 +3035,7 @@ function RetirementEngine() {
     s.flow = Object.assign(FLOW_DEF(), fo);
     ['self', 'spouse', 'stock'].forEach(k => { s.flow[k] = Object.assign(FLOW_DEF()[k], fo[k] && typeof fo[k] === 'object' ? fo[k] : {}); });
     ['bonus', 'extra', 'alloc'].forEach(k => { s.flow[k] = Array.isArray(fo[k]) ? fo[k].filter(x => x && typeof x === 'object') : []; s.flow[k].forEach(x => { if (!x.id) x.id = uid(); }); });
+    s.mdd = Object.assign(MDD_DEF(), s.mdd && typeof s.mdd === 'object' ? s.mdd : {});
     s.flow.spendMode = 'pct'; s.flow.spendPct = 100;   // 은퇴 전 생활비 칸을 없앰: 세후 연봉 = 생활비
     s.flow.stock.on = false;   // 예전 ‘성과급 일부를 자사주로’ 설정은 삼성전자 OPI 계산으로 바뀌어 화면에 없으므로 끔
     const oo = fo.opi && typeof fo.opi === 'object' ? fo.opi : {};
@@ -4786,7 +4803,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   function renderResults() {
     const R = lastMain; if (!R) return;
     renderCover(R); renderMini(R);
-    renderAssets(R); renderCashCard(R); renderCashTbl(R); renderFlow(R); renderSpend(R); renderBench(R);
+    renderAssets(R); renderMdd(R); renderCashCard(R); renderCashTbl(R); renderFlow(R); renderSpend(R); renderBench(R);
     renderStrat(R); renderScenario(R); renderFirst(R); renderPlace(R); renderTips();
     renderExtra(); renderScen(); renderPlan(); renderVerify(R); renderAssume(R);
     renderFoldSums(R);
@@ -5016,6 +5033,73 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   }
   function legend(el, items) {
     el.innerHTML = items.map(it => `<span><i class="sw${it.line ? ' line' : ''}" style="background:${it.color}"></i>${esc(it.label)}</span>`).join('');
+  }
+  // ── 은퇴 무렵 폭락(MDD) 대비 비교 ─────────────────────────────────────────
+  // 간단 계산: 기본 계획에서 해마다 계좌에서 꺼내야 하는 돈(세금·건보료 포함)을 그대로 쓰고,
+  // 자산을 ‘투자’와 ‘안전(예금)’ 두 주머니로만 나눠 폭락 시나리오별로 언제까지 버티는지 봄
+  function mddSim(R, P, sc, st) {
+    const m = R.meta, rows = R.planCur.rows, ret = m.retYear, r = postRate(R), rd = Math.max(0, Math.min(r, 0.03));
+    const r0 = rows.find(x => x.y === ret - 1), T0 = r0 ? r0.total : R.planCur.totalAtRet;
+    const out = rows.filter(x => x.y >= ret).map(x => ({ y: x.y, o: (x.W || 0) + (x.short || 0) - (x.surplus || 0) - (x.fill || 0) - (x.contrib || 0) }));   // 계좌에서 실제로 빠져나가는 돈(다시 넣는 돈은 뺌)
+    if (!(T0 > 0) || !out.length) return null;
+    const D = Math.max(0, Math.min(0.9, num(P.depth, 40) / 100)), RC = Math.max(0, Math.round(num(P.recov, 5)));
+    const rec = RC > 0 ? Math.pow(1 / (1 - D), 1 / RC) - 1 : r;   // 폭락 뒤 RC년에 걸쳐 폭락 전 값까지 회복(그 뒤 평소 수익률)
+    const retOf = y => sc == null ? r : y === sc ? -D : (y > sc && y <= sc + RC) ? Math.max(rec, RC > 0 ? rec : r) : r;
+    const lead = Math.max(1, Math.round(num(P.lead, 2)));
+    let risky = T0, safe = 0;
+    // 은퇴 전에 미리 안전 주머니를 만듦: 그동안 투자 수익을 못 얻는 대신 은퇴 전 폭락은 피함
+    const need = k => out.slice(0, k).reduce((t, x) => t + Math.max(0, x.o), 0);
+    let B = st.bucket ? Math.min(T0 * 0.9, need(Math.max(1, Math.round(num(P.years, 3))))) : st.mix ? T0 * Math.max(0, Math.min(0.9, num(P.safe, 30) / 100)) : 0;
+    if (B > 0) { risky = T0 - B * Math.pow((1 + r) / (1 + rd), lead); safe = B; if (risky < 0) { safe = T0; risky = 0; } }
+    if (sc != null && sc < ret) risky *= (1 - D);   // 은퇴 직전 해의 폭락: 미리 옮겨 둔 안전 주머니는 영향 없음
+    let idx = (sc != null && sc < ret) ? 1 - D : 1, peak = 1, failY = null, cutSum = 0;
+    const mixS = st.mix ? Math.max(0, Math.min(0.9, num(P.safe, 30) / 100)) : 0;
+    for (const x of out) {
+      const dd = idx < peak * 0.999;
+      let o = x.o; if (o < 0) { risky -= o; o = 0; }
+      if (st.cut && dd) { const c = o * Math.max(0, Math.min(0.5, num(P.cut, 15) / 100)); o -= c; cutSum += c; }
+      if (risky + safe < o - 1) { failY = x.y; break; }
+      if (st.mix) { const t = risky + safe - o; safe = t * mixS; risky = t - safe; }
+      else if (dd && safe > 0) { const u = Math.min(safe, o); safe -= u; risky -= (o - u); }
+      else { const u = Math.min(risky, o); risky -= u; safe -= (o - u); }
+      const g = retOf(x.y); risky *= (1 + g); safe *= (1 + rd); idx *= (1 + g); if (idx > peak) peak = idx;
+    }
+    return { failY, end: failY ? 0 : (risky + safe) / Math.pow(1 + m.infl, m.endYear - m.cy), cutSum, B };
+  }
+  function renderMdd(R) {
+    const card = $('#cardMdd'); if (!card) return;
+    const m = R.meta, P = state.mdd || MDD_DEF(), ret = m.retYear;
+    if (!R.planCur || !R.planCur.rows.some(x => x.y >= ret)) { card.hidden = true; return; }
+    card.hidden = false;
+    const inp = $('#mddIn');
+    if (!inp.contains(document.activeElement)) inp.innerHTML = `<div class="grid3">
+      ${numF('폭락 크기(MDD)', 'mdd.depth', P.depth, '%', { step: 5, hint: '투자 자산이 한 해에 떨어지는 폭' })}
+      ${numF('회복 기간', 'mdd.recov', P.recov, '년', { step: 1, hint: '폭락 전 값으로 돌아오는 데' })}
+      ${numF('예금 주머니', 'mdd.years', P.years, '년치', { step: 1, hint: '은퇴 후 꺼낼 돈 몇 해치' })}
+      ${numF('미리 옮기는 때', 'mdd.lead', P.lead, '년 전', { step: 1, hint: '은퇴 몇 년 전에' })}
+      ${numF('안전자산 비중', 'mdd.safe', P.safe, '%', { step: 5, hint: '‘늘 섞어 두기’ 전략' })}
+      ${numF('폭락 때 지출 줄이기', 'mdd.cut', P.cut, '%', { step: 5, hint: '회복될 때까지' })}</div>`;
+    const SC = [[null, '폭락 없음'], [ret - 1, `은퇴 1년 전<br>${ret - 1}년`], [ret, `은퇴 첫해<br>${ret}년`], [ret + 5, `은퇴 5년 뒤<br>${ret + 5}년`]];
+    const yrs = Math.max(1, Math.round(num(P.years, 3)));
+    const ST = [['none', '대비 없음', '지금 계획 그대로 모두 투자', {}],
+      ['bucket', `예금 주머니 ${yrs}년치`, `은퇴 ${Math.max(1, Math.round(num(P.lead, 2)))}년 전에 예금으로 옮겨 두고, 폭락한 동안만 여기서 꺼내 씀. 폭락이 없으면 그대로 둠`, { bucket: 1 }],
+      ['mix', `안전자산 ${num(P.safe, 30)}% 늘 섞어 두기`, '해마다 비중을 다시 맞춤(폭락 때 싸게 사는 효과)', { mix: 1 }],
+      ['cut', `폭락 때 지출 ${num(P.cut, 15)}% 줄이기`, '투자는 그대로, 회복될 때까지만 덜 씀', { cut: 1 }],
+      ['both', `예금 주머니 + 지출 줄이기`, '두 가지를 함께', { bucket: 1, cut: 1 }]];
+    const endAge = m.endAge, cell = v => !v ? '–' : v.failY ? `<span class="neg"><b>${v.failY - m.birth[0]}세</b>에 바닥</span>` : `<b>${won(v.end, { short: true })}</b> 남음`;
+    const score = v => !v ? -1 : v.failY ? v.failY - 3000 : v.end;
+    const res = ST.map(s2 => SC.map(c => mddSim(R, P, c[0], s2[3])));
+    const best = SC.map((c, j) => { let bi = 0; res.forEach((rw, i) => { if (score(rw[j]) > score(res[bi][j])) bi = i; }); return bi; });
+    const r = postRate(R);
+    $('#mddOut').innerHTML = `<div class="tbl-wrap"><table class="t sum-t mdd-t"><thead><tr><th class="l sticky">대비 방법</th>${SC.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${
+      ST.map((s2, i) => `<tr><td class="l sticky"><b>${s2[1]}</b><br><span class="muted">${s2[2]}</span></td>${SC.map((c, j) => `<td class="${best[j] === i && j > 0 ? 'best' : ''}">${cell(res[i][j])}</td>`).join('')}</tr>`).join('')
+    }</tbody></table></div>
+    <p class="hint">${endAge}세까지 버티면 그때 남는 돈(오늘 돈), 못 버티면 돈이 바닥나는 나이예요. 칸의 색은 그 폭락에서 가장 나은 방법. 간단 계산이라 위 그래프와 조금 다를 수 있어요: 기본 계획에서 해마다 꺼내는 돈(세금·건보료 포함)을 그대로 쓰고, 투자 수익률 연 ${(r * 100).toFixed(1)}%, 예금 ${(Math.min(r, 0.03) * 100).toFixed(1)}%로 봤어요. 폭락한 해에 −${num(P.depth, 40)}%, 그 뒤 ${num(P.recov, 5)}년에 걸쳐 폭락 전 값을 되찾는다고 가정해요.</p>
+    <ul class="cash-notes mdd-notes">
+      <li><b>옮길 때는 ‘인출’하지 말고 계좌 안에서 바꾸세요.</b> 연금저축·IRP·ISA 안에서 주식형 ETF를 팔고 예금·MMF·단기채 ETF를 사면 세금이 없어요. 계좌 밖으로 꺼내면 세금이 붙고 한도도 다시 못 채워요.</li>
+      <li><b>예금 주머니의 값</b>: 폭락이 안 오면 그만큼 수익을 덜 얻어요(‘폭락 없음’ 칸의 차이가 보험료). 폭락이 오면 싼값에 주식을 팔지 않아도 돼요.</li>
+      <li><b>폭락 뒤에 다시 채우지는 않는다</b>고 봤어요. 회복된 뒤 주머니를 다시 채우면 다음 폭락도 대비되지만 그만큼 수익은 줄어요.</li>
+    </ul>`;
   }
   function renderAssets(R) {
     const P = planOf(R), m = R.meta;
