@@ -2848,7 +2848,7 @@ function RetirementEngine() {
   const FLOW_DEF = () => ({
     on: false, self: { salary: '', growth: 3, cap: '' }, spouse: { salary: '', growth: 3, cap: '' }, spouseIn: true,
     bonus: [], stock: { on: false, cashPct: 50, years: 3, drift: 0 }, taxMode: 'auto', taxRate: 30,
-    spendMode: 'amount', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], rest: '',
+    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], rest: '',
     opi: OPI_DEF()
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
@@ -3019,6 +3019,7 @@ function RetirementEngine() {
     s.flow = Object.assign(FLOW_DEF(), fo);
     ['self', 'spouse', 'stock'].forEach(k => { s.flow[k] = Object.assign(FLOW_DEF()[k], fo[k] && typeof fo[k] === 'object' ? fo[k] : {}); });
     ['bonus', 'extra', 'alloc'].forEach(k => { s.flow[k] = Array.isArray(fo[k]) ? fo[k].filter(x => x && typeof x === 'object') : []; s.flow[k].forEach(x => { if (!x.id) x.id = uid(); }); });
+    s.flow.spendMode = 'pct'; s.flow.spendPct = 100;   // 은퇴 전 생활비 칸을 없앰: 세후 연봉 = 생활비
     s.flow.stock.on = false;   // 예전 ‘성과급 일부를 자사주로’ 설정은 삼성전자 OPI 계산으로 바뀌어 화면에 없으므로 끔
     const oo = fo.opi && typeof fo.opi === 'object' ? fo.opi : {};
     s.flow.opi = Object.assign(OPI_DEF(), oo);
@@ -3300,6 +3301,15 @@ function RetirementEngine() {
     return dup || (!tagged && a.owner === 'spouse') ? `${nm} (${a.owner === 'spouse' ? '배우자' : '본인'})` : nm;
   }
   const allocTargets = () => state.accounts.filter(a => a.type !== 'dc');
+  const NEW_ACC = [['pension_savings', '연금저축'], ['irp', 'IRP'], ['isa', 'ISA']];
+  const ownerOfAcc = a => (a.owner === 'spouse' && state.spouse.enabled) ? 'spouse' : 'self';
+  const missingAccs = () => {
+    const out = [];
+    (state.spouse.enabled ? ['self', 'spouse'] : ['self']).forEach(o => NEW_ACC.forEach(([t, l]) => {
+      if (!state.accounts.some(a => a.type === t && ownerOfAcc(a) === o)) out.push(['new:' + t + ':' + o, `+ ${o === 'spouse' ? '아내' : '나'} ${l} (새로 만들기)`]);
+    }));
+    return out;
+  };
   const restTargets = () => state.accounts.filter(a => /^(taxable_foreign|taxable_domestic|taxable_kr_etf|deposit)$/.test(a.type));
   const yearIn = (k, v, label, ph) => `<input class="txt yr" type="number" inputmode="numeric" data-k="${k}" value="${esc(v)}" aria-label="${label}"${ph ? ` placeholder="${ph}"` : ''}>`;
   const amtIn = (k, v, label, unit, ph) => `<span class="in amt"><input type="number" inputmode="decimal" data-k="${k}" value="${esc(v)}" aria-label="${label}"${ph ? ` placeholder="${ph}"` : ''}><em>${unit || '만원'}</em></span>`;
@@ -3327,7 +3337,7 @@ function RetirementEngine() {
     const ph = a ? (a.type === 'pension_savings' ? '600' : a.type === 'irp' ? '300' : a.type === 'isa' ? '2,000' : '제한 없음') : '';
     return `<div class="frow alloc" data-id="${e.id}">
       <span class="no" aria-hidden="true">${i + 1}</span>
-      <select class="sel acc" data-k="${p}.acc" data-re="cash" aria-label="${i + 1}번째로 넣을 계좌">${a ? '' : '<option value="">계좌 고르기</option>'}${opt(allocTargets().map(x => [x.id, accName(x)]), e.acc)}</select>
+      <select class="sel acc" data-k="${p}.acc" data-re="cash" aria-label="${i + 1}번째로 넣을 계좌">${a ? '' : '<option value="">계좌 고르기</option>'}${opt(allocTargets().map(x => [x.id, accName(x)]).concat(missingAccs()), e.acc)}</select>
       ${amtIn(p + '.max', e.max, `${i + 1}번째 계좌에 넣을 최대 금액(연)`, '만원/년', ph)}
       <span class="mvs"><button class="mv" type="button" data-act="allocUp" data-id="${e.id}" aria-label="위로"${i === 0 ? ' disabled' : ''}>↑</button><button class="mv" type="button" data-act="allocDown" data-id="${e.id}" aria-label="아래로"${i === n - 1 ? ' disabled' : ''}>↓</button></span>
       <button class="xbtn" type="button" data-act="fdel" data-list="alloc" data-id="${e.id}" aria-label="${i + 1}번째 순서 삭제">×</button>
@@ -3379,7 +3389,7 @@ function RetirementEngine() {
   }
   function renderCash() {
     const F = state.flow, sp = state.spouse.enabled, on = !!F.on;
-    let h = `<p class="hint">① 연봉 + ② 성과급 − ③ 생활비 = 여윳자금. 이 돈을 해마다 계좌에 넣어요(모자라는 해는 일반계좌에서 꺼내요).</p>
+    let h = `<p class="hint">세후 연봉은 생활비로 쓰고, ② 성과급 − ③ 큰 지출 = 여윳자금. 이 돈을 해마다 계좌에 넣어요(모자라는 해는 일반계좌에서 꺼내요).</p>
       ${chkF('여윳자금으로 해마다 넣을 돈 정하기', 'flow.on', on, '켜면 각 계좌의 ‘매년 넣을 돈’ 대신 이 계획대로 해마다 연말에 넣어요. 퇴직연금 회사 부담금은 그대로 연봉의 1/12이에요.', { re: 'all' })}`;
     if (!on) { $('#cash').innerHTML = h; return; }
     const salCard = (key, p, title) => `<div class="pcard"><div class="pc-h"><b>${title} 연봉</b><span class="hint">세전 · 성과급 빼고</span></div>
@@ -3398,16 +3408,11 @@ function RetirementEngine() {
       (opiOn ? opiBlock(O) + subh('그 밖의 성과급', '', 'TAI처럼 현금으로 받는 상여나 배우자 성과급이에요(세전, 그 해 금액).') : '') +
       `<div class="flist">${F.bonus.map(bonusRow).join('') || '<div class="empty">없으면 비워 두세요.</div>'}</div>
       <div class="adds"><button class="chip add" type="button" data-act="addBonus">+ ${opiOn ? '그 밖의 성과급' : '성과급'} 추가</button></div>`;
-    h += subh('③ 은퇴 전 생활비', segBtns('cashSpend', 'flow', F.spendMode === 'pct' ? 'pct' : 'amount', [['amount', '월 금액'], ['pct', '세후 연봉의 %']], '생활비 입력 방식'),
-      F.spendMode === 'pct' ? '100%면 세후 연봉은 다 쓰고 성과급만 모아요.' : '오늘 물가로 적으면 해마다 물가만큼 올려요. 자녀 교육비·보험료·관리비처럼 은퇴 전에 매달 쓰는 돈을 모두 넣어요.') +
-      `<div class="grid2">${F.spendMode === 'pct'
-        ? numF('세후 연봉 중 쓰는 비율', 'flow.spendPct', F.spendPct, '%', { step: 1 })
-        : numF('월 생활비', 'flow.spendMonthly', F.spendMonthly, '만원', { ph: '0', hint: '오늘 물가' })}</div>`;
-    h += subh('큰 지출·목돈 수입(있을 때만)', '', '자동차·이사·등록금처럼 해마다 다른 돈이에요. 수입은 성과급 말고 들어오는 목돈(집 판 돈·보험금 등).') +
+    h += subh('③ 큰 지출·목돈 수입(있을 때만)', '', '세후 연봉은 생활비로 다 쓰고 성과급만 모은다고 봐요. 성과급에서 쓸 큰돈(자동차·이사·등록금)이나 따로 들어오는 목돈(연봉에서 모으는 돈·집 판 돈)만 여기에 넣어요.') +
       `<div class="flist">${F.extra.map(extraRow).join('') || '<div class="empty">없으면 비워 두세요.</div>'}</div>
       <div class="adds"><button class="chip add" type="button" data-act="addExtra" data-kind="out">+ 지출 추가</button><button class="chip add" type="button" data-act="addExtra" data-kind="in">+ 수입 추가</button></div>
       ${chkF('금액에 물가 반영', 'flow.extraReal', F.extraReal !== false, '켜면 오늘 물가로 적은 금액을 그 해 물가로 올려요. 끄면 적은 금액 그대로(그 해 금액)예요.')}
-      ${(state.loans || []).length ? chkF('은퇴 전 대출 원리금도 여윳자금에서 내기', 'flow.loans', F.loans !== false, '끄면 대출은 위 생활비 안에서 갚는다고 봐요.') : ''}`;
+      ${(state.loans || []).length ? chkF('은퇴 전 대출 원리금도 여윳자금에서 내기', 'flow.loans', F.loans !== false, '끄면 대출은 연봉(생활비) 안에서 갚는다고 봐요.') : ''}`;
     h += `<div class="pro-only">` + subh('④ 세금·4대보험', segBtns('cashTax', 'flow', F.taxMode === 'rate' ? 'rate' : 'auto', [['auto', '자동 추정'], ['rate', '실효율 직접']], '세금 계산 방식'),
       F.taxMode === 'rate' ? '연봉+성과급에 이 비율을 곱해 세금과 4대보험을 뺍니다. 원천징수영수증의 (결정세액 + 4대보험) ÷ 총급여로 구할 수 있어요.' : '2026년 세율·4대보험료율로 추정해요(근로소득공제·인적공제·4대보험 공제 → 기본세율 → 근로소득세액공제·표준세액공제, 지방세 10%).') +
       (F.taxMode === 'rate' ? `<div class="grid2">${numF('세금+4대보험 실효율', 'flow.taxRate', F.taxRate, '%', { step: 0.5 })}</div>` : '');
@@ -3994,6 +3999,11 @@ function RetirementEngine() {
     if (!el.dataset || !el.dataset.k) return;
     if (el.dataset.reblur) { const w = el.dataset.reblur; setTimeout(() => rerender(w), 0); return; }
     if (!(el.tagName === 'SELECT' || el.type === 'checkbox')) return;
+    if (el.tagName === 'SELECT' && /^new:/.test(el.value)) {
+      const [, t, o] = el.value.split(':'), lab = (NEW_ACC.find(x => x[0] === t) || [0, '계좌'])[1];
+      const acc = Object.assign({ id: uid(), type: t, owner: o, bal: 0, cagr: 7, contrib: 0 }, clone(ACC_DEF[t]), { name: (o === 'spouse' ? '아내 ' : '나 ') + lab });
+      state.accounts.push(acc); setPath(el.dataset.k, acc.id); afterEdit('all'); return;
+    }
     setPath(el.dataset.k, readVal(el));
     if (el.dataset.k === 'flow.on' && el.checked && !(state.flow.alloc || []).length) setRecAlloc(state);
     if (el.dataset.k === 'flow.opi.dept') applyDeptOpi1();
