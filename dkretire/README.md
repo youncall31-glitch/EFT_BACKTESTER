@@ -1,4 +1,4 @@
-# 120세 은퇴자금 계산기 v2
+# DK 은퇴계산기
 
 **바로 쓰기 → https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/**
 

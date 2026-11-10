@@ -3,28 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>120세 은퇴자금 계산기 v2 · 연봉·성과급으로 계좌별 저축과 세금·건보료까지</title>
+<title>DK 은퇴계산기 · 연봉·성과급으로 계좌별 저축과 세금·건보료까지</title>
 <meta name="description" content="연봉·성과급·생활비로 해마다 계좌별 납입을 정하고, 국민연금·대출·계좌별 세금과 건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금과 최적 인출 순서를 계산합니다. 입력값은 이 브라우저에만 저장됩니다.">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#e9edeb" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0f13" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
-<meta property="og:title" content="120세 은퇴자금 계산기 v2">
+<meta property="og:title" content="DK 은퇴계산기">
 <meta property="og:description" content="연봉·성과급으로 해마다 계좌별 저축을 정하고, 세금·건강보험료까지 반영해 120세까지 필요한 은퇴자금과 최적 인출 순서를 계산합니다.">
 <meta property="og:url" content="https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/">
 <meta property="og:locale" content="ko_KR">
-<meta property="og:site_name" content="120세 은퇴자금 계산기 v2">
+<meta property="og:site_name" content="DK 은퇴계산기">
 <meta property="og:image" content="https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="120세 은퇴자금 계산기 — 세금·건강보험료까지 반영한 필요 자금과 계좌별 최적 인출 순서">
+<meta property="og:image:alt" content="DK 은퇴계산기 — 세금·건강보험료까지 반영한 필요 자금과 계좌별 최적 인출 순서">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"120세 은퇴자금 계산기 v2","url":"https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"ko","description":"물가·국민연금·대출·계좌별 세금과 건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금과 최적 인출 순서를 계산합니다.","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"DK 은퇴계산기","url":"https://youncall31-glitch.github.io/EFT_BACKTESTER/dkretire/","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"ko","description":"물가·국민연금·대출·계좌별 세금과 건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금과 최적 인출 순서를 계산합니다.","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c5cab'/%3E%3Ctext x='32' y='42' font-size='24' text-anchor='middle' fill='white' font-family='Arial,sans-serif' font-weight='700'%3E120%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-title" content="은퇴자금 v2">
+<meta name="apple-mobile-web-app-title" content="DK 은퇴계산기">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
@@ -987,7 +987,7 @@ body.choosing .top{border-bottom:0}
 <div class="wrap">
   <header class="top">
     <div class="top-t">
-      <h1><small>연봉·성과급으로 계좌별 저축 · 세금과 건강보험료까지</small>120세 은퇴자금 계산기 <span class="ver">v2</span></h1>
+      <h1><small>연봉·성과급으로 계좌별 저축 · 세금과 건강보험료까지</small>DK 은퇴계산기</h1>
       <p class="lede">연봉·성과급·생활비로 해마다 어느 계좌에 얼마를 넣을지 정하고, 국민연금과 계좌별 세금·건강보험료를 반영해 120세까지 바닥나지 않는 은퇴자금을 계산해요.</p>
     </div>
     <div class="top-r">
@@ -4727,7 +4727,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const q = s => '"' + String(s).replace(/"/g, '""') + '"';
     const n0 = x => Math.round(x || 0);
     const lines = [
-      q(`120세 은퇴자금 계산기 검산표 · 금액은 원(그 해 금액) · 필요자금을 갖췄을 때 · 추천 전략 ${bestOf(R).name}`),
+      q(`DK 은퇴계산기 검산표 · 금액은 원(그 해 금액) · 필요자금을 갖췄을 때 · 추천 전략 ${bestOf(R).name}`),
       [q('은퇴 후 수익률(계좌 평균)'), L.rate].join(','),
       [q('계산기 필요자금(은퇴 첫해 연초 자산)'), n0(L.start)].join(','),
       q('읽는 법: 잔액 차이·돈 흐름 차이가 0(반올림 때문에 몇 원)이고 맨 아래 합계가 필요자금과 같으면 맞습니다. 다시 계산한 연말 잔액 = (연초 잔액 − 꺼낸 돈 + 다시 투자 − 굴리지 않는 잔액) × (1 + 수익률) + 굴리지 않는 잔액 − 배당·이자세 + 은퇴 후 납입'),
@@ -5150,7 +5150,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const c = w => Math.round((w || 0) / MAN);
     const head = ['연도', '본인 나이', '본인 연봉', '배우자 연봉', '본인 성과급', '배우자 성과급', '본인 OPI1(세전)', '본인 OPI2(세전)', '본인 PSU(세전)', '세금', '4대보험', '자사주 매도', 'OPI2 연말정산 환급', '세후 소득', '생활비', '큰 지출', '목돈 수입', '대출 원리금', '여윳자금']
       .concat(ids.map(id => '넣음: ' + nm(id)), ['남는 돈: ' + cashRestName(R), '세액공제 환급', '모자라서 꺼낸 돈', '꺼낼 때 세금', '그래도 모자란 돈', '금융소득 추가 세금·건보료']);
-    const lines = [q('120세 은퇴자금 계산기 v2 · 은퇴 전 여윳자금 · 단위 만원 · 그 해 금액'), head.map(q).join(',')];
+    const lines = [q('DK 은퇴계산기 · 은퇴 전 여윳자금 · 단위 만원 · 그 해 금액'), head.map(q).join(',')];
     rows.forEach(r => {
       const f = r.f;
       lines.push([f.y, f.y - m.birth[0], c(f.sal[0]), c(f.sal[1]), c(f.bon[0]), c(f.bon[1]), c(f.o1), c(f.o2), c(f.o3), c(f.tax[0] + f.tax[1]), c(f.ins[0] + f.ins[1]), c(f.sold[0] + f.sold[1]), c(f.taxBack), c(f.inc), c(f.spend), c(f.exOut), c(f.exIn), c(f.loan), c(f.fc)]
@@ -5616,7 +5616,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     head.push('세금', '건강보험료');
     ids.forEach(id => head.push('잔액: ' + accLabel(R, byId[id])));
     head.push('연말 잔액 합계', '부족');
-    const lines = [q(`120세 은퇴자금 계산기 · 단위 만원 · ${view.money === 'pv' ? m.by + '년 돈 가치' : '그 해 금액'} · ${view.basis === 'req' ? '필요자금을 갖췄을 때' : '지금 계획대로'} · 추천 전략 ${bestOf(R).name}`), head.map(q).join(',')];
+    const lines = [q(`DK 은퇴계산기 · 단위 만원 · ${view.money === 'pv' ? m.by + '년 돈 가치' : '그 해 금액'} · ${view.basis === 'req' ? '필요자금을 갖췄을 때' : '지금 계획대로'} · 추천 전략 ${bestOf(R).name}`), head.map(q).join(',')];
     P.rows.forEach(r => {
       const c = w => Math.round(V(R, w || 0, r.y) / MAN);
       const row = [r.y, r.age0];

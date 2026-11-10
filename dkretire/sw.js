@@ -1,4 +1,4 @@
-/* 120세 은퇴자금 계산기 v2: 연결되어 있으면 늘 최신 파일을 받고, 연결이 없을 때만 저장해 둔 사본으로 엽니다. */
+/* DK 은퇴계산기: 연결되어 있으면 늘 최신 파일을 받고, 연결이 없을 때만 저장해 둔 사본으로 엽니다. */
 const CACHE = 'retire120v2-v1'; // 기존 앱 캐시('retire120-v1')와 이름이 겹치지 않게
 const CORE = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
