@@ -991,6 +991,8 @@ body.choosing .top{border-bottom:0}
 /* v2: 계좌 묶음 제목 */
 .acc-grp{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:14px 0 6px;font-size:13.5px}
 .acc-grp small{opacity:.75;font-size:12px}
+/* v2: 처음 정할 것 */
+.pcard.start{border-color:color-mix(in srgb,var(--t5) 40%,var(--rule))}
 </style>
 </head>
 <body>
@@ -1049,7 +1051,7 @@ body.choosing .top{border-bottom:0}
       <div class="mini" id="mini" aria-live="polite"></div>
 
       <h2 class="grp"><span>꼭 넣을 것</span><small>1·3·4만 넣어도 계산돼요 · 2를 켜면 연봉·성과급으로 해마다 넣을 돈이 정해져요</small></h2>
-      <details class="sec" id="secFamily" style="--hue:var(--t2)"><summary><span class="tab" aria-hidden="true">1</span><span class="sh"><span class="st">나와 가족</span><span class="sd">출생연도, 은퇴 나이, 국민연금 예상액</span><span class="ss" id="ssFamily"></span></span></summary><div class="sb" id="family"></div></details>
+      <details class="sec" id="secFamily" style="--hue:var(--t2)"><summary><span class="tab" aria-hidden="true">1</span><span class="sh"><span class="st">나와 가족</span><span class="sd">은퇴하는 해, 포트폴리오 수익률, 출생연도, 국민연금</span><span class="ss" id="ssFamily"></span></span></summary><div class="sb" id="family"></div></details>
       <details class="sec" id="secCash" style="--hue:var(--t5)"><summary><span class="tab" aria-hidden="true">2</span><span class="sh"><span class="st">은퇴 전 여윳자금</span><span class="sd">연봉·성과급(삼성전자 OPI)에서 생활비를 빼고 해마다 계좌에 넣을 돈</span><span class="ss" id="ssCash"></span></span></summary><div class="sb" id="cash"></div></details>
       <details class="sec" id="secAcc" style="--hue:var(--t6)"><summary><span class="tab" aria-hidden="true">3</span><span class="sh"><span class="st">모은 돈과 저축</span><span class="sd">내 포트폴리오 수익률, 계좌마다 지금 잔액</span><span class="ss" id="ssAcc"></span></span></summary><div class="sb" id="acc"></div></details>
       <details class="sec" id="secExp" style="--hue:var(--t3)"><summary><span class="tab" aria-hidden="true">4</span><span class="sh"><span class="st">은퇴 후 생활비</span><span class="sd">은퇴하고 매달·매년 쓸 돈을 오늘 물가로</span><span class="ss" id="ssExp"></span></span></summary><div class="sb" id="exp"></div></details>
@@ -3224,7 +3226,10 @@ function RetirementEngine() {
   }
   function renderFamily() {
     const s = state;
-    $('#family').innerHTML = personBlock('self', s.self, '본인') + personBlock('spouse', s.spouse, '배우자');
+    const ry = num(s.self.birthYear) + num(s.self.retireAge);
+    $('#family').innerHTML = `<div class="pcard start"><div class="pc-h"><b>먼저 정할 것</b></div>
+      <div class="grid2">${numF('은퇴하는 해', 'self.retireYearIn', ry, '년', { step: 1, hint: '본인 기준 · 아래 은퇴 나이와 함께 바뀌어요' })}</div></div>` +
+      pfBlock() + personBlock('self', s.self, '본인') + personBlock('spouse', s.spouse, '배우자');
   }
   function renderKids() {
     $('#kids').innerHTML = `<p class="hint">출생연도를 넣으면 교육비가 끝나는 해가 정해지고, 은퇴한 뒤에 남는 몫만 계산에 들어가요.</p>
@@ -3473,8 +3478,8 @@ function RetirementEngine() {
     const bt = !pf.on ? '' : L.length
       ? `<label class="f wide" for="btPick"><span class="fl">ETF 백테스터에 저장한 포트폴리오에서 가져오기</span><span class="in"><select id="btPick"><option value="">고르기…</option>${L.map((x, i) => `<option value="${i}">${esc(String(x.name || '포트폴리오').slice(0, 40))} · CAGR ${(x.snap.cagr * 100).toFixed(1)}%${x.snap.real ? ' 실질' : ''}${x.snap.cur === 'USD' ? ' 달러' : ''}${x.snap.from ? ` · ${esc(x.snap.from)}~${esc(x.snap.to || '')}` : ''}</option>`).join('')}</select></span><small>지난 수익률이라 앞으로도 같다는 보장은 없어요. 1~2%p 낮춰 넣으면 더 안전해요. 실질 CAGR은 물가를 더해 바꿔 넣어요.</small></label>`
       : '<small class="hint">같은 사이트의 ETF 백테스터에서 포트폴리오를 저장해 두면, 여기서 그 CAGR을 골라 넣을 수 있어요.</small>';
-    return `<div class="pcard pf"><div class="pc-h"><b>내 포트폴리오</b>${chkF('모든 계좌 같은 수익률', 'pf.on', pf.on, '', { re: 'acc' })}</div>
-      ${pf.on ? `<div class="grid2">${numF('연평균 수익률(CAGR)', 'pf.cagr', pf.cagr, '%', { step: 0.1, hint: '은퇴 전까지 · 세전' })}${numF('은퇴 후 수익률', 'pf.cagrPost', pf.cagrPost, '%', { step: 0.1, ph: '같게', hint: '비우면 은퇴 전과 같음' })}</div>${bt}`
+    return `<div class="pcard pf"><div class="pc-h"><b>포트폴리오 수익률</b>${chkF('모든 계좌 같은 수익률', 'pf.on', pf.on, '', { re: 'all' })}</div>
+      ${pf.on ? `<div class="grid2">${numF('은퇴 전 수익률', 'pf.cagr', pf.cagr, '%/년', { step: 0.1, hint: '연평균(CAGR) · 세전' })}${numF('은퇴 후 수익률', 'pf.cagrPost', pf.cagrPost, '%/년', { step: 0.1, ph: '같게', hint: '비우면 은퇴 전과 같음' })}</div>${bt}`
         : '<small class="hint">켜면 예금을 뺀 연금저축·IRP·ISA·퇴직연금·일반계좌가 모두 같은 포트폴리오 수익률로 굴러가요.</small>'}
       <output class="derived" data-d="pf"></output></div>`;
   }
@@ -3597,7 +3602,7 @@ function RetirementEngine() {
   }
   function renderAcc() {
     $('#acc').innerHTML = `<p class="hint">연금저축·IRP·ISA·주식·예금·퇴직연금을 계좌마다 넣어 주세요. 지금 잔액과 은퇴 전까지 매년 넣을 돈만 적으면 되고, 수익률은 기본값으로 계산해요. 계좌 종류에 따라 세금이 달라서, 세금·건보료가 가장 적게 드는 꺼내는 순서를 찾아 줘요.</p>
-      ${pfBlock()}
+      ${state.pf.on ? `<small class="hint">수익률은 1번 ‘포트폴리오 수익률’에서 정한 값(은퇴 전 ${esc(state.pf.cagr)}%${blank(state.pf.cagrPost) ? '' : ' · 은퇴 후 ' + esc(state.pf.cagrPost) + '%'})을 예금을 뺀 모든 계좌에 써요.</small>` : '<small class="hint">계좌마다 수익률을 따로 넣어요. 한 가지 수익률로 하려면 1번 ‘포트폴리오 수익률’을 켜세요.</small>'}
       ${keyNote([['var(--s3)', '일반계좌'], ['var(--s2)', '연금계좌']])}
       ${state.accounts.length ? '' : addBar('')}
       ${accLists() || '<div class="list"><div class="empty">아직 계좌가 없어요. 위에서 계좌를 추가하세요. 없으면 해외주식형 일반계좌 하나로 가정해 필요한 돈을 계산해요.</div></div>'}
@@ -3669,7 +3674,7 @@ function RetirementEngine() {
     if (which === 'all') renderInputs();
     else if (which === 'acc' || which === 'cash') { renderAcc(); renderCash(); updateDerived(); }
     else { ({ exp: renderExp, loan: renderLoan, inc: renderInc, health: renderHealth, family: renderFamily, kids: renderKids, basic: renderBasic, work: renderWork })[which](); updateDerived(); }
-    if (aid) { const el = document.getElementById(aid); if (el && document.activeElement !== el) { try { el.focus({ preventScroll: true }); } catch (e) { /* 무시 */ } } }
+    if (aid) { const el = document.getElementById(aid); if (el && document.activeElement !== el) { try { el.focus({ preventScroll: true }); if (el.tagName === 'INPUT' && el.select) el.select(); } catch (e) { /* 무시 */ } } }
     updateRetLabel();
   }
 
@@ -4021,6 +4026,7 @@ function RetirementEngine() {
     }
     return false;
   }
+  let pfT = 0;
   function afterEdit(re) {
     if (state.sample && !state.edited) { state.edited = true; renderBanner(); }
     if (re) rerender(re); else updateDerived();
@@ -4029,7 +4035,15 @@ function RetirementEngine() {
   document.addEventListener('input', e => {
     const el = e.target;
     if (!el.dataset || !el.dataset.k || el.tagName === 'SELECT' || el.type === 'checkbox') return;
+    const setV = (k, v) => { const o = document.querySelector(`[data-k="${k}"]`); if (o && o !== el) o.value = v; };
+    if (el.dataset.k === 'self.retireYearIn') {   // 은퇴하는 해 ↔ 은퇴 나이
+      const y = Math.round(num(readVal(el), 0)), by = num(state.self.birthYear);
+      if (y > 1900 && by > 1900) { state.self.retireAge = y - by; setV('self.retireAge', y - by); afterEdit(null); }
+      return;
+    }
     setPath(el.dataset.k, readVal(el));
+    if (el.dataset.k === 'self.retireAge' || el.dataset.k === 'self.birthYear') setV('self.retireYearIn', num(state.self.birthYear) + num(state.self.retireAge));
+    if (/^pf\.cagr/.test(el.dataset.k)) { clearTimeout(pfT); pfT = setTimeout(() => { if (!document.querySelector('#acc').contains(document.activeElement)) { try { renderAcc(); updateDerived(); } catch (e2) { /* 무시 */ } } }, 400); }
     afterEdit(null);
   });
   document.addEventListener('change', e => {
@@ -4041,7 +4055,7 @@ function RetirementEngine() {
       const x = btList()[+el.value]; if (!x) return;
       const c = x.snap.cagr, nominal = x.snap.real ? (1 + c) * (1 + num(state.inflation, 2.5) / 100) - 1 : c;
       state.pf.cagr = Math.round(nominal * 1000) / 10; state.pf.src = String(x.name || '').slice(0, 40);
-      afterEdit('acc'); return;
+      afterEdit('all'); return;
     }
     if (!el.dataset || !el.dataset.k) return;
     if (el.dataset.reblur) { const w = el.dataset.reblur; setTimeout(() => rerender(w), 0); return; }
