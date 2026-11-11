@@ -993,6 +993,9 @@ body.choosing .top{border-bottom:0}
 .acc-grp small{opacity:.75;font-size:12px}
 /* v2: 처음 정할 것 */
 .pcard.start{border-color:color-mix(in srgb,var(--t5) 40%,var(--rule))}
+/* v2: 꼭 넣는 돈 */
+.frow.must .co{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}
+.frow.must .co input{width:18px;height:18px}
 </style>
 </head>
 <body>
@@ -1672,6 +1675,8 @@ function RetirementEngine() {
       if (group === 'FOR' || group === 'KRE' || group === 'ISA') acc.basis = bal * Math.max(0, Math.min(100, num(a.basisPct, 100))) / 100;
       if (group === 'ISA') {
         acc.isaLeft = acc.isaExempt;
+        acc.isaStart = (a.isaStart === '' || a.isaStart == null) ? NaN : Math.round(num(a.isaStart, NaN));
+        if (!(a.isaPaid === '' || a.isaPaid == null)) acc.basis = Math.min(bal, Math.max(0, num(a.isaPaid, 0) * MAN));
         acc.isaMat = (a.isaMat === '' || a.isaMat == null) ? cy + 3 : Math.max(cy, Math.round(num(a.isaMat, cy + 3)));
         acc.isaMat0 = acc.isaMat;
         const ch = over.isaChoice && over.isaChoice[acc.id] ? over.isaChoice[acc.id] : a.isaAfter;
@@ -1824,7 +1829,9 @@ function RetirementEngine() {
       // 계좌별 납입 한도 추적: 연금저축·IRP 1인 연 1,800만원, ISA 계약별 연 2,000만원(이월)·총 1억원
       accounts.forEach(a => { if (a.group !== 'DC') a.flowSched = new Float64Array(N); });
       const isaSt = {};
-      accounts.filter(a => a.group === 'ISA').forEach(a => { isaSt[a.id] = { start: Math.min(cy, a.isaMat0 - 3), paid: a.basis }; });
+      accounts.filter(a => a.group === 'ISA').forEach(a => { isaSt[a.id] = { start: Number.isFinite(a.isaStart) ? Math.min(cy, a.isaStart) : Math.min(cy, a.isaMat0 - 3), paid: a.basis }; });
+      // 해마다 꼭 넣는 돈(여윳자금과 상관없이): 내 돈이면 여윳자금에서 먼저 빠지고 모자라면 일반계좌에서 꺼냄, 회사가 넣어 주는 돈이면 내 돈은 안 나감
+      const mustList = (Array.isArray(F.must) ? F.must : []).filter(e => e && byId[e.acc] && byId[e.acc].group !== 'DC' && num(e.amt, 0) > 0);
       const isaRoom = (st, y) => Math.max(0, Math.min(WG.ISA_T - st.paid, WG.ISA_Y * (y - st.start + 1) - st.paid));
       const defCap = a => a.type === 'pension_savings' ? C.CREDIT_PS : a.type === 'irp' ? C.CREDIT_ALL - C.CREDIT_PS : a.group === 'ISA' ? WG.ISA_Y : Infinity;
       const allocList = (Array.isArray(F.alloc) ? F.alloc : []).filter(e => e && byId[e.acc] && byId[e.acc].group !== 'DC');
@@ -1877,9 +1884,22 @@ function RetirementEngine() {
           ? Math.max(0, num(F.spendPct, 100)) / 100 * (pp[0].netS + (spIn ? pp[1].netS : 0))
           : Math.max(0, num(F.spendMonthly, 0)) * MAN * 12 * factor(infl, y);
         const loanY = F.loans === false ? 0 : loanPre[i];
-        const fc = inc[0] + inc[1] + exIn[i] - spend - exOut[i] - loanY;
         if (holdAcc && heldY[i] > 0) holdAcc.flowSched[i] += heldY[i];
         const alloc = {}; const penUsed = [0, 0], psAmt = [0, 0], irpAmt = [0, 0];
+        let mustOwn = 0, compIn = 0;
+        for (const e of mustList) {
+          const a = byId[e.acc];
+          if (y >= Math.min(a.ownerRet, retYear)) continue;
+          let t = Math.max(0, num(e.amt, 0) * MAN);
+          if (a.group === 'PEN') t = Math.min(t, C.PEN_CAP - penUsed[a.owner]);
+          if (a.group === 'ISA') t = Math.min(t, isaRoom(isaSt[a.id], y));
+          if (!(t > 0.5)) continue;
+          a.flowSched[i] += t; alloc[a.id] = (alloc[a.id] || 0) + t;
+          if (e.company) compIn += t; else mustOwn += t;
+          if (a.group === 'PEN') { penUsed[a.owner] += t; if (a.type === 'pension_savings') psAmt[a.owner] += t; else irpAmt[a.owner] += t; }
+          if (a.group === 'ISA') isaSt[a.id].paid += t;
+        }
+        const fc = inc[0] + inc[1] + exIn[i] - spend - exOut[i] - loanY - mustOwn;
         let left = Math.max(0, fc);
         for (const e of allocList) {
           if (!(left > 0.5)) break;
@@ -1910,7 +1930,7 @@ function RetirementEngine() {
         const refund = F.refund === false ? 0 : credit[0] + credit[1];
         rest[i] = left + refund;
         if (fc < 0) deficit[i] = -fc;
-        rows.push({ y, i, sal: [pp[0].s, pp[1].s], bon: [pp[0].b, pp[1].b], o1: pp[0].o1, o2: pp[0].o2, o3: pp[0].o3, net3: pp[0].net3, held: heldY[i], tax: [pp[0].tax, pp[1].tax], ins: [pp[0].ins, pp[1].ins], mr: [pp[0].mr || 0, pp[1].mr || 0],
+        rows.push({ y, i, sal: [pp[0].s, pp[1].s], bon: [pp[0].b, pp[1].b], o1: pp[0].o1, o2: pp[0].o2, o3: pp[0].o3, net3: pp[0].net3, held: heldY[i], must: mustOwn, comp: compIn, tax: [pp[0].tax, pp[1].tax], ins: [pp[0].ins, pp[1].ins], mr: [pp[0].mr || 0, pp[1].mr || 0],
           net: [pp[0].netS + pp[0].netB + pp[0].net1 + pp[0].net3, pp[1].netS + pp[1].netB + pp[1].net1], netS: [pp[0].netS, pp[1].netS], net1: pp[0].net1,
           stockGot: [pp[0].stock + pp[0].stock1 + pp[0].stock2, pp[1].stock + pp[1].stock1 + pp[1].stock2], sold: [proceeds[0][i], proceeds[1][i]], taxBack: refunds[0][i] + refunds[1][i], inc: inc[0] + inc[1],
           spend, exIn: exIn[i], exOut: exOut[i], loan: loanY, fc, alloc, left, credit, refund, rest: rest[i], deficit: deficit[i] });
@@ -2835,7 +2855,7 @@ function RetirementEngine() {
     taxable_domestic: { name: '국내주식', cagrMode: 'mix', stockPct: 100, stockPctPost: '', div: 2.0, contribMode: 'fixed', contribList: [] },
     taxable_kr_etf: { name: '국내상장 해외ETF', cagrMode: 'mix', stockPct: 100, stockPctPost: '', div: 1.5, basisPct: 80, contribMode: 'fixed', contribList: [] },
     deposit: { name: '예금', cagrMode: 'direct', cagr: 3, contribMode: 'fixed', contribList: [] },
-    isa: { name: 'ISA', cagrMode: 'mix', stockPct: 60, stockPctPost: '', basisPct: 90, isaExempt: 200, isaMat: '', isaAfter: 'move', contribMode: 'fixed', contribList: [] },
+    isa: { name: 'ISA', cagrMode: 'mix', stockPct: 60, stockPctPost: '', basisPct: 90, isaExempt: 200, isaMat: '', isaStart: '', isaPaid: '', isaAfter: 'move', contribMode: 'fixed', contribList: [] },
     pension_savings: { name: '연금저축', cagrMode: 'mix', stockPct: 80, stockPctPost: '', nd: 0, startAge: 55, pre2013: false, contribMode: 'fixed', contribList: [] },
     irp: { name: 'IRP', cagrMode: 'mix', stockPct: 70, stockPctPost: '', nd: 0, ri: 0, riRate: '', serviceYears: 20, startAge: 55, pre2013: false, contribMode: 'fixed', contribList: [] },
     dc: { name: '퇴직연금', dcPlan: 'dc', dcInput: 'salary', salary: 6000, wageGrowth: 3, salaryCap: '', peakAge: '', peakCut: 10, peakStep: 10, dbToDc: false, cagrMode: 'mix', stockPct: 40, stockPctPost: '', hireYear: CY - 15, pre2013: false }
@@ -2877,7 +2897,7 @@ function RetirementEngine() {
   const FLOW_DEF = () => ({
     on: false, self: { salary: '', growth: 3, cap: '' }, spouse: { salary: '', growth: 3, cap: '' }, spouseIn: true,
     bonus: [], stock: { on: false, cashPct: 50, years: 3, drift: 0 }, taxMode: 'auto', taxRate: 30,
-    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], rest: '',
+    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], must: [], rest: '',
     opi: OPI_DEF()
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
@@ -2939,8 +2959,15 @@ function RetirementEngine() {
     ];
   }
   // 여윳자금 순서(추천)와 남는 돈 계좌(나 해외 ETF)
+  // 기본: 해마다 꼭 넣는 돈(연금저축·IRP) + 남는 돈은 내 ISA → 배우자 ISA → 일반계좌
   function setRecAlloc(s) {
-    s.flow.alloc = ENG.recAlloc(s).map(e => ({ id: uid(), acc: e.acc, max: e.max }));
+    const sp = s.spouse.enabled, own = a => (a.owner === 'spouse' && sp) ? 'spouse' : 'self';
+    const first = (t, o) => s.accounts.find(a => a.type === t && own(a) === o);
+    const must = [], add = (a, amt, company) => { if (a) must.push({ id: uid(), acc: a.id, amt, company: !!company }); };
+    add(first('pension_savings', 'self'), 600, true); add(first('irp', 'self'), 300);
+    if (sp) { add(first('pension_savings', 'spouse'), 900); add(first('irp', 'spouse'), 300); }
+    s.flow.must = must; s.flow.mustV = 1;
+    s.flow.alloc = ['self'].concat(sp ? ['spouse'] : []).map(o => first('isa', o)).filter(Boolean).map(a => ({ id: uid(), acc: a.id, max: 2000 }));
     const etf = s.accounts.find(a => a.type === 'taxable_foreign' && a.owner !== 'spouse');
     if (!s.accounts.some(a => a.id === s.flow.rest)) s.flow.rest = etf ? etf.id : '';
   }
@@ -3051,7 +3078,16 @@ function RetirementEngine() {
     ['bonus', 'extra', 'alloc'].forEach(k => { s.flow[k] = Array.isArray(fo[k]) ? fo[k].filter(x => x && typeof x === 'object') : []; s.flow[k].forEach(x => { if (!x.id) x.id = uid(); }); });
     s.mdd = Object.assign(MDD_DEF(), s.mdd && typeof s.mdd === 'object' ? s.mdd : {});
     s.accounts = (s.accounts || []).filter(a => !(a.opiHold && !(num(a.bal, 0) > 0))); s.accounts.forEach(a => { delete a.opiHold; });
-    s.flow.spendMode = 'pct'; s.flow.spendPct = 100;   // 은퇴 전 생활비 칸을 없앰: 세후 연봉 = 생활비
+    s.flow.spendMode = 'pct'; s.flow.spendPct = 100;
+    if (!Array.isArray(s.flow.must)) s.flow.must = [];
+    s.flow.must = s.flow.must.filter(e => e && s.accounts.some(a => a.id === e.acc)); s.flow.must.forEach(e => { if (!e.id) e.id = uid(); });
+    if (s.flow.on && !s.flow.mustV) {   // 한 번만: ‘꼭 넣는 돈’ 방식으로 바꿈(연금저축·IRP는 해마다 꼭, 남는 돈은 ISA → 일반계좌) · ISA는 가입 2년차로
+      const keep = (s.flow.alloc || []).filter(e => { const a = s.accounts.find(x => x.id === e.acc); return a && a.type !== 'pension_savings' && a.type !== 'irp'; });
+      setRecAlloc(s);
+      const have = {}; s.flow.alloc.forEach(e => { have[e.acc] = 1; });
+      keep.forEach(e => { if (!have[e.acc]) s.flow.alloc.push(e); });
+      s.accounts.forEach(a => { if (a.type !== 'isa') return; if (blank(a.isaMat)) a.isaMat = CY + 1; if (blank(a.isaStart)) a.isaStart = CY - 1; a.isaAfter = 'move'; });
+    }   // 은퇴 전 생활비 칸을 없앰: 세후 연봉 = 생활비
     s.flow.stock.on = false;   // 예전 ‘성과급 일부를 자사주로’ 설정은 삼성전자 OPI 계산으로 바뀌어 화면에 없으므로 끔
     const oo = fo.opi && typeof fo.opi === 'object' ? fo.opi : {};
     s.flow.opi = Object.assign(OPI_DEF(), oo);
@@ -3370,6 +3406,15 @@ function RetirementEngine() {
       <button class="xbtn" type="button" data-act="fdel" data-list="extra" data-id="${r.id}" aria-label="${esc(r.name || '항목')} 삭제">×</button>
     </div>`;
   }
+  function mustRow(e) {
+    const p = 'flow.must.' + e.id, cid = fid(p + '.company');
+    return `<div class="frow must" data-id="${e.id}">
+      <select class="sel acc" data-k="${p}.acc" data-re="cash" aria-label="꼭 넣는 계좌">${opt(allocTargets().map(x => [x.id, accName(x)]).concat(missingAccs()), e.acc)}</select>
+      ${amtIn(p + '.amt', e.amt, '해마다 넣는 금액', '만원/년', '0')}
+      <label class="co" for="${cid}"><input type="checkbox" id="${cid}" data-k="${p}.company"${e.company ? ' checked' : ''}> 회사가 넣어 줌</label>
+      <button class="xbtn" type="button" data-act="fdel" data-list="must" data-id="${e.id}" aria-label="꼭 넣는 돈 삭제">×</button>
+    </div>`;
+  }
   function allocRow(e, i, n) {
     const p = 'flow.alloc.' + e.id, a = state.accounts.find(x => x.id === e.acc);
     const ph = a ? (a.type === 'pension_savings' ? '600' : a.type === 'irp' ? '300' : a.type === 'isa' ? '2,000' : '제한 없음') : '';
@@ -3451,20 +3496,21 @@ function RetirementEngine() {
       <div class="adds"><button class="chip add" type="button" data-act="addExtra" data-kind="out">+ 지출 추가</button><button class="chip add" type="button" data-act="addExtra" data-kind="in">+ 수입 추가</button></div>
       ${chkF('금액에 물가 반영', 'flow.extraReal', F.extraReal !== false, '켜면 오늘 물가로 적은 금액을 그 해 물가로 올려요. 끄면 적은 금액 그대로(그 해 금액)예요.')}
       ${(state.loans || []).length ? chkF('은퇴 전 대출 원리금도 여윳자금에서 내기', 'flow.loans', F.loans !== false, '끄면 대출은 연봉(생활비) 안에서 갚는다고 봐요.') : ''}`;
-    h += `<div class="pro-only">` + subh('④ 세금·4대보험', segBtns('cashTax', 'flow', F.taxMode === 'rate' ? 'rate' : 'auto', [['auto', '자동 추정'], ['rate', '실효율 직접']], '세금 계산 방식'),
+    const tg = allocTargets(), list = F.alloc.filter(e => true);
+    h += `<div class="pro-only">` + subh('세금·4대보험', segBtns('cashTax', 'flow', F.taxMode === 'rate' ? 'rate' : 'auto', [['auto', '자동 추정'], ['rate', '실효율 직접']], '세금 계산 방식'),
       F.taxMode === 'rate' ? '연봉+성과급에 이 비율을 곱해 세금과 4대보험을 뺍니다. 원천징수영수증의 (결정세액 + 4대보험) ÷ 총급여로 구할 수 있어요.' : '2026년 세율·4대보험료율로 추정해요(근로소득공제·인적공제·4대보험 공제 → 기본세율 → 근로소득세액공제·표준세액공제, 지방세 10%).') +
       (F.taxMode === 'rate' ? `<div class="grid2">${numF('세금+4대보험 실효율', 'flow.taxRate', F.taxRate, '%', { step: 0.5 })}</div>` : '');
     h += `</div>`;
-    const tg = allocTargets(), list = F.alloc.filter(e => true);
-    h += `<div class="pro-only">` + subh('⑤ 넣는 순서와 한도', `<button class="chip add" type="button" data-act="allocRec">추천 순서로</button>`,
-      '위에서부터 채워요. 칸을 비우면 세액공제·법정 한도(연금저축 600만원, IRP 300만원, ISA 2,000만원)까지예요. 연금저축·IRP는 1인 합계 연 1,800만원, ISA는 연 2,000만원(못 넣은 한도는 이월)·계약당 1억원을 넘지 않게 맞춰요. 같은 계좌를 두 번 넣으면(예: 연금저축 추가 납입) 합쳐서 넣어요.') +
+    h += subh('④ 해마다 꼭 넣는 돈', '', '여윳자금이 얼마든 해마다 들어가요. 내 돈이면 여윳자금에서 먼저 빠지고, 모자라면 일반계좌에서 꺼내요. ‘회사가 넣어 줌’은 내 돈이 나가지 않는 입금이에요(세액공제는 받는 것으로 계산).') +
+      `<div class="flist">${(F.must || []).map(mustRow).join('') || '<div class="empty">없으면 비워 두세요.</div>'}</div>
+      <div class="adds">${tg.length ? '<button class="chip add" type="button" data-act="addMust">+ 꼭 넣는 돈 추가</button>' : ''}<button class="chip add" type="button" data-act="allocRec">기본값으로</button></div>`;
+    h += subh('⑤ 남는 돈 넣는 순서', '', '꼭 넣는 돈을 뺀 여윳돈을 위에서부터 채우고, 그래도 남으면 일반계좌(해외 ETF)에 넣어요. 칸을 비우면 한도(ISA 연 2,000만원·이월)까지예요.') +
       `<div class="flist">${list.map((e, i) => allocRow(e, i, list.length)).join('') || '<div class="empty">순서가 없으면 여윳자금을 모두 아래 ‘남는 돈 계좌’에 넣어요.</div>'}</div>
       <div class="adds">${tg.length ? '<button class="chip add" type="button" data-act="allocAdd">+ 순서 추가</button>' : ''}</div>
-      <div class="grid2">${selF('남는 돈 넣을 계좌', 'flow.rest', F.rest, [['', '자동(본인 해외 ETF 또는 잉여자금 계좌)']].concat(restTargets().map(a => [a.id, accName(a)])), { wide: true, hint: '순서대로 넣고 남는 돈, 연금계좌 세액공제 환급금, 은퇴 뒤에 파는 자사주. 모자라는 해에는 이 계좌부터 꺼내요.' })}</div>
+      <div class="pro-only"><div class="grid2">${selF('남는 돈 넣을 계좌', 'flow.rest', F.rest, [['', '자동(본인 해외 ETF 또는 잉여자금 계좌)']].concat(restTargets().map(a => [a.id, accName(a)])), { wide: true, hint: '순서대로 넣고 남는 돈, 연금계좌 세액공제 환급금, 은퇴 뒤에 파는 자사주. 모자라는 해에는 이 계좌부터 꺼내요.' })}</div>
       ${chkF('연금계좌 세액공제 환급금도 남는 돈 계좌에 넣기', 'flow.refund', F.refund !== false, '연말정산으로 돌려받는 돈(13.2% 또는 16.5%)을 그 해에 다시 투자한다고 봐요.')}
       </div>
-      <p class="hint simple-only">넣는 순서: 연금저축·IRP 세액공제 한도 → ISA → 연금저축 추가 납입 → 남는 돈은 일반계좌(고급 버전에서 바꿀 수 있어요).</p>
-      ${sp ? chkF('아내 ISA가 일반계좌보다 유리하면 자동으로 넣기', 'flow.autoSpIsa', F.autoSpIsa !== false, '연 2,000만원까지 · 계산해 보고 모자란 돈이 줄어들 때만 순서에 넣어요. ISA는 만기 뒤 각자의 연금저축으로 옮겨요.') : ''}
+
       <output class="derived" data-d="cash:preview"></output>`;
     $('#cash').innerHTML = h;
   }
@@ -3566,7 +3612,7 @@ function RetirementEngine() {
     // ISA: 만기 후 연금계좌로 옮길지, 그대로 둘지
     let isaSec = '';
     if (t === 'isa') isaSec = subh('만기 후', '', '만기 뒤 60일 안에 연금계좌로 옮기면 옮긴 돈의 10%(최대 300만원)를 추가로 세액공제 받아요. ‘해지해 일반계좌로’는 이익에 세금(비과세 한도 넘는 몫 9.9%)을 내고 일반계좌로 옮긴 뒤 새 ISA에 다시 넣어요. 은퇴 전 만기마다(3년) 반복합니다.') +
-      `<div class="grid2">${numF('만기 연도', p + '.isaMat', a.isaMat, '년', { ph: String(CY + 3), hint: '가입하고 3년 뒤' })}${selF('만기 후 처리', p + '.isaAfter', a.isaAfter || 'auto', [['auto', '유리한 쪽 자동'], ['move', '연금계좌로 옮기기'], ['cash', '해지해 일반계좌로(새로 가입)'], ['keep', 'ISA로 유지']])}</div>
+      `<div class="grid2">${numF('가입한 해', p + '.isaStart', a.isaStart, '년', { ph: '만기 3년 전', hint: '납입 한도(해마다 2,000만원씩 쌓임) 계산용' })}${numF('지금까지 넣은 원금', p + '.isaPaid', a.isaPaid, '만원', { ph: '잔액으로 추정', hint: '남은 한도와 세금 계산용' })}</div><div class="grid2">${numF('만기 연도', p + '.isaMat', a.isaMat, '년', { ph: String(CY + 3), hint: '이 해 12월에 해지 · 가입하고 3년 뒤' })}${selF('만기 후 처리', p + '.isaAfter', a.isaAfter || 'auto', [['auto', '유리한 쪽 자동'], ['move', '연금계좌로 옮기기'], ['cash', '해지해 일반계좌로(새로 가입)'], ['keep', 'ISA로 유지']])}</div>
       <output class="derived" data-d="isa:${a.id}"></output>`;
     // 세금 계산용(대부분 기본값 그대로 두면 되는 항목)
     let adv = '';
@@ -3614,11 +3660,11 @@ function RetirementEngine() {
     const F = state.flow;
     if (!F || !F.on) return `<div class="list">${A.map(accBlock).join('')}</div>`;
     const seen = {}, first = [];
-    (F.alloc || []).forEach(e => { const a = A.find(x => x.id === e.acc); if (a && !seen[a.id]) { seen[a.id] = 1; first.push(a); } });
+    (F.must || []).concat(F.alloc || []).forEach(e => { const a = A.find(x => x.id === e.acc); if (a && !seen[a.id]) { seen[a.id] = 1; first.push(a); } });
     const rest = A.find(a => a.id === F.rest) || A.find(a => a.type === 'taxable_foreign' && a.owner !== 'spouse');
     if (rest && !seen[rest.id]) { seen[rest.id] = 1; first.push(rest); }
     const others = A.filter(a => !seen[a.id]);
-    return (first.length ? `<div class="acc-grp"><b>여윳자금이 들어가는 계좌</b><small>2번 ‘넣는 순서’와 같은 순서 · 지금 잔액만 넣으면 돼요</small></div><div class="list">${first.map(accBlock).join('')}</div>` : '') +
+    return (first.length ? `<div class="acc-grp"><b>해마다 돈이 들어가는 계좌</b><small>2번의 ‘꼭 넣는 돈’ → ‘남는 돈 넣는 순서’와 같은 순서 · 지금 잔액만 넣으면 돼요</small></div><div class="list">${first.map(accBlock).join('')}</div>` : '') +
       (others.length ? `<div class="acc-grp"><b>그 밖의 계좌</b><small>퇴직연금, 넣는 순서에 없는 계좌</small></div><div class="list">${others.map(accBlock).join('')}</div>` : '') +
       `<div class="acc-grp"><b>계좌가 더 있으면</b><small>아래에서 추가하세요. 여윳자금을 넣으려면 2번 ‘넣는 순서’에서 고르면 돼요.</small></div>`;
   }
@@ -3770,7 +3816,7 @@ function RetirementEngine() {
     const lines = rows.slice(0, 4).map(r => {
       const parts = Object.keys(r.alloc).map(id => `${esc(nameOf(id))} ${won(r.alloc[id], { nu: true })}`);
       if (r.rest > 0.5) parts.push(`${esc(restName)} ${won(r.rest, { nu: true })}`);
-      return `<li><b>${r.y}년</b> 여윳자금 ${r.fc < 0 ? `<span class="neg">${won(r.fc)}</span> → ${esc(restName)} 등에서 꺼냄` : `<b>${won(r.fc)}</b>${parts.length ? ' → ' + parts.join(' · ') : ''}`}</li>`;
+      return `<li><b>${r.y}년</b> ${(r.must || 0) + (r.comp || 0) > 0.5 ? `꼭 넣는 돈 ${won((r.must || 0) + (r.comp || 0), { nu: true })}${r.comp > 0.5 ? `(회사 ${won(r.comp, { nu: true })})` : ''} · 그 뒤 ` : ''}여윳자금 ${r.fc < 0 ? `<span class="neg">${won(r.fc)}</span> → ${esc(restName)} 등에서 꺼냄` : `<b>${won(r.fc)}</b>${parts.length ? ' → ' + parts.join(' · ') : ''}`}</li>`;
     }).join('');
     let pen = 0, isa = 0, gen = 0, def = 0, nDef = 0, cr = 0;
     rows.forEach(r => {
@@ -4014,7 +4060,7 @@ function RetirementEngine() {
   // 배우자 ISA에 연 2,000만원 넣는 쪽이 일반계좌보다 유리하면 순서에 자동으로 넣음(자동으로 넣은 줄만 다시 뺌)
   function autoSpIsa() {
     const F = state.flow, L = lastExtra && lastExtra.alloc;
-    if (!F.on || F.autoSpIsa === false || !L) return false;
+    if (!F.on || F.autoSpIsa !== true || !L) return false;   // 넣는 순서를 직접 정하므로 자동 변경은 끔
     const cur = L.find(v => v.id === 'cur'), on = L.find(v => v.id === 'spIsaOn'), off = L.find(v => v.id === 'spIsaOff');
     if (!cur || !Number.isFinite(cur.gap)) return false;
     if (on && Number.isFinite(on.gap) && cur.gap - on.gap > 1e5 && state.accounts.some(a => a.id === on.accId)) {
@@ -4213,7 +4259,7 @@ function RetirementEngine() {
       }
       case 'del': {
         const list = state[b.dataset.list]; const i = list.findIndex(x => x.id === b.dataset.id); if (i >= 0) list.splice(i, 1);
-        if (b.dataset.list === 'accounts') { state.flow.alloc = state.flow.alloc.filter(e => e.acc !== b.dataset.id); if (state.flow.rest === b.dataset.id) state.flow.rest = ''; }
+        if (b.dataset.list === 'accounts') { state.flow.alloc = state.flow.alloc.filter(e => e.acc !== b.dataset.id); state.flow.must = (state.flow.must || []).filter(e => e.acc !== b.dataset.id); if (state.flow.rest === b.dataset.id) state.flow.rest = ''; }
         afterEdit(b.dataset.list === 'children' ? 'kids' : b.dataset.list === 'expenses' ? 'exp' : b.dataset.list === 'incomes' ? 'inc' : b.dataset.list === 'loans' ? 'loan' : 'acc'); break;
       }
       // 은퇴 전 여윳자금
@@ -4237,6 +4283,7 @@ function RetirementEngine() {
         break;
       }
       case 'allocRec': setRecAlloc(state); afterEdit('cash'); break;
+      case 'addMust': { const t = allocTargets().find(a => a.type === 'pension_savings' || a.type === 'irp') || allocTargets()[0]; if (!t) break; state.flow.must.push({ id: uid(), acc: t.id, amt: '', company: false }); afterEdit('cash'); break; }
       // 삼성전자 OPI
       case 'opiMode': {
         const O = state.flow.opi; O.on = b.dataset.mode === 'opi';
@@ -5236,10 +5283,10 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   function renderCashSum(R, rows) {
     const host = $('#cashSum'); if (!host) return;
     const c = w => manCell(w || 0), m = R.meta;
-    const L = rows.map(r => { const f = r.f, sold = f.sold[0] + f.sold[1]; return { y: f.y, age: f.y - m.birth[0], o1: f.net1 || 0, sold, psu: f.net3 || 0, tb: f.taxBack || 0, cash: (f.net1 || 0) + sold + (f.net3 || 0) + (f.taxBack || 0), sal: f.netS[0], sal2: R.flow.spIn === false ? 0 : f.netS[1], spend: f.spend + f.exOut + f.loan, save: r.pen + r.isa, gen: r.gen, hold: f.held || 0, w: r.fl.w }; });
+    const L = rows.map(r => { const f = r.f, sold = f.sold[0] + f.sold[1]; return { y: f.y, age: f.y - m.birth[0], o1: f.net1 || 0, sold, psu: f.net3 || 0, tb: f.taxBack || 0, cash: (f.net1 || 0) + sold + (f.net3 || 0) + (f.taxBack || 0), sal: f.netS[0], sal2: R.flow.spIn === false ? 0 : f.netS[1], spend: f.spend + f.exOut + f.loan, save: r.pen + r.isa, comp: f.comp || 0, gen: r.gen, hold: f.held || 0, w: r.fl.w }; });
     const has = k => L.some(x => x[k] > 0.5), T = k => L.reduce((t, x) => t + x[k], 0);
     const cols = [['o1', 'OPI1<br><span class="muted">세후 현금</span>', has('o1')], ['sold', '자사주 판 돈<br><span class="muted">OPI2</span>', has('sold')], ['psu', 'PSU<br><span class="muted">세후</span>', has('psu')], ['tb', 'OPI2 환급', has('tb')],
-      ['cash', '<b>성과금 현금화</b><br><span class="muted">합계</span>', has('cash')], ['sal', m.P > 1 ? '세후 연봉<br><span class="muted">본인</span>' : '세후 연봉', true], ['sal2', '세후 연봉<br><span class="muted">배우자</span>', has('sal2')], ['spend', '<b>소비</b><br><span class="muted">생활비·큰 지출</span>', true], ['save', '<b>연금·ISA 저축</b>', true], ['gen', '<b>일반계좌 납입</b>', true], ['hold', '삼성전자<br><span class="muted">주식 보유</span>', has('hold')], ['w', '모자라 꺼낸 돈', has('w')]].filter(x => x[2]);
+      ['cash', '<b>성과금 현금화</b><br><span class="muted">합계</span>', has('cash')], ['sal', m.P > 1 ? '세후 연봉<br><span class="muted">본인</span>' : '세후 연봉', true], ['sal2', '세후 연봉<br><span class="muted">배우자</span>', has('sal2')], ['spend', '<b>소비</b><br><span class="muted">생활비·큰 지출</span>', true], ['save', '<b>연금·ISA 저축</b>', true], ['comp', '그중 회사가<br><span class="muted">넣어 준 돈</span>', has('comp')], ['gen', '<b>일반계좌 납입</b>', true], ['hold', '삼성전자<br><span class="muted">주식 보유</span>', has('hold')], ['w', '모자라 꺼낸 돈', has('w')]].filter(x => x[2]);
     const bold = { cash: 1, spend: 1, save: 1, gen: 1 };
     host.innerHTML = `<div class="tbl-wrap"><table class="t sum-t"><thead><tr><th class="l sticky">연도</th>${cols.map(k => `<th>${k[1]}</th>`).join('')}</tr></thead><tbody>${
       L.map(x => `<tr><td class="l sticky">${x.y}<span class="muted"> ${x.age}세</span></td>${cols.map(k => `<td${k[0] === 'w' && x.w > 0.5 ? ' class="neg"' : ''}>${bold[k[0]] ? '<b>' + c(x[k[0]]) + '</b>' : c(x[k[0]])}</td>`).join('')}</tr>`).join('')
@@ -5798,6 +5845,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       <li><b>은퇴 전 여윳자금(2026년 기준)</b> — 여윳자금 = 세후 소득(연봉·성과급·자사주 매도) + 목돈 수입 − 생활비 − 큰 지출 − 대출 원리금. 세후 소득은 국민연금 4.75%(기준소득월액 상한 659만원), 건강보험 3.595%와 장기요양(건보료의 13.14%), 고용보험 0.9%를 빼고, 근로소득공제·인적공제(본인, 소득 없는 배우자, 20세 이하 자녀 1인 150만원)·4대보험료 공제 → 기본세율 → 근로소득세액공제·표준세액공제(13만원) → 지방소득세 10%로 추정합니다. 신용카드·의료비·교육비 등 다른 공제는 넣지 않아 실제보다 세금이 조금 많게(보수적으로) 나올 수 있고, 원천징수영수증의 실효율을 직접 넣을 수도 있습니다. 성과급은 연봉과 합친 세금에서 연봉만의 세금을 뺀 만큼(한계세율) 떼고, 자사주로 받는 몫은 받는 해에 세금을 내고 정한 햇수에 나눠 팔며(국내 상장주식 매매차익은 비과세로 봄), 은퇴 뒤에 파는 몫은 그 해 연말에 남는 돈 계좌로 들어갑니다.</li>
       <li><b>삼성전자 성과금(OPI, 본인만)</b> — 실적 연도의 DS 영업이익과 OPI1 지급률을 넣으면 그다음 해에 받는 몫을 계산합니다. OPI1 = 그 해 연봉 × 지급률(최대 50%)이고, 지금처럼 연봉과 합쳐 누진세율과 4대보험을 뗍니다. OPI2(DS 특별경영성과급) = 올해 연봉 × 소속별 지급률(DS 영업이익 370조원일 때 연봉의 몇 배, SSOPI 계산기와 같은 노조 추산값) × (영업이익 ÷ 370조원) × CL4 업적 배수이고, DS 영업이익이 2026~2028년 200조원, 2029~2035년 100조원 이상인 해만 나오며 2036년부터는 없다고 봅니다. OPI1·OPI2 모두 실적 다음 해 4월에 받는다고 보고(첫 지급 2027년), OPI2는 받을 때 소득세·지방소득세 49.5%와 건강·장기요양·고용보험료 4.967%(합계 54.467%)를 떼고 남은 45.533%를 자사주로 받아, 1/3은 받는 해, 1/3은 1년 뒤, 1/3은 2년 뒤(매도 제한이 풀리는 때)에 팝니다. 파는 값은 주가가 해마다 정한 비율(기본 −20%)로 변한다고 보고, 국내 상장주식 매매차익은 세금이 없다고 봅니다(증권거래세 등 작은 비용은 뺌). 받는 날 재직 중이어야 해서 은퇴하는 해에 나오는 몫은 넣지 않고, 은퇴할 때 매도 제한이 남은 자사주는 회사에 돌려준다고 봅니다(이미 낸 세금은 돌려받지 않는다고 봄 · 정년퇴직이면 ‘그대로 두고 풀리면 팖’을 고르세요). ‘연말정산 실효세율’을 고르면 연봉·OPI1·OPI2를 합친 누진세율로 다시 계산해 49.5%보다 덜 내야 하는 몫을 다음 해에 현금으로 돌려받습니다. 적지 않은 실적 연도는 0원으로 봅니다.</li>
       <li><b>PSU(성과연동 주식보상)</b> — 정한 해부터 해마다 정한 주식 수(기본 2028년부터 3해, 200주씩)를 받는다고 봅니다. 받는 해 주가는 넣은 ‘오늘 주가’에서 해마다 정한 비율(기본 −20%)로 변한다고 보고, 주가 × 주식 수를 근로소득으로 봐 연봉·OPI1에 얹은 누진세율과 4대보험을 뗀 뒤 받은 해에 바로 판다고 계산합니다. 재직 중인 해만 받습니다. 실제 주식 수는 2028년 10월 주가가 기준주가(85,385원)보다 오른 폭에 따라 0~2배로 정해지므로, 주가 가정에 맞는 수량인지 확인하세요. 고과는 해마다 평고과(1.0배)가 기본이고, 실적 연도별로 고른 배수를 그 해 OPI2에 곱합니다.</li>
+      <li><b>해마다 꼭 넣는 돈</b> — 정한 금액은 여윳자금이 얼마든 해마다 그 계좌에 들어갑니다(은퇴 전, 그 사람이 일하는 해까지). 내 돈으로 넣는 몫은 여윳자금에서 먼저 빼고, 모자라면 일반계좌 → 예금 → ISA 원금 순서로 꺼내 채웁니다. ‘회사가 넣어 줌’은 내 돈이 나가지 않고 계좌에만 들어가며, 연금계좌 세액공제 대상에 넣습니다. ISA는 ‘가입한 해’부터 해마다 2,000만원씩 쌓이는 한도에서 ‘지금까지 넣은 원금’을 뺀 만큼만 넣고, 만기 연도 12월에 해지해 각자의 연금저축으로 옮긴 뒤 다음 해에 새로 가입한다고 봅니다.</li>
       <li><b>넣는 순서와 한도</b> — 여윳자금은 정한 순서대로 해마다 연말에 넣습니다. 연금저축·IRP는 1인 합계 연 1,800만원, ISA는 계약마다 연 2,000만원(못 넣은 한도는 이월)·총 1억원(지금 잔액의 원금은 이미 넣은 것으로 봄)을 넘지 않고, 은퇴하는 해(그 사람이 퇴직하는 해)부터는 넣지 않습니다. 근로소득이 있는 사람은 연금저축 600만원·IRP 합산 900만원까지 세액공제(총급여 5,500만원 이하 16.5%, 초과 13.2%, 결정세액 한도)를 받아 환급금을 그 해 남는 돈 계좌에 넣고, 공제 한도를 넘는 납입은 ‘세액공제 안 받은 원금’으로 쌓여 나중에 세금 없이 꺼냅니다. 여윳자금이 모자라는 해는 연초에 남는 돈 계좌 → 다른 일반계좌 → 예금 → ISA 원금 순으로 꺼내고(해외주식 양도세 22%·1인 250만원 공제, 국내상장 해외ETF 15.4%), 연금계좌는 은퇴 전에 꺼내지 않습니다. 일하는 해에 1인 이자·배당이 2,000만원을 넘으면 넘는 몫을 근로소득과 합쳐 누진세율로 더 내고 소득월액 건보료(넘는 몫 × 7.19%, 장기요양 포함)도 내며, 그 뒤 3년은 ISA를 새로 열지 못해 만기 뒤 새 ISA를 미룹니다. 퇴직연금(연봉으로 계산)은 여기 연봉 ÷ 12를 회사가 넣는다고 봅니다(성과급 제외).</li>
       <li><b>계좌 배분 비교</b> — 여윳자금 계획을 켜면 같은 여윳자금으로 넣는 계좌만 바꿔(지금 순서·추천 순서·연금저축 추가 납입 없이·배우자 계좌 없이·모두 일반계좌에) 모자란 돈(필요자금 − 은퇴할 때 예상 자산)을 비교합니다. ISA 만기 후 처리의 ‘유리한 쪽 자동’도 연금계좌로 옮기기·유지에 더해 ‘해지해 일반계좌로(새로 가입)’까지 비교합니다.</li>
       <li><b>필요자금</b> — 은퇴하는 해 연초 자산을 계좌 구성 비율 그대로 늘리거나 줄여, 계획 종료 해까지 한 해도 모자라지 않는 가장 작은 금액을 찾습니다. 리밸런싱을 켜면 계좌별 은퇴 후 수익률을 은퇴 시점 잔액으로 평균 낸 값(${R.planCur.blendRate != null ? pct(R.planCur.blendRate) : '—'})으로 모든 계좌가 굴러갑니다.</li>
