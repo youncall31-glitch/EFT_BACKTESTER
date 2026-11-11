@@ -1151,10 +1151,10 @@ body.choosing .top{border-bottom:0}
         </div>
 
         <details class="card fold" id="cardCashTbl" data-fold="cash" hidden>
-          <summary class="fold-h"><span class="fold-tt"><h2>은퇴 전 여윳자금 표</h2><span class="fold-s" id="fsCash">해마다 연봉·성과급·세금·생활비와 계좌별 납입</span></span></summary>
+          <summary class="fold-h"><span class="fold-tt"><h2>은퇴 전 여윳자금 표</h2><span class="fold-s" id="fsCash">해마다 성과급·세금과 계좌별 납입</span></span></summary>
           <div class="fold-b">
             <div class="toolbar"><button class="btn" type="button" data-act="cashCsv">CSV로 저장</button></div>
-            <p class="desc"><span class="unit">단위: 만원 · 그 해 금액</span> · 여윳자금 = 세후 소득(연봉·성과급·자사주 매도) + 목돈 수입 − 생활비 − 큰 지출 − 대출 원리금. 남는 돈에는 연금계좌 세액공제 환급금이 들어 있고, 금융소득 추가 세금은 남는 돈에서 냅니다.</p>
+            <p class="desc"><span class="unit">단위: 만원 · 그 해 금액</span> · 세후 연봉은 은퇴 전 생활비로 그대로 쓴다고 보고 뺐어요(은퇴 후 생활비는 은퇴한 해부터만 빠져요). 여윳자금 = 성과금 세후(OPI1·자사주 매도·PSU) + 목돈 수입 − 큰 지출 − 대출 원리금 − 꼭 넣는 돈(내 돈). 남는 돈에는 연금계좌 세액공제 환급금이 들어 있고, 금융소득 추가 세금은 남는 돈에서 냅니다.</p>
             <div class="tbl-wrap plan-wrap"><table class="t" id="cashTbl"></table></div>
             <div class="io" id="cashOut" hidden></div>
           </div>
@@ -5359,10 +5359,10 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const hasStock = rows.some(r => r.f.sold[0] + r.f.sold[1] > 0.5), hasEx = rows.some(r => r.f.exOut > 0.5), hasIn = rows.some(r => r.f.exIn > 0.5), hasLoan = rows.some(r => r.f.loan > 0.5);
     const hasW = rows.some(r => r.fl.w > 0.5), hasX = rows.some(r => r.fl.finX > 0.5);
     const hasO1 = rows.some(r => (r.f.o1 || 0) > 0.5), hasO2 = rows.some(r => (r.f.o2 || 0) > 0.5), hasTB = rows.some(r => (r.f.taxBack || 0) > 0.5), hasO3 = rows.some(r => (r.f.o3 || 0) > 0.5), hasB = !(hasO1 || hasO2) || rows.some(r => r.f.bon[0] + r.f.bon[1] > 0.5);
-    let h = `<thead><tr><th class="l sticky">연도</th><th>나이</th><th>연봉</th>${hasB ? `<th>${hasO1 || hasO2 ? '그 밖의 성과급' : '성과급'}</th>` : ''}${hasO1 ? '<th>OPI1<br><span class="muted">세전</span></th>' : ''}${hasO2 ? '<th>OPI2<br><span class="muted">세전</span></th>' : ''}${hasO3 ? '<th>PSU<br><span class="muted">세전</span></th>' : ''}<th>세금</th><th>4대보험</th>${hasStock ? '<th>자사주 매도</th>' : ''}${hasTB ? '<th>OPI2 환급</th>' : ''}<th>세후 소득</th><th>생활비</th>${hasEx ? '<th>큰 지출</th>' : ''}${hasIn ? '<th>목돈 수입</th>' : ''}${hasLoan ? '<th>대출</th>' : ''}<th>여윳자금</th>${ids.map(id => `<th>${esc(nm(id))}</th>`).join('')}<th>남는 돈<br><span class="muted">${esc(cashRestName(R))}</span></th><th>세액공제 환급</th>${hasW ? '<th>꺼낸 돈</th>' : ''}${hasX ? '<th>금융소득 추가 세금·건보료</th>' : ''}</tr></thead><tbody>`;
+    let h = `<thead><tr><th class="l sticky">연도</th><th>나이</th><th>연봉<br><span class="muted">세전</span></th>${hasB ? `<th>${hasO1 || hasO2 ? '그 밖의 성과급' : '성과급'}</th>` : ''}${hasO1 ? '<th>OPI1<br><span class="muted">세전</span></th>' : ''}${hasO2 ? '<th>OPI2<br><span class="muted">세전</span></th>' : ''}${hasO3 ? '<th>PSU<br><span class="muted">세전</span></th>' : ''}<th>세금<br><span class="muted">연봉 포함</span></th><th>4대보험</th>${hasStock ? '<th>자사주 매도</th>' : ''}${hasTB ? '<th>OPI2 환급</th>' : ''}<th>성과금 세후<br><span class="muted">연봉 제외</span></th>${hasEx ? '<th>큰 지출</th>' : ''}${hasIn ? '<th>목돈 수입</th>' : ''}${hasLoan ? '<th>대출</th>' : ''}<th>여윳자금</th>${ids.map(id => `<th>${esc(nm(id))}</th>`).join('')}<th>남는 돈<br><span class="muted">${esc(cashRestName(R))}</span></th><th>세액공제 환급</th>${hasW ? '<th>꺼낸 돈</th>' : ''}${hasX ? '<th>금융소득 추가 세금·건보료</th>' : ''}</tr></thead><tbody>`;
     rows.forEach(r => {
       const f = r.f;
-      h += `<tr class="${f.fc < 0 ? 'short' : ''}"><td class="l sticky">${f.y}</td><td>${f.y - m.birth[0]}${two ? '·' + (f.y - m.birth[1]) : ''}</td><td>${c(f.sal[0] + f.sal[1])}</td>${hasB ? `<td>${c(f.bon[0] + f.bon[1])}</td>` : ''}${hasO1 ? `<td>${c(f.o1)}</td>` : ''}${hasO2 ? `<td>${c(f.o2)}</td>` : ''}${hasO3 ? `<td>${c(f.o3)}</td>` : ''}<td>${c(f.tax[0] + f.tax[1])}</td><td>${c(f.ins[0] + f.ins[1])}</td>${hasStock ? `<td>${c(f.sold[0] + f.sold[1])}</td>` : ''}${hasTB ? `<td>${c(f.taxBack)}</td>` : ''}<td>${c(f.inc)}</td><td>${c(f.spend)}</td>${hasEx ? `<td>${c(f.exOut)}</td>` : ''}${hasIn ? `<td>${c(f.exIn)}</td>` : ''}${hasLoan ? `<td>${c(f.loan)}</td>` : ''}<td class="${f.fc < 0 ? 'neg' : ''}"><b>${f.fc < 0 ? '−' + c(-f.fc) : c(f.fc)}</b></td>${ids.map(id => `<td>${c(f.alloc[id])}</td>`).join('')}<td>${c(r.fl.rest)}</td><td>${c(f.refund)}</td>${hasW ? `<td>${c(r.fl.w)}</td>` : ''}${hasX ? `<td>${c(r.fl.finX)}</td>` : ''}</tr>`;
+      h += `<tr class="${f.fc < 0 ? 'short' : ''}"><td class="l sticky">${f.y}</td><td>${f.y - m.birth[0]}${two ? '·' + (f.y - m.birth[1]) : ''}</td><td>${c(f.sal[0] + f.sal[1])}</td>${hasB ? `<td>${c(f.bon[0] + f.bon[1])}</td>` : ''}${hasO1 ? `<td>${c(f.o1)}</td>` : ''}${hasO2 ? `<td>${c(f.o2)}</td>` : ''}${hasO3 ? `<td>${c(f.o3)}</td>` : ''}<td>${c(f.tax[0] + f.tax[1])}</td><td>${c(f.ins[0] + f.ins[1])}</td>${hasStock ? `<td>${c(f.sold[0] + f.sold[1])}</td>` : ''}${hasTB ? `<td>${c(f.taxBack)}</td>` : ''}<td>${c(f.inc - f.spend)}</td>${hasEx ? `<td>${c(f.exOut)}</td>` : ''}${hasIn ? `<td>${c(f.exIn)}</td>` : ''}${hasLoan ? `<td>${c(f.loan)}</td>` : ''}<td class="${f.fc < 0 ? 'neg' : ''}"><b>${f.fc < 0 ? '−' + c(-f.fc) : c(f.fc)}</b></td>${ids.map(id => `<td>${c(f.alloc[id])}</td>`).join('')}<td>${c(r.fl.rest)}</td><td>${c(f.refund)}</td>${hasW ? `<td>${c(r.fl.w)}</td>` : ''}${hasX ? `<td>${c(r.fl.finX)}</td>` : ''}</tr>`;
     });
     host.innerHTML = h + '</tbody>';
   }
@@ -5372,12 +5372,12 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const q = s => '"' + String(s).replace(/"/g, '""') + '"';
     const nm = id => { const a = state.accounts.find(x => x.id === id); return a ? accName(a) : id; };
     const c = w => Math.round((w || 0) / MAN);
-    const head = ['연도', '본인 나이', '본인 연봉', '배우자 연봉', '본인 성과급', '배우자 성과급', '본인 OPI1(세전)', '본인 OPI2(세전)', '본인 PSU(세전)', '세금', '4대보험', '자사주 매도', 'OPI2 연말정산 환급', '세후 소득', '생활비', '큰 지출', '목돈 수입', '대출 원리금', '여윳자금']
+    const head = ['연도', '본인 나이', '본인 연봉', '배우자 연봉', '본인 성과급', '배우자 성과급', '본인 OPI1(세전)', '본인 OPI2(세전)', '본인 PSU(세전)', '세금', '4대보험', '자사주 매도', 'OPI2 연말정산 환급', '성과금 세후(연봉 제외)', '큰 지출', '목돈 수입', '대출 원리금', '여윳자금']
       .concat(ids.map(id => '넣음: ' + nm(id)), ['남는 돈: ' + cashRestName(R), '세액공제 환급', '모자라서 꺼낸 돈', '꺼낼 때 세금', '그래도 모자란 돈', '금융소득 추가 세금·건보료']);
     const lines = [q('DK 은퇴계산기 · 은퇴 전 여윳자금 · 단위 만원 · 그 해 금액'), head.map(q).join(',')];
     rows.forEach(r => {
       const f = r.f;
-      lines.push([f.y, f.y - m.birth[0], c(f.sal[0]), c(f.sal[1]), c(f.bon[0]), c(f.bon[1]), c(f.o1), c(f.o2), c(f.o3), c(f.tax[0] + f.tax[1]), c(f.ins[0] + f.ins[1]), c(f.sold[0] + f.sold[1]), c(f.taxBack), c(f.inc), c(f.spend), c(f.exOut), c(f.exIn), c(f.loan), c(f.fc)]
+      lines.push([f.y, f.y - m.birth[0], c(f.sal[0]), c(f.sal[1]), c(f.bon[0]), c(f.bon[1]), c(f.o1), c(f.o2), c(f.o3), c(f.tax[0] + f.tax[1]), c(f.ins[0] + f.ins[1]), c(f.sold[0] + f.sold[1]), c(f.taxBack), c(f.inc - f.spend), c(f.exOut), c(f.exIn), c(f.loan), c(f.fc)]
         .concat(ids.map(id => c(f.alloc[id])), [c(r.fl.rest), c(f.refund), c(r.fl.w), c(r.fl.tax), c(r.fl.short), c(r.fl.finX)]).join(','));
     });
     exportText('은퇴자금-여윳자금.csv', '﻿' + lines.join('\n'), 'csv', 'cashOut');
