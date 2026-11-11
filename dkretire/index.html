@@ -996,6 +996,9 @@ body.choosing .top{border-bottom:0}
 /* v2: 꼭 넣는 돈 */
 .frow.must .co{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;white-space:nowrap}
 .frow.must .co input{width:18px;height:18px}
+/* v2: 몇 년까지 */
+.frow.alloc .yrs.to{display:inline-flex;align-items:center;gap:4px}
+.frow.alloc .yrs.to small{font-size:11.5px;opacity:.7;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1761,6 +1764,8 @@ function RetirementEngine() {
         const p = (r.who === 'spouse' && hasSp) ? 1 : 0;
         for (let y = Math.max(y0, cy); y <= Math.min(y1, endYear); y++) if (y < Math.min(ownRet[p], retYear)) bon[p][idx(y)] += amt;
       });
+      // ‘올해 넣을 돈은 이미 넣음’: 잔액은 오늘 기준 → 올해는 소득·지출·입금을 계산하지 않고, 남은 기간만큼만 불어남
+      const skipCur = F.curDone !== false && Number.isFinite(S.yearLeft), curFrac = skipCur ? Math.max(0, Math.min(1, S.yearLeft)) : 1;
       const exIn = new Float64Array(N), exOut = new Float64Array(N), exReal = F.extraReal !== false;
       (Array.isArray(F.extra) ? F.extra : []).forEach(r => {
         if (!r) return; const amt = num(r.amt, 0) * MAN; if (!(amt > 0)) return;
@@ -1839,6 +1844,7 @@ function RetirementEngine() {
       const restA = restOk(byId[F.rest]) ? byId[F.rest] : (accounts.find(a => a.group === 'FOR' && a.owner === 0) || accounts.find(a => restOk(a) && a.owner === 0) || accounts.find(restOk) || null);
       const restId = restA ? restA.id : 'auto_reinv0';
       const rows = [];
+      if (skipCur) { sal[0][0] = sal[1][0] = bon[0][0] = bon[1][0] = 0; exIn[0] = exOut[0] = 0; }
       for (let i = 0; i < ri; i++) {
         const y = years[i];
         // ISA 만기 뒤(연금계좌로 옮기는 경우) 새 계약은 다음 해부터 — 한도 새로 시작
@@ -1883,13 +1889,16 @@ function RetirementEngine() {
         const spend = F.spendMode === 'pct'
           ? Math.max(0, num(F.spendPct, 100)) / 100 * (pp[0].netS + (spIn ? pp[1].netS : 0))
           : Math.max(0, num(F.spendMonthly, 0)) * MAN * 12 * factor(infl, y);
-        const loanY = F.loans === false ? 0 : loanPre[i];
+        const cur0 = skipCur && i === 0;
+        const loanY = (F.loans === false || cur0) ? 0 : loanPre[i];
         if (holdAcc && heldY[i] > 0) holdAcc.flowSched[i] += heldY[i];
         const alloc = {}; const penUsed = [0, 0], psAmt = [0, 0], irpAmt = [0, 0];
         let mustOwn = 0, compIn = 0;
         for (const e of mustList) {
+          if (cur0) break;
           const a = byId[e.acc];
           if (y >= Math.min(a.ownerRet, retYear)) continue;
+          if (!(e.to === '' || e.to == null) && y > Math.round(num(e.to, Infinity))) continue;   // ‘몇 년까지’만 넣기
           let t = Math.max(0, num(e.amt, 0) * MAN);
           if (a.group === 'PEN') t = Math.min(t, C.PEN_CAP - penUsed[a.owner]);
           if (a.group === 'ISA') t = Math.min(t, isaRoom(isaSt[a.id], y));
@@ -1905,6 +1914,7 @@ function RetirementEngine() {
           if (!(left > 0.5)) break;
           const a = byId[e.acc];
           if (y >= Math.min(a.ownerRet, retYear)) continue;
+          if (!(e.to === '' || e.to == null) && y > Math.round(num(e.to, Infinity))) continue;   // ‘몇 년까지’만 넣기
           let cap = (e.max === '' || e.max == null) ? defCap(a) : Math.max(0, num(e.max, 0) * MAN);
           if (a.group === 'PEN') cap = Math.min(cap, C.PEN_CAP - penUsed[a.owner]);
           if (a.group === 'ISA') cap = Math.min(cap, isaRoom(isaSt[a.id], y));
@@ -1943,7 +1953,7 @@ function RetirementEngine() {
         let s = 0, n = 0; for (let i = 0; i < Math.min(ri, N); i++) { if (years[i] < Math.min(a.ownerRet, retYear)) { s += a.flowSched[i]; n++; } }
         a.contribAvg = n ? s / n : 0; a.contrib = 0; a.sched = null;
       });
-      return { rows, restId, rest, deficit, postIn, postHold, base, nPre: ri, spIn, opi: O ? { perf: Object.keys(opi.perf).map(Number).sort((a, b) => a - b).map(k => opi.perf[k]), psu: opi.psu, g: opiG, dept: O.dept } : null };
+      return { rows, restId, rest, deficit, postIn, postHold, curFrac, base, nPre: ri, spIn, opi: O ? { perf: Object.keys(opi.perf).map(Number).sort((a, b) => a - b).map(k => opi.perf[k]), psu: opi.psu, g: opiG, dept: O.dept } : null };
     }
 
     // 연금계좌 납입 중 세액공제 한도(1인 연금저축 600만원, IRP 합산 900만원)를 넘는 몫은 '세액공제 안 받은 원금'으로 쌓임
@@ -2390,6 +2400,8 @@ function RetirementEngine() {
       }
       // 운용수익 (검산용: 계좌 안에서 떼는 배당·이자세, 굴리지 않는 DB 잔액도 기록)
       let divTax = 0, noGrow = 0;
+      const cf = (i === 0 && FL && FL.curFrac < 1 && !isRet) ? FL.curFrac : 1; let svR = null;
+      if (cf < 1) { svR = A.map(a => [a.cagr, a.div, a.depRate]); for (const a of A) { a.cagr = Math.pow(1 + a.cagr, cf) - 1; a.div *= cf; if (a.depRate != null) a.depRate = Math.pow(1 + a.depRate, cf) - 1; } }
       for (const a of A) {
         if (!(a.bal > 0)) continue;
         const g = a.group;
@@ -2418,6 +2430,7 @@ function RetirementEngine() {
           if (a.group === 'PEN' && a.ndSched) a.nd += a.ndSched[i];
         }
       }
+      if (svR) A.forEach((a, j) => { a.cagr = svR[j][0]; a.div = svR[j][1]; a.depRate = svR[j][2]; });
       // 여윳자금 계획의 연말 납입: 순서대로 정한 금액 → 각 계좌, 남는 돈(+세액공제 환급) → 남는 돈 계좌
       if (fl) {
         let add = FL.rest[i];
@@ -2897,7 +2910,7 @@ function RetirementEngine() {
   const FLOW_DEF = () => ({
     on: false, self: { salary: '', growth: 3, cap: '' }, spouse: { salary: '', growth: 3, cap: '' }, spouseIn: true,
     bonus: [], stock: { on: false, cashPct: 50, years: 3, drift: 0 }, taxMode: 'auto', taxRate: 30,
-    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], must: [], rest: '',
+    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], must: [], curDone: true, rest: '',
     opi: OPI_DEF()
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
@@ -3147,6 +3160,7 @@ function RetirementEngine() {
   function engineState() {
     const s = clone(state);
     s.currentYear = CY;
+    { const d = new Date(); s.yearLeft = d.getFullYear() === CY ? Math.max(0, Math.min(1, (new Date(CY + 1, 0, 1) - d) / (365.25 * 864e5))) : 1; }   // 올해 남은 기간(잔액을 오늘 기준으로 볼 때)
     s.accounts.forEach(a => { if (a.cagrMode === 'mix') { a.cagr = mixCagr(a.stockPct); a.cagrPost = blank(a.stockPctPost) ? '' : mixCagr(a.stockPctPost); } });
     // 내 포트폴리오: 예금을 뺀 모든 계좌가 같은 수익률(은퇴 후 값을 비우면 은퇴 전과 같음)
     if (s.pf && s.pf.on) s.accounts.forEach(a => { if (a.type === 'deposit' || a.opiHold) return; a.cagrMode = 'direct'; a.cagr = num(s.pf.cagr, 7); a.cagrPost = blank(s.pf.cagrPost) ? '' : num(s.pf.cagrPost, 7); });
@@ -3422,6 +3436,7 @@ function RetirementEngine() {
       <span class="no" aria-hidden="true">${i + 1}</span>
       <select class="sel acc" data-k="${p}.acc" data-re="cash" aria-label="${i + 1}번째로 넣을 계좌">${a ? '' : '<option value="">계좌 고르기</option>'}${opt(allocTargets().map(x => [x.id, accName(x)]).concat(missingAccs()), e.acc)}</select>
       ${amtIn(p + '.max', e.max, `${i + 1}번째 계좌에 넣을 최대 금액(연)`, '만원/년', ph)}
+      <span class="yrs to"><span class="til" aria-hidden="true">~</span>${yearIn(p + '.to', e.to, `${i + 1}번째 계좌에 넣는 마지막 해(비우면 은퇴 전까지)`, '은퇴 전')}<small>년까지</small></span>
       <span class="mvs"><button class="mv" type="button" data-act="allocUp" data-id="${e.id}" aria-label="위로"${i === 0 ? ' disabled' : ''}>↑</button><button class="mv" type="button" data-act="allocDown" data-id="${e.id}" aria-label="아래로"${i === n - 1 ? ' disabled' : ''}>↓</button></span>
       <button class="xbtn" type="button" data-act="fdel" data-list="alloc" data-id="${e.id}" aria-label="${i + 1}번째 순서 삭제">×</button>
     </div>`;
@@ -3501,10 +3516,11 @@ function RetirementEngine() {
       F.taxMode === 'rate' ? '연봉+성과급에 이 비율을 곱해 세금과 4대보험을 뺍니다. 원천징수영수증의 (결정세액 + 4대보험) ÷ 총급여로 구할 수 있어요.' : '2026년 세율·4대보험료율로 추정해요(근로소득공제·인적공제·4대보험 공제 → 기본세율 → 근로소득세액공제·표준세액공제, 지방세 10%).') +
       (F.taxMode === 'rate' ? `<div class="grid2">${numF('세금+4대보험 실효율', 'flow.taxRate', F.taxRate, '%', { step: 0.5 })}</div>` : '');
     h += `</div>`;
+    h += chkF(`올해(${CY}년) 넣을 돈은 이미 다 넣었어요`, 'flow.curDone', F.curDone !== false, `켜면 3번에 적은 잔액을 오늘 기준으로 보고, 올해는 더 넣지 않고 남은 기간만큼만 불어난다고 계산해요. 입금은 ${CY + 1}년부터예요.`);
     h += subh('④ 해마다 꼭 넣는 돈', '', '여윳자금이 얼마든 해마다 들어가요. 내 돈이면 여윳자금에서 먼저 빠지고, 모자라면 일반계좌에서 꺼내요. ‘회사가 넣어 줌’은 내 돈이 나가지 않는 입금이에요(세액공제는 받는 것으로 계산).') +
       `<div class="flist">${(F.must || []).map(mustRow).join('') || '<div class="empty">없으면 비워 두세요.</div>'}</div>
       <div class="adds">${tg.length ? '<button class="chip add" type="button" data-act="addMust">+ 꼭 넣는 돈 추가</button>' : ''}<button class="chip add" type="button" data-act="allocRec">기본값으로</button></div>`;
-    h += subh('⑤ 남는 돈 넣는 순서', '', '꼭 넣는 돈을 뺀 여윳돈을 위에서부터 채우고, 그래도 남으면 일반계좌(해외 ETF)에 넣어요. 칸을 비우면 한도(ISA 연 2,000만원·이월)까지예요.') +
+    h += subh('⑤ 남는 돈 넣는 순서', '', '꼭 넣는 돈을 뺀 여윳돈을 위에서부터 채우고, 그래도 남으면 일반계좌(해외 ETF)에 넣어요. 금액 칸을 비우면 한도(ISA 연 2,000만원·이월)까지, 연도 칸을 비우면 은퇴 전까지 넣어요.') +
       `<div class="flist">${list.map((e, i) => allocRow(e, i, list.length)).join('') || '<div class="empty">순서가 없으면 여윳자금을 모두 아래 ‘남는 돈 계좌’에 넣어요.</div>'}</div>
       <div class="adds">${tg.length ? '<button class="chip add" type="button" data-act="allocAdd">+ 순서 추가</button>' : ''}</div>
       <div class="pro-only"><div class="grid2">${selF('남는 돈 넣을 계좌', 'flow.rest', F.rest, [['', '자동(본인 해외 ETF 또는 잉여자금 계좌)']].concat(restTargets().map(a => [a.id, accName(a)])), { wide: true, hint: '순서대로 넣고 남는 돈, 연금계좌 세액공제 환급금, 은퇴 뒤에 파는 자사주. 모자라는 해에는 이 계좌부터 꺼내요.' })}</div>
@@ -5845,7 +5861,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       <li><b>은퇴 전 여윳자금(2026년 기준)</b> — 여윳자금 = 세후 소득(연봉·성과급·자사주 매도) + 목돈 수입 − 생활비 − 큰 지출 − 대출 원리금. 세후 소득은 국민연금 4.75%(기준소득월액 상한 659만원), 건강보험 3.595%와 장기요양(건보료의 13.14%), 고용보험 0.9%를 빼고, 근로소득공제·인적공제(본인, 소득 없는 배우자, 20세 이하 자녀 1인 150만원)·4대보험료 공제 → 기본세율 → 근로소득세액공제·표준세액공제(13만원) → 지방소득세 10%로 추정합니다. 신용카드·의료비·교육비 등 다른 공제는 넣지 않아 실제보다 세금이 조금 많게(보수적으로) 나올 수 있고, 원천징수영수증의 실효율을 직접 넣을 수도 있습니다. 성과급은 연봉과 합친 세금에서 연봉만의 세금을 뺀 만큼(한계세율) 떼고, 자사주로 받는 몫은 받는 해에 세금을 내고 정한 햇수에 나눠 팔며(국내 상장주식 매매차익은 비과세로 봄), 은퇴 뒤에 파는 몫은 그 해 연말에 남는 돈 계좌로 들어갑니다.</li>
       <li><b>삼성전자 성과금(OPI, 본인만)</b> — 실적 연도의 DS 영업이익과 OPI1 지급률을 넣으면 그다음 해에 받는 몫을 계산합니다. OPI1 = 그 해 연봉 × 지급률(최대 50%)이고, 지금처럼 연봉과 합쳐 누진세율과 4대보험을 뗍니다. OPI2(DS 특별경영성과급) = 올해 연봉 × 소속별 지급률(DS 영업이익 370조원일 때 연봉의 몇 배, SSOPI 계산기와 같은 노조 추산값) × (영업이익 ÷ 370조원) × CL4 업적 배수이고, DS 영업이익이 2026~2028년 200조원, 2029~2035년 100조원 이상인 해만 나오며 2036년부터는 없다고 봅니다. OPI1·OPI2 모두 실적 다음 해 4월에 받는다고 보고(첫 지급 2027년), OPI2는 받을 때 소득세·지방소득세 49.5%와 건강·장기요양·고용보험료 4.967%(합계 54.467%)를 떼고 남은 45.533%를 자사주로 받아, 1/3은 받는 해, 1/3은 1년 뒤, 1/3은 2년 뒤(매도 제한이 풀리는 때)에 팝니다. 파는 값은 주가가 해마다 정한 비율(기본 −20%)로 변한다고 보고, 국내 상장주식 매매차익은 세금이 없다고 봅니다(증권거래세 등 작은 비용은 뺌). 받는 날 재직 중이어야 해서 은퇴하는 해에 나오는 몫은 넣지 않고, 은퇴할 때 매도 제한이 남은 자사주는 회사에 돌려준다고 봅니다(이미 낸 세금은 돌려받지 않는다고 봄 · 정년퇴직이면 ‘그대로 두고 풀리면 팖’을 고르세요). ‘연말정산 실효세율’을 고르면 연봉·OPI1·OPI2를 합친 누진세율로 다시 계산해 49.5%보다 덜 내야 하는 몫을 다음 해에 현금으로 돌려받습니다. 적지 않은 실적 연도는 0원으로 봅니다.</li>
       <li><b>PSU(성과연동 주식보상)</b> — 정한 해부터 해마다 정한 주식 수(기본 2028년부터 3해, 200주씩)를 받는다고 봅니다. 받는 해 주가는 넣은 ‘오늘 주가’에서 해마다 정한 비율(기본 −20%)로 변한다고 보고, 주가 × 주식 수를 근로소득으로 봐 연봉·OPI1에 얹은 누진세율과 4대보험을 뗀 뒤 받은 해에 바로 판다고 계산합니다. 재직 중인 해만 받습니다. 실제 주식 수는 2028년 10월 주가가 기준주가(85,385원)보다 오른 폭에 따라 0~2배로 정해지므로, 주가 가정에 맞는 수량인지 확인하세요. 고과는 해마다 평고과(1.0배)가 기본이고, 실적 연도별로 고른 배수를 그 해 OPI2에 곱합니다.</li>
-      <li><b>해마다 꼭 넣는 돈</b> — 정한 금액은 여윳자금이 얼마든 해마다 그 계좌에 들어갑니다(은퇴 전, 그 사람이 일하는 해까지). 내 돈으로 넣는 몫은 여윳자금에서 먼저 빼고, 모자라면 일반계좌 → 예금 → ISA 원금 순서로 꺼내 채웁니다. ‘회사가 넣어 줌’은 내 돈이 나가지 않고 계좌에만 들어가며, 연금계좌 세액공제 대상에 넣습니다. ISA는 ‘가입한 해’부터 해마다 2,000만원씩 쌓이는 한도에서 ‘지금까지 넣은 원금’을 뺀 만큼만 넣고, 만기 연도 12월에 해지해 각자의 연금저축으로 옮긴 뒤 다음 해에 새로 가입한다고 봅니다.</li>
+      <li><b>해마다 꼭 넣는 돈</b> — 정한 금액은 여윳자금이 얼마든 해마다 그 계좌에 들어갑니다(은퇴 전, 그 사람이 일하는 해까지). 내 돈으로 넣는 몫은 여윳자금에서 먼저 빼고, 모자라면 일반계좌 → 예금 → ISA 원금 순서로 꺼내 채웁니다. ‘회사가 넣어 줌’은 내 돈이 나가지 않고 계좌에만 들어가며, 연금계좌 세액공제 대상에 넣습니다. ‘올해 넣을 돈은 이미 넣음’을 켜면 올해는 소득·지출·입금을 계산하지 않고 잔액이 올해 남은 기간만큼만 불어난다고 봅니다. ISA는 ‘가입한 해’부터 해마다 2,000만원씩 쌓이는 한도에서 ‘지금까지 넣은 원금’을 뺀 만큼만 넣고, 만기 연도 12월에 해지해 각자의 연금저축으로 옮긴 뒤 다음 해에 새로 가입한다고 봅니다.</li>
       <li><b>넣는 순서와 한도</b> — 여윳자금은 정한 순서대로 해마다 연말에 넣습니다. 연금저축·IRP는 1인 합계 연 1,800만원, ISA는 계약마다 연 2,000만원(못 넣은 한도는 이월)·총 1억원(지금 잔액의 원금은 이미 넣은 것으로 봄)을 넘지 않고, 은퇴하는 해(그 사람이 퇴직하는 해)부터는 넣지 않습니다. 근로소득이 있는 사람은 연금저축 600만원·IRP 합산 900만원까지 세액공제(총급여 5,500만원 이하 16.5%, 초과 13.2%, 결정세액 한도)를 받아 환급금을 그 해 남는 돈 계좌에 넣고, 공제 한도를 넘는 납입은 ‘세액공제 안 받은 원금’으로 쌓여 나중에 세금 없이 꺼냅니다. 여윳자금이 모자라는 해는 연초에 남는 돈 계좌 → 다른 일반계좌 → 예금 → ISA 원금 순으로 꺼내고(해외주식 양도세 22%·1인 250만원 공제, 국내상장 해외ETF 15.4%), 연금계좌는 은퇴 전에 꺼내지 않습니다. 일하는 해에 1인 이자·배당이 2,000만원을 넘으면 넘는 몫을 근로소득과 합쳐 누진세율로 더 내고 소득월액 건보료(넘는 몫 × 7.19%, 장기요양 포함)도 내며, 그 뒤 3년은 ISA를 새로 열지 못해 만기 뒤 새 ISA를 미룹니다. 퇴직연금(연봉으로 계산)은 여기 연봉 ÷ 12를 회사가 넣는다고 봅니다(성과급 제외).</li>
       <li><b>계좌 배분 비교</b> — 여윳자금 계획을 켜면 같은 여윳자금으로 넣는 계좌만 바꿔(지금 순서·추천 순서·연금저축 추가 납입 없이·배우자 계좌 없이·모두 일반계좌에) 모자란 돈(필요자금 − 은퇴할 때 예상 자산)을 비교합니다. ISA 만기 후 처리의 ‘유리한 쪽 자동’도 연금계좌로 옮기기·유지에 더해 ‘해지해 일반계좌로(새로 가입)’까지 비교합니다.</li>
       <li><b>필요자금</b> — 은퇴하는 해 연초 자산을 계좌 구성 비율 그대로 늘리거나 줄여, 계획 종료 해까지 한 해도 모자라지 않는 가장 작은 금액을 찾습니다. 리밸런싱을 켜면 계좌별 은퇴 후 수익률을 은퇴 시점 잔액으로 평균 낸 값(${R.planCur.blendRate != null ? pct(R.planCur.blendRate) : '—'})으로 모든 계좌가 굴러갑니다.</li>
