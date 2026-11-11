@@ -1199,7 +1199,7 @@ body.choosing .top{border-bottom:0}
           <summary class="fold-h"><span class="fold-tt"><h2>은퇴 전 여윳자금 표</h2><span class="fold-s" id="fsCash">해마다 성과급·세금과 계좌별 납입</span></span></summary>
           <div class="fold-b">
             <div class="toolbar"><button class="btn" type="button" data-act="cashCsv">CSV로 저장</button></div>
-            <p class="desc"><span class="unit">단위: 만원 · 그 해 금액</span> · 세후 연봉은 은퇴 전 생활비로 그대로 쓴다고 보고 뺐어요(은퇴 후 생활비는 은퇴한 해부터만 빠져요). 여윳자금 = 성과금 세후(OPI1·자사주 매도·PSU) + 목돈 수입 − 큰 지출 − 대출 원리금 − 꼭 넣는 돈(내 돈). 남는 돈에는 연금계좌 세액공제 환급금이 들어 있고, 금융소득 추가 세금은 남는 돈에서 냅니다.</p>
+            <p class="desc"><span class="unit">단위: 만원 · 그 해 금액</span> · 세후 연봉은 은퇴 전 생활비로 그대로 쓴다고 보고 뺐어요(은퇴 후 생활비는 은퇴한 해부터만 빠져요). 여윳자금 = 성과금 세후(OPI1·자사주 매도·PSU) + 목돈 수입 − 큰 지출 − 꼭 넣는 돈(내 돈). 은퇴 전 대출 원리금은 연봉에서 갚는다고 보고 넣지 않았어요. 남는 돈에는 연금계좌 세액공제 환급금이 들어 있고, 금융소득 추가 세금은 남는 돈에서 냅니다.</p>
             <div class="tbl-wrap plan-wrap"><table class="t" id="cashTbl"></table></div>
             <div class="io" id="cashOut" hidden></div>
           </div>
@@ -2969,7 +2969,7 @@ function RetirementEngine() {
   const FLOW_DEF = () => ({
     on: false, self: { salary: '', growth: 3, cap: '' }, spouse: { salary: '', growth: 3, cap: '' }, spouseIn: true,
     bonus: [], stock: { on: false, cashPct: 50, years: 3, drift: 0 }, taxMode: 'auto', taxRate: 30,
-    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: true, refund: true, dcLink: true, alloc: [], must: [], curDone: true, rest: '',
+    spendMode: 'pct', spendMonthly: '', spendPct: 100, extra: [], extraReal: true, loans: false, refund: true, dcLink: true, alloc: [], must: [], curDone: true, rest: '',
     opi: OPI_DEF()
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
@@ -3153,6 +3153,7 @@ function RetirementEngine() {
     s.mdd = Object.assign(MDD_DEF(), s.mdd && typeof s.mdd === 'object' ? s.mdd : {});
     s.accounts = (s.accounts || []).filter(a => !(a.opiHold && !(num(a.bal, 0) > 0))); s.accounts.forEach(a => { delete a.opiHold; });
     s.flow.spendMode = 'pct'; s.flow.spendPct = 100;
+    s.flow.loans = false;   // 은퇴 전 대출 원리금은 연봉에서 갚는 것으로 봄(성과금에서 빼는 기능은 없앰)
     if (!Array.isArray(s.flow.must)) s.flow.must = [];
     s.flow.must = s.flow.must.filter(e => e && s.accounts.some(a => a.id === e.acc)); s.flow.must.forEach(e => { if (!e.id) e.id = uid(); });
     if (s.flow.on && !s.flow.mustV) {   // 한 번만: ‘꼭 넣는 돈’ 방식으로 바꿈(연금저축·IRP는 해마다 꼭, 남는 돈은 ISA → 일반계좌) · ISA는 가입 2년차로
@@ -3433,7 +3434,7 @@ function RetirementEngine() {
     </div>`;
   }
   function renderLoan() {
-    $('#loan').innerHTML = `<p class="hint">은퇴 전까지는 지금처럼 월급으로 나눠 갚고, 은퇴하는 해에 그때 남은 원금을 모은 돈에서 한 번에 갚는 것이 기본이에요. 금리·만기·상환 방식은 ‘세부 설정’에 있어요.</p>
+    $('#loan').innerHTML = `<p class="hint">은퇴 전까지는 지금처럼 월급으로 나눠 갚는다고 보고 계산에서 빼지 않아요. 은퇴하는 해에 그때 남은 원금만 모은 돈에서 한 번에 갚는 것이 기본이에요. 금리·만기·상환 방식은 ‘세부 설정’에 있어요.</p>
       <div class="list">${(state.loans || []).map(loanItem).join('') || '<div class="empty">대출이 없으면 비워 두세요.</div>'}</div>
       <div class="adds">${Object.keys(LOAN_PRESETS).map(k => `<button class="chip" type="button" data-act="addLoan" data-preset="${esc(k)}">+ ${esc(k)}</button>`).join('')}</div>`;
   }
@@ -3571,8 +3572,7 @@ function RetirementEngine() {
     h += subh('③ 큰 지출·목돈 수입(있을 때만)', '', '세후 연봉은 생활비로 다 쓰고 성과급만 모은다고 봐요. 성과급에서 쓸 큰돈(자동차·이사·등록금)이나 따로 들어오는 목돈(연봉에서 모으는 돈·집 판 돈)만 여기에 넣어요.') +
       `<div class="flist">${F.extra.map(extraRow).join('') || '<div class="empty">없으면 비워 두세요.</div>'}</div>
       <div class="adds"><button class="chip add" type="button" data-act="addExtra" data-kind="out">+ 지출 추가</button><button class="chip add" type="button" data-act="addExtra" data-kind="in">+ 수입 추가</button></div>
-      ${chkF('금액에 물가 반영', 'flow.extraReal', F.extraReal !== false, '켜면 오늘 물가로 적은 금액을 그 해 물가로 올려요. 끄면 적은 금액 그대로(그 해 금액)예요.')}
-      ${(state.loans || []).length ? chkF('은퇴 전 대출 원리금도 여윳자금에서 내기', 'flow.loans', F.loans !== false, '끄면 대출은 연봉(생활비) 안에서 갚는다고 봐요.') : ''}`;
+      ${chkF('금액에 물가 반영', 'flow.extraReal', F.extraReal !== false, '켜면 오늘 물가로 적은 금액을 그 해 물가로 올려요. 끄면 적은 금액 그대로(그 해 금액)예요.')}`;
     const tg = allocTargets(), list = F.alloc.filter(e => true);
     h += `<div class="pro-only">` + subh('세금·4대보험', segBtns('cashTax', 'flow', F.taxMode === 'rate' ? 'rate' : 'auto', [['auto', '자동 추정'], ['rate', '실효율 직접']], '세금 계산 방식'),
       F.taxMode === 'rate' ? '연봉+성과급에 이 비율을 곱해 세금과 4대보험을 뺍니다. 원천징수영수증의 (결정세액 + 4대보험) ÷ 총급여로 구할 수 있어요.' : '2026년 세율·4대보험료율로 추정해요(근로소득공제·인적공제·4대보험 공제 → 기본세율 → 근로소득세액공제·표준세액공제, 지방세 10%).') +
