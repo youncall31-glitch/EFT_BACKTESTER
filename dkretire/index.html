@@ -1544,12 +1544,15 @@ function RetirementEngine() {
     const loans = [];
     const homeDedRaw = new Float64Array(N), jeonseDedRaw = new Float64Array(N);
     const loanPre = new Float64Array(N); // 은퇴 전 원리금(여윳자금 계획에서 뺄 때 씀)
+    const loanFreed = new Float64Array(N); // ‘은퇴 직전에 한 번에’로 해마다 갚지 않게 된 원금(여윳자금에 더함)
     (S.loans || []).forEach((l, li) => {
       const bal0 = Math.max(0, num(l.bal, 0) * MAN); if (!(bal0 > 0)) return;
       const id = l.id || ('loan' + li);
       const r = Math.max(0, num(l.rate, 4)) / 100, im = r / 12;
-      const endY = Math.max(cy, Math.round(num(l.endYear, cy + 20)));
-      const method = (l.method === 'principal' || l.method === 'bullet') ? l.method : 'annuity';
+      // ‘은퇴 직전에 한 번에’: 은퇴 전에는 이자만 내고, 은퇴하는 해에 남은 원금 전부를 모은 돈에서 갚음
+      const atRet = l.method === 'retire';
+      const endY = atRet ? Math.max(retYear, cy) : Math.max(cy, Math.round(num(l.endYear, cy + 20)));
+      const method = atRet ? 'bullet' : (l.method === 'principal' || l.method === 'bullet') ? l.method : 'annuity';
       const nTot = (endY - cy + 1) * 12, prinFix = bal0 / nTot;
       const balStart = new Float64Array(N), pay = new Float64Array(N), intr = new Float64Array(N);
       let B = bal0, m = 0, monthlyNow = 0;
@@ -1566,9 +1569,16 @@ function RetirementEngine() {
       }
       const kind = (l.kind === 'jeonse' || l.kind === 'other') ? l.kind : 'home';
       const ch = over.loanChoice && over.loanChoice[id] ? over.loanChoice[id] : l.atRetire;
-      const mode = ch === 'continue' ? 'continue' : 'pay';
+      const mode = atRet ? 'pay' : ch === 'continue' ? 'continue' : 'pay';
       const ri = idx(retYear);
       for (let i = 0; i < Math.min(N, Math.max(0, ri)); i++) loanPre[i] += pay[i];
+      if (atRet && l.freed !== false) {   // 원리금균등으로 만기까지 갚았다면 해마다 냈을 원금 = 갚지 않고 굴릴 수 있는 돈
+        const eY = Math.max(cy, Math.round(num(l.endYear, cy + 20))), nT = (eY - cy + 1) * 12; let Bq = bal0, mq = 0;
+        for (let i = 0; i < Math.min(N, Math.max(0, ri)) && Bq > 0.5 && years[i] <= eY; i++) for (let k = 0; k < 12 && Bq > 0.5; k++, mq++) {
+          const left = nT - mq, I = Bq * im, Pm = Math.min(Bq, Math.max(0, im > 0 ? Bq * im / (1 - Math.pow(1 + im, -left)) - I : Bq / left));
+          loanFreed[i] += Pm + (I - bal0 * im); Bq -= Pm;   // 원금 상환분 − (이자만 낼 때 더 내는 이자)
+        }
+      }
       const remaining = ri >= 0 && ri < N ? balStart[ri] : 0;
       const series = new Float64Array(N);
       if (remaining > 0.5) { if (mode === 'pay') series[ri] = remaining; else for (let i = ri; i < N; i++) series[i] = pay[i]; }
@@ -1911,7 +1921,8 @@ function RetirementEngine() {
           if (a.group === 'PEN') { penUsed[a.owner] += t; if (a.type === 'pension_savings') psAmt[a.owner] += t; else irpAmt[a.owner] += t; }
           if (a.group === 'ISA') isaSt[a.id].paid += t;
         }
-        const fc = inc[0] + inc[1] + exIn[i] - spend - exOut[i] - loanY - mustOwn;
+        const freed = cur0 ? 0 : Math.max(0, loanFreed[i]);
+        const fc = inc[0] + inc[1] + exIn[i] + freed - spend - exOut[i] - loanY - mustOwn;
         let left = Math.max(0, fc);
         for (const e of allocList) {
           if (!(left > 0.5)) break;
@@ -1946,7 +1957,7 @@ function RetirementEngine() {
         rows.push({ y, i, sal: [pp[0].s, pp[1].s], bon: [pp[0].b, pp[1].b], o1: pp[0].o1, o2: pp[0].o2, o3: pp[0].o3, net3: pp[0].net3, held: heldY[i], must: mustOwn, comp: compIn, tax: [pp[0].tax, pp[1].tax], ins: [pp[0].ins, pp[1].ins], mr: [pp[0].mr || 0, pp[1].mr || 0],
           net: [pp[0].netS + pp[0].netB + pp[0].net1 + pp[0].net3, pp[1].netS + pp[1].netB + pp[1].net1], netS: [pp[0].netS, pp[1].netS], net1: pp[0].net1,
           stockGot: [pp[0].stock + pp[0].stock1 + pp[0].stock2, pp[1].stock + pp[1].stock1 + pp[1].stock2], sold: [proceeds[0][i], proceeds[1][i]], taxBack: refunds[0][i] + refunds[1][i], inc: inc[0] + inc[1],
-          spend, exIn: exIn[i], exOut: exOut[i], loan: loanY, fc, alloc, left, credit, refund, rest: rest[i], deficit: deficit[i] });
+          spend, exIn: exIn[i] + freed, freed, exOut: exOut[i], loan: loanY, fc, alloc, left, credit, refund, rest: rest[i], deficit: deficit[i] });
       }
       // 은퇴 뒤에 들어오는 자사주 매도 대금은 그 해 연말 남는 돈 계좌로
       for (let p = 0; p < P; p++) if (p === 0 || spIn) for (let i = ri; i < N; i++) postIn[i] += proceeds[p][i] + refunds[p][i];
@@ -2900,7 +2911,7 @@ function RetirementEngine() {
   const guessHi = n => /주택연금|연금보험|비과세|보험금/.test(String(n || '')) ? 0 : /근로|급여|월급|연봉|국민연금|공무원|군인|사학/.test(String(n || '')) ? 50 : BIZ_RE.test(String(n || '')) ? 101 : 100;
   // 대출
   const LOAN_KINDS = [['home', '주담대(1주택)'], ['jeonse', '전세대출'], ['other', '신용·기타']];
-  const LOAN_METHODS = [['annuity', '원리금균등'], ['principal', '원금균등'], ['bullet', '만기일시']];
+  const LOAN_METHODS = [['retire', '은퇴 직전에 한 번에(그때까지 이자만)'], ['annuity', '원리금균등'], ['principal', '원금균등'], ['bullet', '만기일시']];
   const LOAN_AT = [['pay', '은퇴 때 다 갚기'], ['continue', '계속 나눠 갚기'], ['auto', '유리한 쪽 자동']];
   const LOAN_PRESETS = {
     '주택담보대출': { kind: 'home', bal: 20000, rate: 4, years: 20, method: 'annuity' },
@@ -3068,6 +3079,8 @@ function RetirementEngine() {
       if (e.hiPct == null) e.hiPct = guessHi(e.name);
       else if (oldV < 5 && num(e.hiPct) === 100 && BIZ_RE.test(String(e.name || ''))) e.hiPct = 101;   // v5: 사업·임대 구분 추가
     });
+    if (s.flow && s.flow.on && !s.loanV) s.loans.forEach(l => { l.method = 'retire'; l.atRetire = 'pay'; });   // 한 번만: 대출은 은퇴 직전에 한 번에 갚는 것으로
+    s.loanV = 1;
     s.loans.forEach(l => { if (!l.atRetire) l.atRetire = 'pay'; if (!l.method) l.method = 'annuity'; if (!l.kind) l.kind = 'home'; if (l.hiDed == null) l.hiDed = true; });
     const selfStop = Math.max(CY, num(s.self.birthYear, CY - 45) + num(s.self.retireAge, 60));
     const stopOf = a => (a.owner === 'spouse' && s.spouse.enabled && s.spouse.retireSame === false) ? Math.min(selfStop, Math.max(CY, num(s.spouse.birthYear, CY - 45) + num(s.spouse.retireAge, 60))) : selfStop;
@@ -3361,21 +3374,20 @@ function RetirementEngine() {
       <div class="row">${swatch('var(--c8)', '결과 차트의 ‘대출 상환’ 색')}<input class="txt name" data-k="${p}.name" value="${esc(l.name)}" aria-label="대출 이름"><button class="xbtn" type="button" data-act="del" data-list="loans" data-id="${l.id}" aria-label="${esc(l.name)} 삭제">×</button></div>
       <div class="grid2">
         ${numF('지금 남은 잔액', p + '.bal', l.bal, '만원')}
-        ${selF('은퇴할 때', p + '.atRetire', l.atRetire || 'pay', LOAN_AT, { hint: '자동은 필요자금이 적은 쪽' })}
+        ${selF('갚는 방법', p + '.method', l.method || 'annuity', LOAN_METHODS, { re: 'loan', hint: l.method === 'retire' ? '은퇴 전에는 이자만 · 은퇴하는 해에 원금을 모은 돈에서 갚음' : '해마다 나눠 갚음' })}
       </div>
       <output class="derived" data-d="loan:${l.id}"></output>
       ${moreBlock('loan:' + l.id, `<div class="grid2">
           ${selF('종류', p + '.kind', kind, LOAN_KINDS, { re: 'loan' })}
           ${numF('금리', p + '.rate', l.rate, '%', { step: 0.1 })}
-          ${numF('만기 연도', p + '.endYear', l.endYear, '년', { hint: '이 해 말까지 다 갚음' })}
-          ${selF('상환 방식', p + '.method', l.method || 'annuity', LOAN_METHODS)}
+          ${l.method === 'retire' ? '' : numF('만기 연도', p + '.endYear', l.endYear, '년', { hint: '이 해 말까지 다 갚음' }) + selF('은퇴할 때 남은 돈', p + '.atRetire', l.atRetire || 'pay', LOAN_AT, { hint: '자동은 필요자금이 적은 쪽' })}
         </div>` + (kind !== 'other' ? chkF('건보료 주택금융부채 공제 받음', p + '.hiDed', l.hiDed !== false, kind === 'jeonse'
         ? '무주택 세대의 전세대출(보증금 5억원 이하)은 대출 잔액의 30%(최대 1억 5,000만원)를 보증금 평가액에서 뺍니다. 공단에 신청해야 적용됩니다.'
         : '1주택 세대가 재산 과표 3억원 이하 집을 살 때(취득·전입 전후 3개월 안) 받은 주담대는 잔액의 60%(최대 5,000만원)를 재산 과표에서 뺍니다. 공단에 신청해야 적용됩니다.') : ''))}
     </div>`;
   }
   function renderLoan() {
-    $('#loan').innerHTML = `<p class="hint">은퇴 전까지는 월급으로 갚는다고 보고, 은퇴할 때 남은 돈을 한 번에 갚을지 계속 나눠 갚을지 계산해요. 금리·만기는 ‘세부 설정’에 있어요.</p>
+    $('#loan').innerHTML = `<p class="hint">‘은퇴 직전에 한 번에’는 은퇴 전에 이자만 내고(연봉에서) 은퇴하는 해에 원금을 모은 돈에서 갚아요. 나눠 갚는 방식을 고르면 은퇴 전까지는 월급으로 갚는다고 봐요. 금리는 ‘세부 설정’에 있어요.</p>
       <div class="list">${(state.loans || []).map(loanItem).join('') || '<div class="empty">대출이 없으면 비워 두세요.</div>'}</div>
       <div class="adds">${Object.keys(LOAN_PRESETS).map(k => `<button class="chip" type="button" data-act="addLoan" data-preset="${esc(k)}">+ ${esc(k)}</button>`).join('')}</div>`;
   }
@@ -4014,6 +4026,7 @@ function RetirementEngine() {
     (state.loans || []).forEach(l => {
       const ln = (M.loans || []).find(x => x.id === l.id);
       if (!ln) { setD('loan:' + l.id, num(l.bal) > 0 ? '' : '<span class="muted">남은 잔액을 넣으면 계산에 들어갑니다</span>'); return; }
+      if (l.method === 'retire') { setD('loan:' + l.id, `은퇴 전에는 이자만 월 <b>${won(ln.monthlyNow)}</b>(연봉에서) → ${yr}년 은퇴하는 해에 원금 <b>${won(ln.remaining)}</b>을 모은 돈에서 한 번에 갚아요. 나눠 갚았다면 해마다 냈을 원금은 여윳자금에 더해 계좌에 넣는다고 봐요(‘목돈 수입’ 칸에 표시).`); return; }
       const parts = [`지금 월 <b>${won(ln.monthlyNow)}</b>(원리금)`];
       if (!(ln.remaining > 0.5)) parts.push(`${yr}년 은퇴 전에 다 갚아 은퇴 후 지출 없음`);
       else {
@@ -4257,7 +4270,7 @@ function RetirementEngine() {
       case 'addLoan': {
         const k = b.dataset.preset, pr = LOAN_PRESETS[k] || LOAN_PRESETS['주택담보대출'];
         if (!Array.isArray(state.loans)) state.loans = [];
-        state.loans.push({ id: uid(), name: k, kind: pr.kind, bal: pr.bal, rate: pr.rate, endYear: CY + pr.years - 1, method: pr.method, atRetire: 'pay', hiDed: true });
+        state.loans.push({ id: uid(), name: k, kind: pr.kind, bal: pr.bal, rate: pr.rate, endYear: CY + pr.years - 1, method: 'retire', atRetire: 'pay', hiDed: true });
         afterEdit('loan'); focusLast('#loan'); break;
       }
       case 'addAcc': {
