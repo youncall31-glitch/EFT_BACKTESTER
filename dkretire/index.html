@@ -1003,6 +1003,17 @@ body.choosing .top{border-bottom:0}
 .acc-t th.grp-h{text-align:center;border-left:1px solid var(--rule)}
 .acc-t thead tr:first-child th{border-bottom:0}
 .cv-tax .tx-b.off{color:inherit;opacity:.6}
+/* v2: 계획 지출 ↔ 원금 유지 지출 */
+.cv-live{padding:12px clamp(16px,2.4vw,26px);border-top:1px solid var(--rule);font-size:13px;line-height:1.55}
+.cv-live .lv-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 12px;margin-top:6px}
+.cv-live .lv-row:first-child{margin-top:0}
+.cv-live .lv-k{font-weight:700}
+.cv-live .lv-v b{font-size:16px}
+.cv-live .lv-d{margin:2px 0 0;font-size:12.5px}
+.cv-live .lv-r{margin:8px 0 2px;padding:8px 10px;border-radius:8px;font-size:13px}
+.cv-live .lv-r.bad{background:color-mix(in srgb,var(--seal) 10%,transparent)}
+.cv-live .lv-r.good{background:color-mix(in srgb,var(--ok,#1a7f4b) 12%,transparent)}
+.cv-live .lv-r:empty{display:none}
 </style>
 </head>
 <body>
@@ -5016,7 +5027,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
         ${gap > 0 ? numBox('bad', '모자란 돈', won(gap, { short: true }), `오늘 돈 ${won(gap / pv, { short: true })}`) : numBox('good', '남는 돈', won(-gap, { short: true }), `오늘 돈 ${won(-gap / pv, { short: true })}`)}
       </div>
       <p class="cv-pv">${n > 0 ? `은퇴할 때 금액은 물가가 오른 ${m.retYear}년의 돈이에요. 오늘 가치로 바꾸면 필요한 돈은 <b>${won(req / pv, { short: true })}</b>, 예상 자산은 <b>${won(T0 / pv, { short: true })}</b>이에요.` : '이미 은퇴 시점이라 지금 있어야 할 금액이에요.'}</p>
-      <p class="cv-tax"><span class="tx-b">✓ 세금 반영</span>계좌에서 꺼낼 때 내는 세금(연금소득세·배당세·양도세·종합과세) <b>${won(b.sumTpv, { short: true })}</b>과 건강보험료 <b>${won(b.sumHpv, { short: true })}</b>(은퇴 후 합계, 오늘 돈)을 내고도 생활비를 쓸 수 있는지로 계산했어요.</p>${npsLine(R)}` : '';
+      <p class="cv-tax"><span class="tx-b">✓ 세금 반영</span>계좌에서 꺼낼 때 내는 세금(연금소득세·배당세·양도세·종합과세) <b>${won(b.sumTpv, { short: true })}</b>과 건강보험료 <b>${won(b.sumHpv, { short: true })}</b>(은퇴 후 합계, 오늘 돈)을 내고도 생활비를 쓸 수 있는지로 계산했어요.</p>${npsLine(R)}${liveLine(R)}` : '';
     // 할 일: 모자라면 더 모으기 · 은퇴 늦추기 · 은퇴 후 일하기
     let todo = '';
     if (fin && !ok) {
@@ -5179,6 +5190,31 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     }
     if (!parts.length) return `<p class="cv-tax"><span class="tx-b off">국민연금 없음</span>1번 ‘나와 가족’에 국민연금 예상액을 넣으면 계산에 들어가요.</p>`;
     return `<p class="cv-tax"><span class="tx-b">✓ 국민연금 반영</span>${parts.join(' · ')}. 받기 시작한 뒤에도 해마다 물가상승률(${(m.infl * 100).toFixed(1)}%)만큼 올라요. 평생 받는 합계 <b>${won(pv, { short: true })}</b>(오늘 돈)만큼 계좌에서 덜 꺼내는 것으로 계산했어요.</p>`;
+  }
+  // 표지: 계획한 은퇴 후 지출(항목별) ↔ 모은 돈을 줄이지 않고 쓸 수 있는 돈
+  //  원금 유지 = 은퇴 때 모은 돈(그 해에 한 번에 갚는 대출 등은 뺌) × 실질수익률(은퇴 후 수익률 − 물가). 세금·건보료는 기본 계획의 비율로 뺌
+  function liveLine(R) {
+    const m = R.meta, k = m.years.indexOf(m.retYear); if (k < 0 || !R.planCur) return '';
+    const def = Math.pow(1 + m.infl, m.retYear - m.cy), td = v => v / def;   // 은퇴하는 해 금액 → 오늘 돈
+    const items = R.exp.items.map(it => ({ name: it.name, v: td(it.series[k] || 0), one: !!it.oneoff })).filter(x => x.v > 0.5);
+    const reg = items.filter(x => !x.one).sort((a, b) => b.v - a.v), one = items.filter(x => x.one);
+    const plan = reg.reduce((t, x) => t + x.v, 0), oneSum = one.reduce((t, x) => t + x.v, 0);
+    const T = Math.max(0, td(R.planCur.totalAtRet) - oneSum), r = postRate(R), real = (1 + r) / (1 + m.infl) - 1;
+    const rows = R.planCur.rows.filter(x => x.ret), EX = rows.reduce((t, x) => t + (x.exp || 0), 0), TH = rows.reduce((t, x) => t + (x.T || 0) + (x.H || 0), 0);
+    const cost = EX + TH > 0 ? Math.max(0, Math.min(0.5, TH / (EX + TH))) : 0;   // 은퇴 후 나가는 돈 중 세금·건보료 비율(기본 계획 기준)
+    const keepGross = T * Math.max(0, real);
+    let nps = 0; for (let p = 0; p < m.P; p++) { const a = R.pub[p] || [], j = a.findIndex(v => v > 0.5); if (j >= 0) nps += a[j] / Math.pow(1 + m.infl, m.years[j] - m.cy); }
+    const can = (keepGross + nps) * (1 - cost), w = v => won(v, { short: true }), mo = v => won(v / 12);
+    const list = reg.slice(0, 5).map(x => `${esc(x.name)} <b>${w(x.v)}</b>`).join(' · ') + (reg.length > 5 ? ` 외 ${reg.length - 5}개` : '');
+    const diff = plan - can;
+    return `<div class="cv-live">
+      <div class="lv-row"><span class="lv-k">계획한 지출</span><span class="lv-v"><b>연 ${w(plan)}</b> <span class="muted">월 ${mo(plan)}</span></span></div>
+      <p class="lv-d">${list || '은퇴 후 지출 항목이 없어요.'}${oneSum > 0.5 ? ` <span class="muted">(은퇴하는 해에 한 번 쓰는 ${one.map(x => esc(x.name)).join('·')} ${w(oneSum)}은 따로)</span>` : ''}</p>
+      <div class="lv-row"><span class="lv-k">모은 돈이 줄지 않게 쓰려면</span><span class="lv-v"><b>연 ${w(can)}</b> <span class="muted">월 ${mo(can)}</span></span></div>
+      <p class="lv-d">은퇴 때 모은 돈 ${w(T)} × 실질수익률 ${(real * 100).toFixed(1)}%(수익률 ${(r * 100).toFixed(1)}% − 물가 ${(m.infl * 100).toFixed(1)}%) = 연 ${w(keepGross)}${nps > 0.5 ? ` + 국민연금 ${w(nps)}(받기 시작한 뒤)` : ''} → 세금·건보료로 나가는 ${Math.round(cost * 100)}%를 빼고 쓸 수 있는 돈.</p>
+      <p class="lv-r ${diff > 0 ? 'bad' : 'good'}">${plan < 0.5 ? '' : diff > 0 ? `계획이 <b>연 ${w(diff)}(월 ${mo(diff)})</b> 더 많아요. 그만큼은 원금을 헐어 쓰는 계획이에요. 원금을 지키려면 지출을 이만큼 줄이거나 더 모아야 해요.` : `계획이 <b>연 ${w(-diff)}</b> 적어요. 이대로 쓰면 모은 돈이 물가보다 빨리 불어나요.`}</p>
+      <p class="lv-d muted">모두 오늘 돈 기준. 수익률이 해마다 같다고 본 어림값이에요.${nps > 0.5 ? ' 국민연금을 받기 전에는 그만큼 덜 쓸 수 있어요.' : ''}</p>
+    </div>`;
   }
   function mddSim(R, P, sc, st) {
     const m = R.meta, rows = R.planCur.rows, ret = m.retYear, r = postRate(R), rd = Math.max(0, Math.min(r, 0.03));
