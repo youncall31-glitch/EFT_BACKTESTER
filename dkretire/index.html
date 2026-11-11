@@ -1045,6 +1045,12 @@ body.choosing .top{border-bottom:0}
 .tot-t{width:100%;table-layout:fixed}
 .tot-t td,.tot-t th{white-space:normal;padding:5px 6px}
 .tot-t th.l,.tot-t td.l{width:34%}
+
+.cv-live .lv-k2{margin:10px 0 4px;font-weight:700;font-size:.92em}
+.keep-t tr.neg td{color:var(--seal)}
+.keep-t tr.neg td.l{color:inherit}
+.keep-t tr.sum td{border-top:1.5px solid var(--line,currentColor)}
+.tip-legend{margin:0 0 10px;font-size:.88em;line-height:1.55;color:var(--muted,inherit)}
 </style>
 </head>
 <body>
@@ -5254,16 +5260,28 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const T = Math.max(0, td(R.planCur.totalAtRet) - oneSum), r = postRate(R), real = (1 + r) / (1 + m.infl) - 1;
     const rows = R.planCur.rows.filter(x => x.ret), EX = rows.reduce((t, x) => t + (x.exp || 0), 0), TH = rows.reduce((t, x) => t + (x.T || 0) + (x.H || 0), 0);
     const cost = EX + TH > 0 ? Math.max(0, Math.min(0.5, TH / (EX + TH))) : 0;   // 은퇴 후 나가는 돈 중 세금·건보료 비율(기본 계획 기준)
+    const TX = rows.reduce((t, x) => t + (x.T || 0), 0), tS = TH > 0 ? cost * TX / TH : 0, hS = cost - tS;   // 그 비율을 세금 / 건보료로 나눔
     const keepGross = T * Math.max(0, real);
     let nps = 0; for (let p = 0; p < m.P; p++) { const a = R.pub[p] || [], j = a.findIndex(v => v > 0.5); if (j >= 0) nps += a[j] / Math.pow(1 + m.infl, m.years[j] - m.cy); }
     const can = (keepGross + nps) * (1 - cost), w = v => won(v, { short: true }), mo = v => won(v / 12);
     const list = reg.slice(0, 5).map(x => `${esc(x.name)} <b>${w(x.v)}</b>`).join(' · ') + (reg.length > 5 ? ` 외 ${reg.length - 5}개` : '');
     const diff = plan - can;
+    // 원금을 지키며 쓸 수 있는 돈: ① 가치 유지(물가만큼은 남겨 둠) ② 금액 유지(수익을 다 씀). 세금·건보료를 따로 보여 줌
+    const col = g => { const all = g + nps; return { g, all, t: all * tS, h: all * hS, net: all * (1 - cost) }; };
+    const A = col(keepGross), B = col(T * Math.max(0, r)), w2 = v => won(v);
+    const tr = (k, f, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="l">${k}</td><td>${f(A)}</td><td>${f(B)}</td></tr>`;
+    const keepTbl = `<div class="tblwrap"><table class="t mini-t tot-t keep-t"><thead><tr><th class="l"></th><th>가치 유지<br><span class="muted">물가만큼 남김</span></th><th>금액 유지<br><span class="muted">수익을 다 씀</span></th></tr></thead><tbody>
+      ${tr('한 해 수익에서<br>꺼내는 돈', c => w2(c.g))}${nps > 0.5 ? tr('국민연금', () => '+' + w2(nps)) : ''}
+      ${tr(`세금 <span class="muted">${(tS * 100).toFixed(1)}%</span>`, c => '−' + w2(c.t), 'neg')}${tr(`건보료 <span class="muted">${(hS * 100).toFixed(1)}%</span>`, c => '−' + w2(c.h), 'neg')}
+      ${tr('<b>쓸 수 있는 돈</b><br>세후 · 연', c => `<b>${w2(c.net)}</b>`, 'sum')}${tr('월', c => mo(c.net))}</tbody></table></div>`;
     return `<div class="cv-live">
       <div class="lv-row"><span class="lv-k">계획한 지출</span><span class="lv-v"><b>연 ${w(plan)}</b> <span class="muted">월 ${mo(plan)}</span></span></div>
       <p class="lv-d">${list || '은퇴 후 지출 항목이 없어요.'}${oneSum > 0.5 ? ` <span class="muted">(은퇴하는 해에 한 번 쓰는 ${one.map(x => esc(x.name)).join('·')} ${w(oneSum)}은 따로)</span>` : ''}</p>
       <div class="lv-row"><span class="lv-k">모은 돈이 줄지 않게 쓰려면</span><span class="lv-v"><b>연 ${w(can)}</b> <span class="muted">월 ${mo(can)}</span></span></div>
       <p class="lv-d">은퇴 때 모은 돈 ${w(T)} × 실질수익률 ${(real * 100).toFixed(1)}%(수익률 ${(r * 100).toFixed(1)}% − 물가 ${(m.infl * 100).toFixed(1)}%) = 연 ${w(keepGross)}${nps > 0.5 ? ` + 국민연금 ${w(nps)}(받기 시작한 뒤)` : ''} → 세금·건보료로 나가는 ${Math.round(cost * 100)}%를 빼고 쓸 수 있는 돈.</p>
+      <p class="lv-k2">원금은 그대로 두고 수익만 쓴다면</p>
+      ${keepTbl}
+      <p class="lv-d"><b>가치 유지</b>: 수익 중 물가(${(m.infl * 100).toFixed(1)}%)만큼은 남겨 둬서 모은 돈의 가치가 평생 그대로예요. <b>금액 유지</b>: 수익(${(r * 100).toFixed(1)}%)을 다 써서 통장 금액은 그대로지만, 물가가 올라 해마다 살 수 있는 양은 줄어요. 세금·건보료 비율은 기본 계획에서 은퇴 뒤 실제로 나간 비율로 어림했어요.</p>
       <p class="lv-r ${diff > 0 ? 'lv-bad' : 'lv-good'}">${plan < 0.5 ? '' : diff > 0 ? `계획이 <b>연 ${w(diff)}(월 ${mo(diff)})</b> 더 많아요. 그만큼은 원금을 헐어 쓰는 계획이에요. 원금을 지키려면 지출을 이만큼 줄이거나 더 모아야 해요.` : `계획이 <b>연 ${w(-diff)}</b> 적어요. 이대로 쓰면 모은 돈이 물가보다 빨리 불어나요.`}</p>
       <p class="lv-d muted">모두 오늘 돈 기준. 수익률이 해마다 같다고 본 어림값이에요.${nps > 0.5 ? ' 국민연금을 받기 전에는 그만큼 덜 쓸 수 있어요.' : ''}</p>
     </div>`;
@@ -5908,7 +5926,8 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const lab = { bad: '주의', warn: '확인', good: '좋음', info: '제안' };
     const card = t => `<div class="tipc ${t.tone}"><h3><span class="pill ${t.tone}">${lab[t.tone]}</span><span>${esc(t.title)}</span></h3><p>${esc(t.body)}</p></div>`;
     const TOP = 3;
-    $('#tips').innerHTML = tips.slice(0, TOP).map(card).join('') + (tips.length > TOP
+    const legend = tips.some(t => t.tone === 'bad' || t.tone === 'warn') ? `<p class="tip-legend"><b>주의</b>는 하지 말라는 뜻이 아니라, 이 계획대로 가면 세금·건보료가 더 나가는 곳이에요. 더 나가는 돈은 위 계산에 이미 들어 있고, 적힌 방법을 쓰면 줄일 수 있어요. <b>확인</b>은 바꾸면 나아지는 것, <b>제안</b>은 참고예요.</p>` : '';
+    $('#tips').innerHTML = legend + tips.slice(0, TOP).map(card).join('') + (tips.length > TOP
       ? `<details class="tips-more"${view.tipsMore ? ' open' : ''}><summary>방법 ${tips.length - TOP}개 더 보기</summary><div class="tips">${tips.slice(TOP).map(card).join('')}</div></details>` : '');
   }
 
