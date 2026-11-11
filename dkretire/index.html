@@ -999,6 +999,9 @@ body.choosing .top{border-bottom:0}
 /* v2: 몇 년까지 */
 .frow.alloc .yrs.to{display:inline-flex;align-items:center;gap:4px}
 .frow.alloc .yrs.to small{font-size:11.5px;opacity:.7;white-space:nowrap}
+/* v2: 계좌 묶음 표 */
+.acc-t th.grp-h{text-align:center;border-left:1px solid var(--rule)}
+.acc-t thead tr:first-child th{border-bottom:0}
 </style>
 </head>
 <body>
@@ -1094,6 +1097,8 @@ body.choosing .top{border-bottom:0}
           <div id="cashNotes"></div>
           <div class="card-h sub"><h3>해마다 현금화하는 성과금, 소비, 저축</h3></div>
           <div id="cashSum"></div>
+          <div class="card-h sub"><h3>해마다 계좌에 들어오는 돈과 총액</h3></div>
+          <div id="cashAcc"></div>
           <div class="card-h sub"><h3>어느 계좌에 넣는 게 나을까</h3></div>
           <div id="cashCmp"><div class="empty">계산 중…</div></div>
           <div class="cash-go"><button class="linkbtn" type="button" data-open="secCash">넣는 순서 바꾸기</button><button class="linkbtn pro-only" type="button" data-open="cardCashTbl">연도별 여윳자금 표 보기</button></div>
@@ -5310,7 +5315,29 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     if (post.length) notes.push(['info', `은퇴 뒤에 파는 자사주${R.flow.opi && R.flow.opi.perf.some(q => q.refund2 > 0) ? '·OPI2 연말정산 환급' : ''} ${won(post.reduce((t, r) => t + r.contrib, 0), { short: true })}은 그 해 연말에 남는 돈 계좌로 들어가요.`]);
     $('#cashNotes').innerHTML = notes.length ? `<ul class="cash-notes">${notes.map(([t, h]) => `<li class="${t}">${h}</li>`).join('')}</ul>` : '';
     renderCashSum(R, rows);
+    renderCashAcc(R);
     renderCashCmp(R);
+  }
+  // 해마다 들어오는 돈과 연말 총액: 세제혜택 계좌(연금저축·IRP·ISA·퇴직연금) / 일반계좌(그 밖) 두 묶음
+  function renderCashAcc(R) {
+    const host = $('#cashAcc'); if (!host) return;
+    const m = R.meta, accs = R.planCur.accounts || [], isTax = a => /^(PEN|ISA|DC)$/.test(a.group), c = w => manCell(w || 0);
+    const taxIds = {}; accs.forEach(a => { if (isTax(a)) taxIds[a.id] = 1; });
+    const L = R.planCur.rows.filter(r => r.y < m.retYear).map(r => {
+      const f = R.flow.rows.find(x => x.y === r.y) || { alloc: {} };
+      let bt = 0, bg = 0; accs.forEach(a => { const v = (r.bal && r.bal[a.id]) || 0; if (isTax(a)) bt += v; else bg += v; });
+      let at = 0, ag = 0; Object.keys(f.alloc).forEach(id => { if (taxIds[id]) at += f.alloc[id]; else ag += f.alloc[id]; });
+      const rest = (r.fl && r.fl.rest) || 0, w = (r.fl && r.fl.w) || 0, other = Math.max(0, (r.contrib || 0) - at - ag - rest);   // other: 퇴직연금 회사 납입 등
+      return { y: r.y, age: r.y - m.birth[0], inT: at + other, balT: bt, inG: ag + rest, outG: w, balG: bg, moved: r.isaMoved || 0 };
+    });
+    if (!L.length) { host.innerHTML = ''; return; }
+    const hasOut = L.some(x => x.outG > 0.5), T = k => L.reduce((t, x) => t + x[k], 0), last = L[L.length - 1];
+    host.innerHTML = `<div class="tbl-wrap"><table class="t sum-t acc-t"><thead>
+      <tr><th class="l sticky" rowspan="2">연도</th><th colspan="2" class="grp-h">세제혜택 계좌<br><span class="muted">연금저축·IRP·ISA·퇴직연금</span></th><th colspan="${hasOut ? 3 : 2}" class="grp-h">일반계좌<br><span class="muted">해외 ETF 등</span></th><th rowspan="2">합계</th></tr>
+      <tr><th>들어온 돈</th><th>연말 총액</th><th>들어온 돈</th>${hasOut ? '<th>꺼낸 돈</th>' : ''}<th>연말 총액</th></tr></thead><tbody>${
+      L.map(x => `<tr><td class="l sticky">${x.y}<span class="muted"> ${x.age}세</span></td><td>${c(x.inT)}</td><td><b>${c(x.balT)}</b></td><td>${c(x.inG)}</td>${hasOut ? `<td class="${x.outG > 0.5 ? 'neg' : ''}">${c(x.outG)}</td>` : ''}<td><b>${c(x.balG)}</b></td><td>${c(x.balT + x.balG)}</td></tr>`).join('')
+    }</tbody><tfoot><tr><td class="l sticky"><b>합계 · 은퇴 직전</b></td><td><b>${c(T('inT'))}</b></td><td><b>${c(last.balT)}</b></td><td><b>${c(T('inG'))}</b></td>${hasOut ? `<td><b>${c(T('outG'))}</b></td>` : ''}<td><b>${c(last.balG)}</b></td><td><b>${c(last.balT + last.balG)}</b></td></tr></tfoot></table></div>
+    <p class="hint">단위 만원 · 그 해 금액(오늘 돈으로 바꾸지 않음). 들어온 돈은 그 해 새로 넣은 돈(회사 납입 포함)이고, 연말 총액은 수익까지 더한 잔액이에요. ISA를 해지해 연금저축으로 옮기는 돈은 세제혜택 계좌 안에서 움직여서 ‘들어온 돈’에 넣지 않았어요. 일반계좌 ‘들어온 돈’에는 세액공제 환급금이 들어 있어요.</p>`;
   }
   // 해마다: 성과금으로 현금이 되는 돈 → 소비 → 연금·ISA 저축 → 일반계좌
   function renderCashSum(R, rows) {
