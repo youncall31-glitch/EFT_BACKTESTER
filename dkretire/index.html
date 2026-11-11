@@ -1011,9 +1011,33 @@ body.choosing .top{border-bottom:0}
 .cv-live .lv-v b{font-size:16px}
 .cv-live .lv-d{margin:2px 0 0;font-size:12.5px}
 .cv-live .lv-r{margin:8px 0 2px;padding:8px 10px;border-radius:8px;font-size:13px}
-.cv-live .lv-r.bad{background:color-mix(in srgb,var(--seal) 10%,transparent)}
-.cv-live .lv-r.good{background:color-mix(in srgb,var(--ok,#1a7f4b) 12%,transparent)}
+.cv-live .lv-r.lv-bad{background:color-mix(in srgb,var(--seal) 10%,transparent)}
+.cv-live .lv-r.lv-good{background:color-mix(in srgb,var(--ok,#1a7f4b) 12%,transparent)}
 .cv-live .lv-r:empty{display:none}
+/* v2: 휴대폰에서 표가 가려지지 않게 */
+.cv-live .lv-r{display:block}
+.cv-live .lv-v{white-space:nowrap}
+.mdd-t .sticky{position:static}
+.mdd-t td.l{min-width:128px}
+.mdd-t td{min-width:84px}
+@media (max-width:560px){
+  .sum-t{font-size:11.5px}
+  .sum-t th,.sum-t td{padding:5px 5px}
+  .sum-t th{white-space:normal;line-height:1.25}
+  .sum-t td.sticky .muted{display:none}
+  .sum-t td.sticky,.sum-t th.sticky{min-width:0;padding-left:8px;padding-right:6px;box-shadow:1px 0 0 var(--rule)}
+  .acc-t th.grp-h .muted{display:none}
+  .mdd-t{font-size:11.5px}
+  .mdd-t td.l{min-width:104px}
+  .mdd-t td{min-width:66px}
+  .mdd-t td.l .muted{display:none}
+}
+.mdd-t{width:100%;table-layout:fixed}
+.mdd-t th,.mdd-t td{white-space:normal;min-width:0;text-align:center}
+.mdd-t tr.mdd-h td{text-align:left;border-bottom:0;padding-bottom:2px;background:var(--sheet-2)}
+.mdd-t tr.mdd-h .muted{font-weight:400;font-size:11.5px}
+.mdd-t td.l{min-width:0;max-width:none}
+@media (max-width:560px){ .mdd-t td.l .muted{display:inline} .mdd-t td{min-width:0} .mdd-t td.l{min-width:0} }
 </style>
 </head>
 <body>
@@ -5212,7 +5236,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       <p class="lv-d">${list || '은퇴 후 지출 항목이 없어요.'}${oneSum > 0.5 ? ` <span class="muted">(은퇴하는 해에 한 번 쓰는 ${one.map(x => esc(x.name)).join('·')} ${w(oneSum)}은 따로)</span>` : ''}</p>
       <div class="lv-row"><span class="lv-k">모은 돈이 줄지 않게 쓰려면</span><span class="lv-v"><b>연 ${w(can)}</b> <span class="muted">월 ${mo(can)}</span></span></div>
       <p class="lv-d">은퇴 때 모은 돈 ${w(T)} × 실질수익률 ${(real * 100).toFixed(1)}%(수익률 ${(r * 100).toFixed(1)}% − 물가 ${(m.infl * 100).toFixed(1)}%) = 연 ${w(keepGross)}${nps > 0.5 ? ` + 국민연금 ${w(nps)}(받기 시작한 뒤)` : ''} → 세금·건보료로 나가는 ${Math.round(cost * 100)}%를 빼고 쓸 수 있는 돈.</p>
-      <p class="lv-r ${diff > 0 ? 'bad' : 'good'}">${plan < 0.5 ? '' : diff > 0 ? `계획이 <b>연 ${w(diff)}(월 ${mo(diff)})</b> 더 많아요. 그만큼은 원금을 헐어 쓰는 계획이에요. 원금을 지키려면 지출을 이만큼 줄이거나 더 모아야 해요.` : `계획이 <b>연 ${w(-diff)}</b> 적어요. 이대로 쓰면 모은 돈이 물가보다 빨리 불어나요.`}</p>
+      <p class="lv-r ${diff > 0 ? 'lv-bad' : 'lv-good'}">${plan < 0.5 ? '' : diff > 0 ? `계획이 <b>연 ${w(diff)}(월 ${mo(diff)})</b> 더 많아요. 그만큼은 원금을 헐어 쓰는 계획이에요. 원금을 지키려면 지출을 이만큼 줄이거나 더 모아야 해요.` : `계획이 <b>연 ${w(-diff)}</b> 적어요. 이대로 쓰면 모은 돈이 물가보다 빨리 불어나요.`}</p>
       <p class="lv-d muted">모두 오늘 돈 기준. 수익률이 해마다 같다고 본 어림값이에요.${nps > 0.5 ? ' 국민연금을 받기 전에는 그만큼 덜 쓸 수 있어요.' : ''}</p>
     </div>`;
   }
@@ -5270,8 +5294,8 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     const res = ST.map(s2 => SC.map(c => mddSim(R, P, c[0], s2[3])));
     const best = SC.map((c, j) => { let bi = 0; res.forEach((rw, i) => { if (score(rw[j]) > score(res[bi][j])) bi = i; }); return bi; });
     const r = postRate(R);
-    $('#mddOut').innerHTML = `<div class="tbl-wrap"><table class="t sum-t mdd-t"><thead><tr><th class="l sticky">대비 방법</th>${SC.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${
-      ST.map((s2, i) => `<tr><td class="l sticky"><b>${s2[1]}</b><br><span class="muted">${s2[2]}</span></td>${SC.map((c, j) => `<td class="${best[j] === i && j > 0 ? 'best' : ''}">${cell(res[i][j])}</td>`).join('')}</tr>`).join('')
+    $('#mddOut').innerHTML = `<div class="tbl-wrap"><table class="t sum-t mdd-t"><thead><tr>${SC.map(c => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${
+      ST.map((s2, i) => `<tr class="mdd-h"><td class="l" colspan="${SC.length}"><b>${s2[1]}</b> <span class="muted">${s2[2]}</span></td></tr><tr>${SC.map((c, j) => `<td class="${best[j] === i && j > 0 ? 'best' : ''}">${cell(res[i][j])}</td>`).join('')}</tr>`).join('')
     }</tbody></table></div>
     <p class="hint">${endAge}세까지 버티면 그때 남는 돈(오늘 돈), 못 버티면 돈이 바닥나는 나이예요. 칸의 색은 그 폭락에서 가장 나은 방법. 간단 계산이라 위 그래프와 조금 다를 수 있어요: 기본 계획에서 해마다 꺼내는 돈(세금·건보료 포함)을 그대로 쓰고, 투자 수익률 연 ${(r * 100).toFixed(1)}%, 예금 ${(Math.min(r, 0.03) * 100).toFixed(1)}%로 봤어요. 폭락한 해에 −${num(P.depth, 40)}%, 그 뒤 ${num(P.recov, 5)}년에 걸쳐 폭락 전 값을 되찾는다고 가정해요.</p>
     <ul class="cash-notes mdd-notes">
@@ -5386,7 +5410,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       <tr><th class="l sticky" rowspan="2">연도</th><th colspan="2" class="grp-h">세제혜택 계좌<br><span class="muted">연금저축·IRP·ISA·퇴직연금</span></th><th colspan="${hasOut ? 3 : 2}" class="grp-h">일반계좌<br><span class="muted">해외 ETF 등</span></th><th rowspan="2">합계</th></tr>
       <tr><th>들어온 돈</th><th>연말 총액</th><th>들어온 돈</th>${hasOut ? '<th>꺼낸 돈</th>' : ''}<th>연말 총액</th></tr></thead><tbody>${
       L.map(x => `<tr><td class="l sticky">${x.y}<span class="muted"> ${x.age}세</span></td><td>${c(x.inT)}</td><td><b>${c(x.balT)}</b></td><td>${c(x.inG)}</td>${hasOut ? `<td class="${x.outG > 0.5 ? 'neg' : ''}">${c(x.outG)}</td>` : ''}<td><b>${c(x.balG)}</b></td><td>${c(x.balT + x.balG)}</td></tr>`).join('')
-    }</tbody><tfoot><tr><td class="l sticky"><b>합계 · 은퇴 직전</b></td><td><b>${c(T('inT'))}</b></td><td><b>${c(last.balT)}</b></td><td><b>${c(T('inG'))}</b></td>${hasOut ? `<td><b>${c(T('outG'))}</b></td>` : ''}<td><b>${c(last.balG)}</b></td><td><b>${c(last.balT + last.balG)}</b></td></tr></tfoot></table></div>
+    }</tbody><tfoot><tr><td class="l sticky"><b>합계</b></td><td><b>${c(T('inT'))}</b></td><td><b>${c(last.balT)}</b></td><td><b>${c(T('inG'))}</b></td>${hasOut ? `<td><b>${c(T('outG'))}</b></td>` : ''}<td><b>${c(last.balG)}</b></td><td><b>${c(last.balT + last.balG)}</b></td></tr></tfoot></table></div>
     <p class="hint">단위 만원 · 그 해 금액(오늘 돈으로 바꾸지 않음). 들어온 돈은 그 해 새로 넣은 돈(회사 납입 포함)이고, 연말 총액은 수익까지 더한 잔액이에요. ISA를 해지해 연금저축으로 옮기는 돈은 세제혜택 계좌 안에서 움직여서 ‘들어온 돈’에 넣지 않았어요. 일반계좌 ‘들어온 돈’에는 세액공제 환급금이 들어 있어요.</p>`;
   }
   // 해마다: 성과금으로 현금이 되는 돈 → 소비 → 연금·ISA 저축 → 일반계좌
