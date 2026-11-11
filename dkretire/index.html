@@ -1038,6 +1038,10 @@ body.choosing .top{border-bottom:0}
 .mdd-t tr.mdd-h .muted{font-weight:400;font-size:11.5px}
 .mdd-t td.l{min-width:0;max-width:none}
 @media (max-width:560px){ .mdd-t td.l .muted{display:inline} .mdd-t td{min-width:0} .mdd-t td.l{min-width:0} }
+/* v2: 입력 화면 한눈에 보기 */
+#cashAll{margin-top:4px}
+.all-t{width:100%}
+@media (max-width:560px){ .all-t{font-size:11px} .all-t th,.all-t td{padding:5px 4px} }
 </style>
 </head>
 <body>
@@ -3585,7 +3589,9 @@ function RetirementEngine() {
       ${chkF('연금계좌 세액공제 환급금도 남는 돈 계좌에 넣기', 'flow.refund', F.refund !== false, '연말정산으로 돌려받는 돈(13.2% 또는 16.5%)을 그 해에 다시 투자한다고 봐요.')}
       </div>
 
-      <output class="derived" data-d="cash:preview"></output>`;
+      <output class="derived" data-d="cash:preview"></output>
+      <div class="ostep"><b>한눈에 보기</b><small>해마다 성과금 → 계좌에 넣는 돈 → 연말 잔액 · 계산이 끝나면 채워져요</small></div>
+      <div id="cashAll">${cashAllHtml}</div>`;
     $('#cash').innerHTML = h;
   }
   // 같은 사이트(github.io)의 ETF 백테스터에 저장한 포트폴리오 — 읽기만 함
@@ -5392,6 +5398,7 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     renderCashAcc(R);
     renderCashCmp(R);
   }
+  let cashAllHtml = '<p class="hint">계산 중…</p>';
   // 해마다 들어오는 돈과 연말 총액: 세제혜택 계좌(연금저축·IRP·ISA·퇴직연금) / 일반계좌(그 밖) 두 묶음
   function renderCashAcc(R) {
     const host = $('#cashAcc'); if (!host) return;
@@ -5402,10 +5409,17 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       let bt = 0, bg = 0; accs.forEach(a => { const v = (r.bal && r.bal[a.id]) || 0; if (isTax(a)) bt += v; else bg += v; });
       let at = 0, ag = 0; Object.keys(f.alloc).forEach(id => { if (taxIds[id]) at += f.alloc[id]; else ag += f.alloc[id]; });
       const rest = (r.fl && r.fl.rest) || 0, w = (r.fl && r.fl.w) || 0, other = Math.max(0, (r.contrib || 0) - at - ag - rest);   // other: 퇴직연금 회사 납입 등
-      return { y: r.y, age: r.y - m.birth[0], inT: at + other, balT: bt, inG: ag + rest, outG: w, balG: bg, moved: r.isaMoved || 0 };
+      const cash = (f.net1 || 0) + (f.sold ? f.sold[0] + f.sold[1] : 0) + (f.net3 || 0) + (f.taxBack || 0);
+      return { y: r.y, age: r.y - m.birth[0], cash, inT: at + other, balT: bt, inG: ag + rest, outG: w, balG: bg, moved: r.isaMoved || 0 };
     });
-    if (!L.length) { host.innerHTML = ''; return; }
+    if (!L.length) { host.innerHTML = ''; cashAllHtml = ''; const e0 = $('#cashAll'); if (e0) e0.innerHTML = ''; return; }
     const hasOut = L.some(x => x.outG > 0.5), T = k => L.reduce((t, x) => t + x[k], 0), last = L[L.length - 1];
+    // 입력 화면용 한눈에 보기(5칸)
+    cashAllHtml = `<div class="tbl-wrap"><table class="t sum-t all-t"><thead><tr><th class="l sticky">연도</th><th>성과금<br><span class="muted">세후 현금</span></th><th>세제혜택<br><span class="muted">넣는 돈</span></th><th>일반계좌<br><span class="muted">넣는 돈</span></th><th>세제혜택<br><span class="muted">연말 잔액</span></th><th>일반계좌<br><span class="muted">연말 잔액</span></th></tr></thead><tbody>${
+      L.map(x => `<tr><td class="l sticky">${x.y}</td><td>${c(x.cash)}</td><td>${c(x.inT)}</td><td>${x.outG > x.inG + 0.5 ? `<span class="neg">−${c(x.outG - x.inG)}</span>` : c(x.inG - x.outG)}</td><td><b>${c(x.balT)}</b></td><td><b>${c(x.balG)}</b></td></tr>`).join('')
+    }</tbody><tfoot><tr><td class="l sticky"><b>합계</b></td><td><b>${c(T('cash'))}</b></td><td><b>${c(T('inT'))}</b></td><td><b>${c(T('inG') - T('outG'))}</b></td><td><b>${c(last.balT)}</b></td><td><b>${c(last.balG)}</b></td></tr></tfoot></table></div>
+    <p class="hint">단위 만원 · 그 해 금액. 세제혜택 = 연금저축·IRP·ISA·퇴직연금(회사가 넣는 돈 포함). 일반계좌 ‘넣는 돈’이 빨간색이면 그 해에는 꺼낸 돈이 더 많아요. 잔액은 수익을 더한 연말 금액이고, 맨 아래 잔액은 은퇴 직전 값이에요.</p>`;
+    { const e1 = $('#cashAll'); if (e1) e1.innerHTML = cashAllHtml; }
     host.innerHTML = `<div class="tbl-wrap"><table class="t sum-t acc-t"><thead>
       <tr><th class="l sticky" rowspan="2">연도</th><th colspan="2" class="grp-h">세제혜택 계좌<br><span class="muted">연금저축·IRP·ISA·퇴직연금</span></th><th colspan="${hasOut ? 3 : 2}" class="grp-h">일반계좌<br><span class="muted">해외 ETF 등</span></th><th rowspan="2">합계</th></tr>
       <tr><th>들어온 돈</th><th>연말 총액</th><th>들어온 돈</th>${hasOut ? '<th>꺼낸 돈</th>' : ''}<th>연말 총액</th></tr></thead><tbody>${
