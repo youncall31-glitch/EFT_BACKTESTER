@@ -1797,6 +1797,9 @@ function RetirementEngine() {
         });
         const base0 = per[0].spec.salary; // OPI2 기초금액: 올해 연봉(재원이 영업이익으로 정해져 연봉 인상과 무관)
         const workEnd = Math.min(ownRet[0], retYear); opiEnd = workEnd;
+        // 전망을 적지 않은 뒤쪽 해: OPI1만 정한 지급률로 계속 받는다고 봄(OPI2는 없음)
+        { const ks = Object.keys(byP).map(Number), tail = Math.max(0, Math.min(50, num(O.tail1, 0)));
+          if (ks.length && tail > 0) for (let Py = Math.max.apply(null, ks) + 1; Py <= workEnd - 2; Py++) byP[Py] = { op: 0, r1: tail, g: 1, tail: true }; }
         Object.keys(byP).map(Number).sort((a, b) => a - b).forEach(Py => {
           const pay = Py + 1, pi = idx(pay);
           if (Py < cy || pay >= workEnd || pi < 0 || pi >= N || !(base0 > 0)) return;
@@ -2915,7 +2918,7 @@ function RetirementEngine() {
   });
   // 삼성전자 성과금(OPI1·OPI2): 실적 연도별 DS 영업이익(조원)·OPI1 지급률(%) — 기본은 ‘보수적’ 묶음, 주가는 해마다 −20%
   const MDD_DEF = () => ({ depth: 40, recov: 5, years: 3, lead: 2, safe: 30, cut: 15 });
-  const OPI_DEF = () => ({ on: false, dept: 'ds_mem', grade: 'cl', rate370: 8.875, rows: [], priceChg: -20, taxMode: 'withhold', donate: 0, stockPct: 0, leave: 'return', gradeX: 1.2, price: 190000, psu: { on: true, y: 2028, n: 3, shares: 200 }, fc: 1, hold: 0, holdRet: 6, holdDiv: 1.5, divOut: true });
+  const OPI_DEF = () => ({ on: false, dept: 'ds_mem', grade: 'cl', rate370: 8.875, rows: [], priceChg: -20, taxMode: 'withhold', donate: 0, stockPct: 0, leave: 'return', gradeX: 1.2, price: 190000, psu: { on: true, y: 2028, n: 3, shares: 200 }, fc: 1, tail1: 25, hold: 0, holdRet: 6, holdDiv: 1.5, divOut: true });
   const opiPresetRows = key => { const P = ENG.OPI.PRESET[key] || ENG.OPI.PRESET.med; return P.op.map((op, k) => ({ id: uid(), y: 2026 + k, to: '', op, opi1: P.opi1[k], g: 'cl' })); };
   function baseAssumptions() {
     return { v: 6, baseYear: CY, inflation: 2.5, eduInflation: 3.0, horizonAge: 120, horizonBasis: 'later', minReserve: 0, eqReturn: 7.0, bondReturn: 3.0, rebalance: true, harvest: true, penDeferAge: '', pf: PF_DEF(), flow: FLOW_DEF(), mdd: MDD_DEF() };
@@ -3468,6 +3471,7 @@ function RetirementEngine() {
       <div class="flist">${O.rows.map(opiRow).join('') || '<div class="empty">위 묶음을 누르면 2026~2030년이 채워져요.</div>'}</div>
       <small class="hint">‘증권사 전망 중앙값’은 최근 3달(2026.8~11) 보도된 증권사 전망의 가운데 값이에요(2026~2028년, 전사 영업이익의 99%를 DS로 봄). 2029·2030년은 전망이 없어 보수적인 값이니 고쳐 쓰세요.</small>
       <div class="adds"><button class="chip add" type="button" data-act="addOpi">+ 실적 연도 추가</button></div>
+      <div class="grid2">${numF('그 뒤 해마다 OPI1', 'flow.opi.tail1', O.tail1, '%', { step: 5, hint: '위에 적지 않은 해(은퇴 전까지) · OPI2는 없다고 봄 · 0이면 성과금 없음' })}</div>
       ${stepH('다', '주가', 'OPI2 자사주는 풀리는 대로 모두 팔고, 그때 주가는 이 비율로 변한다고 봐요')}
       <div class="grid2">
         ${numF('오늘 주가', 'flow.opi.price', O.price, '원', { step: 100, hint: 'PSU 금액 계산에 써요' })}
@@ -3871,7 +3875,7 @@ function RetirementEngine() {
       }<tr><td class="l"><b>합계</b></td><td><b>${cw(ySum('a'))}</b></td><td><b>${cw(ySum('b'))}</b></td>${hasC ? `<td><b>${cw(ySum('c'))}</b></td>` : ''}${hasD ? `<td><b>${cw(ySum('d'))}</b></td>` : ''}<td><b>${cw(ySum('a') + ySum('b') + ySum('c') + ySum('d'))}</b></td>${hasH ? `<td><b>${cw(ySum('h'))}</b></td>` : ''}</tr></tbody></table></div>` : '';
       const lost = Q.perf.reduce((t, q) => t + (q.lost || 0), 0), lostY = Q.perf.filter(q => q.lost > 0).map(q => q.pay);
       const lastP = O.rows.reduce((mx, r) => Math.max(mx, Math.round(num(r.y, 0)), blank(r.to) ? 0 : Math.round(num(r.to, 0))), 0), endP = contribStopYear('self') - 2;
-      const gapTxt = lastP && endP > lastP ? ` <span class="muted">${lastP + 1 === endP ? endP + '년' : `${lastP + 1}~${endP}년`} 실적(은퇴 전에 받는 몫)은 적지 않아 성과금 0원으로 봤어요. 받을 것 같으면 ‘+ 실적 연도 추가’로 넣으세요(끝 연도를 적으면 그 해까지 같은 값).</span>` : '';
+      const gapTxt = lastP && endP > lastP ? ` <span class="muted">${lastP + 1 === endP ? endP + '년' : `${lastP + 1}~${endP}년`} 실적은 ${num(O.tail1, 0) > 0 ? `OPI1 ${num(O.tail1)}%만 받는다고 봤어요(‘그 뒤 해마다 OPI1’)` : '적지 않아 성과금 0원으로 봤어요. ‘그 뒤 해마다 OPI1’에 지급률을 넣으세요'}.</span>` : '';
       setD('cash:opi', (Q.perf.length ? `<div class="tbl-wrap"><table class="t mini-t"><thead><tr><th class="l">실적→받는 해</th><th>DS 영업이익</th><th>OPI1 세후</th><th>OPI2 세전 → 자사주</th><th>자사주 판 돈</th></tr></thead><tbody>${tr}</tbody></table></div>` : '') +
         `<span>${Q.perf.length ? `${Q.perf.length}번 받는 성과금 세전 <b>${won(s1, { short: true })}</b> → 세금·보험료를 떼고 자사주를 주가 해마다 ${gTxt}로 3년에 나눠 팔면 실제로 쥐는 돈 <b>${won(sNet, { short: true })}</b>(${s1 > 0 ? Math.round(sNet / s1 * 100) : 0}%)${O.taxMode === 'settled' ? ' · 연말정산 환급 포함' : ''}. 자사주 1/3은 받는 해, 1/3은 1년 뒤, 1/3은 2년 뒤에 팔아요.` : '연봉을 넣으면 OPI가 계산돼요.'}${gapTxt}${lost > 0.5 ? ` <span class="neg">${lostY.join('·')}년에 받은 자사주 중 은퇴 때 아직 못 파는 ${won(lost, { short: true })}(받을 때 값)은 돌려준다고 봤어요.</span>` : ''}${psuTxt}</span>` + yearTbl);
     } else setD('cash:opi', O.on ? '<span class="muted">받을 성과금이 없어요. 연봉과 실적 연도(은퇴 전에 받는 해)를 확인해 주세요.</span>' : '');
@@ -5268,9 +5272,9 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
       title: i => `${x[i]}년 · 본인 ${ages[i]}세${m.P > 1 ? ` · 배우자 ${x[i] - m.birth[1]}세` : ''}`,
       extra: i => {
         const f = rows[i].f, sold = f.sold[0] + f.sold[1];
-        return [['여윳자금', won(f.fc)], ['세후 소득', won(f.inc + f.exIn)]]
+        return [['여윳자금', won(f.fc)], ['성과금 등 세후(연봉 제외)', won(f.inc + f.exIn - f.spend)]]
           .concat((f.net1 || 0) > 0.5 ? [['└ OPI1 세후(현금)', won(f.net1)]] : [], (f.net3 || 0) > 0.5 ? [['└ PSU 세후', won(f.net3)]] : [], sold > 0.5 ? [['└ 자사주 판 돈', won(sold)]] : [], (f.taxBack || 0) > 0.5 ? [['└ OPI2 연말정산 환급', won(f.taxBack)]] : [],
-            [['생활비·지출·대출', won(f.spend + f.exOut + f.loan)]], f.refund > 0.5 ? [['세액공제 환급(일반계좌에 포함)', won(f.refund)]] : []);
+            (f.exOut + f.loan) > 0.5 ? [['큰 지출·대출(성과금에서)', won(f.exOut + f.loan)]] : [], f.refund > 0.5 ? [['세액공제 환급(일반계좌에 포함)', won(f.refund)]] : []);
       }
     });
     const sum = k => rows.reduce((t, r) => t + k(r), 0);
@@ -5299,15 +5303,15 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
   function renderCashSum(R, rows) {
     const host = $('#cashSum'); if (!host) return;
     const c = w => manCell(w || 0), m = R.meta;
-    const L = rows.map(r => { const f = r.f, sold = f.sold[0] + f.sold[1]; return { y: f.y, age: f.y - m.birth[0], o1: f.net1 || 0, sold, psu: f.net3 || 0, tb: f.taxBack || 0, cash: (f.net1 || 0) + sold + (f.net3 || 0) + (f.taxBack || 0), sal: f.netS[0], sal2: R.flow.spIn === false ? 0 : f.netS[1], spend: f.spend + f.exOut + f.loan, save: r.pen + r.isa, comp: f.comp || 0, gen: r.gen, hold: f.held || 0, w: r.fl.w }; });
+    const L = rows.map(r => { const f = r.f, sold = f.sold[0] + f.sold[1]; return { y: f.y, age: f.y - m.birth[0], o1: f.net1 || 0, sold, psu: f.net3 || 0, tb: f.taxBack || 0, cash: (f.net1 || 0) + sold + (f.net3 || 0) + (f.taxBack || 0), spend: f.exOut + f.loan, must: f.must || 0, exIn: f.exIn || 0, save: r.pen + r.isa, comp: f.comp || 0, gen: r.gen, hold: f.held || 0, w: r.fl.w }; });
     const has = k => L.some(x => x[k] > 0.5), T = k => L.reduce((t, x) => t + x[k], 0);
     const cols = [['o1', 'OPI1<br><span class="muted">세후 현금</span>', has('o1')], ['sold', '자사주 판 돈<br><span class="muted">OPI2</span>', has('sold')], ['psu', 'PSU<br><span class="muted">세후</span>', has('psu')], ['tb', 'OPI2 환급', has('tb')],
-      ['cash', '<b>성과금 현금화</b><br><span class="muted">합계</span>', has('cash')], ['sal', m.P > 1 ? '세후 연봉<br><span class="muted">본인</span>' : '세후 연봉', true], ['sal2', '세후 연봉<br><span class="muted">배우자</span>', has('sal2')], ['spend', '<b>소비</b><br><span class="muted">생활비·큰 지출</span>', true], ['save', '<b>연금·ISA 저축</b>', true], ['comp', '그중 회사가<br><span class="muted">넣어 준 돈</span>', has('comp')], ['gen', '<b>일반계좌 납입</b>', true], ['hold', '삼성전자<br><span class="muted">주식 보유</span>', has('hold')], ['w', '모자라 꺼낸 돈', has('w')]].filter(x => x[2]);
+      ['cash', '<b>성과금 현금화</b><br><span class="muted">합계</span>', has('cash')], ['spend', '<b>큰 지출</b><br><span class="muted">성과금에서 씀</span>', has('spend')], ['save', '<b>연금·ISA 저축</b>', true], ['comp', '그중 회사가<br><span class="muted">넣어 준 돈</span>', has('comp')], ['gen', '<b>일반계좌 납입</b>', true], ['hold', '삼성전자<br><span class="muted">주식 보유</span>', has('hold')], ['w', '모자라 꺼낸 돈', has('w')]].filter(x => x[2]);
     const bold = { cash: 1, spend: 1, save: 1, gen: 1 };
     host.innerHTML = `<div class="tbl-wrap"><table class="t sum-t"><thead><tr><th class="l sticky">연도</th>${cols.map(k => `<th>${k[1]}</th>`).join('')}</tr></thead><tbody>${
       L.map(x => `<tr><td class="l sticky">${x.y}<span class="muted"> ${x.age}세</span></td>${cols.map(k => `<td${k[0] === 'w' && x.w > 0.5 ? ' class="neg"' : ''}>${bold[k[0]] ? '<b>' + c(x[k[0]]) + '</b>' : c(x[k[0]])}</td>`).join('')}</tr>`).join('')
     }</tbody><tfoot><tr><td class="l sticky"><b>합계</b></td>${cols.map(k => `<td><b>${c(T(k[0]))}</b></td>`).join('')}</tr></tfoot></table></div>
-    <p class="hint">단위 만원 · 그 해 금액. 성과금 현금화 = OPI1 세후 + 그 해에 판 자사주 + PSU 세후${has('tb') ? ' + 환급' : ''}. 세후 연봉은 성과금을 뺀 연봉에서 세금과 4대보험을 뗀 1년치예요. 세후 연봉 + 성과금 현금화 − 소비 = 연금·ISA 저축 + 일반계좌 납입(세액공제 환급 포함).</p>`;
+    <p class="hint">단위 만원 · 그 해 금액. 세후 연봉은 은퇴 전 생활비로 그대로 쓴다고 보고 이 표에서 뺐어요(은퇴 후 생활비는 은퇴한 해부터만 빠져요). 성과금 현금화 − 큰 지출 = 연금·ISA 저축(내 돈) + 일반계좌 납입. 세액공제 환급금은 일반계좌 납입에 들어 있어요.</p>`;
   }
   const ALLOC_NAME = { spIsaOn: '아내 ISA에 연 2,000만원 넣기', spIsaOff: '아내 ISA에 넣지 않고 일반계좌로', cur: '지금 순서', rec: '추천 순서', noExtra: '연금저축 추가 납입 없이', noSpouse: '배우자 계좌 안 쓰고', restOnly: '모두 남는 돈 계좌(일반계좌)에' };
   const ALLOC_DESC = {
