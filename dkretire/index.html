@@ -988,6 +988,9 @@ body.choosing .top{border-bottom:0}
 .mdd-t td.best{background:color-mix(in srgb,var(--ok,#1a7f4b) 14%,transparent)}
 .mdd-t .neg{color:var(--seal)}
 .mdd-notes{margin-top:8px}
+/* v2: 계좌 묶음 제목 */
+.acc-grp{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:14px 0 6px;font-size:13.5px}
+.acc-grp small{opacity:.75;font-size:12px}
 </style>
 </head>
 <body>
@@ -3597,8 +3600,22 @@ function RetirementEngine() {
       ${pfBlock()}
       ${keyNote([['var(--s3)', '일반계좌'], ['var(--s2)', '연금계좌']])}
       ${state.accounts.length ? '' : addBar('')}
-      <div class="list">${state.accounts.map(accBlock).join('') || '<div class="empty">아직 계좌가 없어요. 위에서 계좌를 추가하세요. 없으면 해외주식형 일반계좌 하나로 가정해 필요한 돈을 계산해요.</div>'}</div>
+      ${accLists() || '<div class="list"><div class="empty">아직 계좌가 없어요. 위에서 계좌를 추가하세요. 없으면 해외주식형 일반계좌 하나로 가정해 필요한 돈을 계산해요.</div></div>'}
       ${state.accounts.length ? addBar('') : ''}`;
+  }
+  // 여윳자금 계획을 켜면: 2번 ‘넣는 순서’에 있는 계좌를 그 순서대로 먼저, 남는 돈 계좌, 그다음 그 밖의 계좌
+  function accLists() {
+    const A = state.accounts; if (!A.length) return '';
+    const F = state.flow;
+    if (!F || !F.on) return `<div class="list">${A.map(accBlock).join('')}</div>`;
+    const seen = {}, first = [];
+    (F.alloc || []).forEach(e => { const a = A.find(x => x.id === e.acc); if (a && !seen[a.id]) { seen[a.id] = 1; first.push(a); } });
+    const rest = A.find(a => a.id === F.rest) || A.find(a => a.type === 'taxable_foreign' && a.owner !== 'spouse');
+    if (rest && !seen[rest.id]) { seen[rest.id] = 1; first.push(rest); }
+    const others = A.filter(a => !seen[a.id]);
+    return (first.length ? `<div class="acc-grp"><b>여윳자금이 들어가는 계좌</b><small>2번 ‘넣는 순서’와 같은 순서 · 지금 잔액만 넣으면 돼요</small></div><div class="list">${first.map(accBlock).join('')}</div>` : '') +
+      (others.length ? `<div class="acc-grp"><b>그 밖의 계좌</b><small>퇴직연금, 넣는 순서에 없는 계좌</small></div><div class="list">${others.map(accBlock).join('')}</div>` : '') +
+      `<div class="acc-grp"><b>계좌가 더 있으면</b><small>아래에서 추가하세요. 여윳자금을 넣으려면 2번 ‘넣는 순서’에서 고르면 돼요.</small></div>`;
   }
   function renderHealth() {
     const h = state.health, sp = state.spouse.enabled;
