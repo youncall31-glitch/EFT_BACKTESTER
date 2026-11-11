@@ -2916,7 +2916,7 @@ function RetirementEngine() {
   const guessHi = n => /주택연금|연금보험|비과세|보험금/.test(String(n || '')) ? 0 : /근로|급여|월급|연봉|국민연금|공무원|군인|사학/.test(String(n || '')) ? 50 : BIZ_RE.test(String(n || '')) ? 101 : 100;
   // 대출
   const LOAN_KINDS = [['home', '주담대(1주택)'], ['jeonse', '전세대출'], ['other', '신용·기타']];
-  const LOAN_METHODS = [['retire', '은퇴 직전에 한 번에(그때까지 이자만)'], ['annuity', '원리금균등'], ['principal', '원금균등'], ['bullet', '만기일시']];
+  const LOAN_METHODS = [['annuity', '원리금균등'], ['principal', '원금균등'], ['bullet', '만기일시'], ['retire', '이자만 내다가 은퇴 때 원금 전부']];
   const LOAN_AT = [['pay', '은퇴 때 다 갚기'], ['continue', '계속 나눠 갚기'], ['auto', '유리한 쪽 자동']];
   const LOAN_PRESETS = {
     '주택담보대출': { kind: 'home', bal: 20000, rate: 4, years: 20, method: 'annuity' },
@@ -3084,8 +3084,8 @@ function RetirementEngine() {
       if (e.hiPct == null) e.hiPct = guessHi(e.name);
       else if (oldV < 5 && num(e.hiPct) === 100 && BIZ_RE.test(String(e.name || ''))) e.hiPct = 101;   // v5: 사업·임대 구분 추가
     });
-    if (s.flow && s.flow.on && !s.loanV) s.loans.forEach(l => { l.method = 'retire'; l.atRetire = 'pay'; });   // 한 번만: 대출은 은퇴 직전에 한 번에 갚는 것으로
-    s.loanV = 1;
+    if (s.flow && s.flow.on && !(s.loanV >= 2)) s.loans.forEach(l => { if (l.method === 'retire' || !l.method) l.method = 'annuity'; l.atRetire = 'pay'; });   // 한 번만: 지금처럼 나눠 갚다가 은퇴할 때 남은 원금을 한 번에
+    s.loanV = 2;
     s.loans.forEach(l => { if (!l.atRetire) l.atRetire = 'pay'; if (!l.method) l.method = 'annuity'; if (!l.kind) l.kind = 'home'; if (l.hiDed == null) l.hiDed = true; });
     const selfStop = Math.max(CY, num(s.self.birthYear, CY - 45) + num(s.self.retireAge, 60));
     const stopOf = a => (a.owner === 'spouse' && s.spouse.enabled && s.spouse.retireSame === false) ? Math.min(selfStop, Math.max(CY, num(s.spouse.birthYear, CY - 45) + num(s.spouse.retireAge, 60))) : selfStop;
@@ -3379,20 +3379,21 @@ function RetirementEngine() {
       <div class="row">${swatch('var(--c8)', '결과 차트의 ‘대출 상환’ 색')}<input class="txt name" data-k="${p}.name" value="${esc(l.name)}" aria-label="대출 이름"><button class="xbtn" type="button" data-act="del" data-list="loans" data-id="${l.id}" aria-label="${esc(l.name)} 삭제">×</button></div>
       <div class="grid2">
         ${numF('지금 남은 잔액', p + '.bal', l.bal, '만원')}
-        ${selF('갚는 방법', p + '.method', l.method || 'annuity', LOAN_METHODS, { re: 'loan', hint: l.method === 'retire' ? '은퇴 전에는 이자만 · 은퇴하는 해에 원금을 모은 돈에서 갚음' : '해마다 나눠 갚음' })}
+        ${l.method === 'retire' ? '' : selF('은퇴할 때 남은 원금', p + '.atRetire', l.atRetire || 'pay', LOAN_AT, { hint: '은퇴 전까지는 지금처럼 나눠 갚아요' })}
       </div>
       <output class="derived" data-d="loan:${l.id}"></output>
       ${moreBlock('loan:' + l.id, `<div class="grid2">
           ${selF('종류', p + '.kind', kind, LOAN_KINDS, { re: 'loan' })}
           ${numF('금리', p + '.rate', l.rate, '%', { step: 0.1 })}
-          ${l.method === 'retire' ? '' : numF('만기 연도', p + '.endYear', l.endYear, '년', { hint: '이 해 말까지 다 갚음' }) + selF('은퇴할 때 남은 돈', p + '.atRetire', l.atRetire || 'pay', LOAN_AT, { hint: '자동은 필요자금이 적은 쪽' })}
+          ${numF('만기 연도', p + '.endYear', l.endYear, '년', { hint: '예: 2024년에 40년짜리면 2063' })}
+          ${selF('상환 방식', p + '.method', l.method || 'annuity', LOAN_METHODS, { re: 'loan' })}
         </div>` + (kind !== 'other' ? chkF('건보료 주택금융부채 공제 받음', p + '.hiDed', l.hiDed !== false, kind === 'jeonse'
         ? '무주택 세대의 전세대출(보증금 5억원 이하)은 대출 잔액의 30%(최대 1억 5,000만원)를 보증금 평가액에서 뺍니다. 공단에 신청해야 적용됩니다.'
         : '1주택 세대가 재산 과표 3억원 이하 집을 살 때(취득·전입 전후 3개월 안) 받은 주담대는 잔액의 60%(최대 5,000만원)를 재산 과표에서 뺍니다. 공단에 신청해야 적용됩니다.') : ''))}
     </div>`;
   }
   function renderLoan() {
-    $('#loan').innerHTML = `<p class="hint">‘은퇴 직전에 한 번에’는 은퇴 전에 이자만 내고(연봉에서) 은퇴하는 해에 원금을 모은 돈에서 갚아요. 나눠 갚는 방식을 고르면 은퇴 전까지는 월급으로 갚는다고 봐요. 금리는 ‘세부 설정’에 있어요.</p>
+    $('#loan').innerHTML = `<p class="hint">은퇴 전까지는 지금처럼 월급으로 나눠 갚고, 은퇴하는 해에 그때 남은 원금을 모은 돈에서 한 번에 갚는 것이 기본이에요. 금리·만기·상환 방식은 ‘세부 설정’에 있어요.</p>
       <div class="list">${(state.loans || []).map(loanItem).join('') || '<div class="empty">대출이 없으면 비워 두세요.</div>'}</div>
       <div class="adds">${Object.keys(LOAN_PRESETS).map(k => `<button class="chip" type="button" data-act="addLoan" data-preset="${esc(k)}">+ ${esc(k)}</button>`).join('')}</div>`;
   }
@@ -4275,7 +4276,7 @@ function RetirementEngine() {
       case 'addLoan': {
         const k = b.dataset.preset, pr = LOAN_PRESETS[k] || LOAN_PRESETS['주택담보대출'];
         if (!Array.isArray(state.loans)) state.loans = [];
-        state.loans.push({ id: uid(), name: k, kind: pr.kind, bal: pr.bal, rate: pr.rate, endYear: CY + pr.years - 1, method: 'retire', atRetire: 'pay', hiDed: true });
+        state.loans.push({ id: uid(), name: k, kind: pr.kind, bal: pr.bal, rate: pr.rate, endYear: CY + pr.years - 1, method: pr.method, atRetire: 'pay', hiDed: true });
         afterEdit('loan'); focusLast('#loan'); break;
       }
       case 'addAcc': {
