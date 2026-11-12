@@ -645,6 +645,8 @@ table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;fo
   body[data-tab="result"] #paneDetail,body[data-tab="detail"] #paneResult{display:none}
   body[data-tab="input"] .lede,body[data-tab="detail"] .lede,body[data-tab="detail"] .banner{display:none}
   body[data-tab="input"] .banner [data-act="startMine"]{display:none}
+  body[data-tab="track"] #inputs,body[data-tab="track"] #paneResult,body[data-tab="track"] #paneDetail,body[data-tab="track"] .lede,body[data-tab="track"] .banner{display:none}
+  body:not([data-tab="track"]) #paneTrack{display:none}
   /* 탭 막대가 위에 붙어 있으니 입력 요약 띠는 붙이지 않음(탭에 결과가 보임) */
   .mini{position:static;box-shadow:none}
   .inputs .sec,.card,.cover{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 66px)}
@@ -837,6 +839,8 @@ body.choosing .top{border-bottom:0}
   body[data-tab="result"] #paneDetail,body[data-tab="detail"] #paneResult{display:none}
   body[data-tab="input"] .lede,body[data-tab="detail"] .lede,body[data-tab="detail"] .banner{display:none}
   body[data-tab="input"] .banner [data-act="startMine"]{display:none}
+  body[data-tab="track"] #inputs,body[data-tab="track"] #paneResult,body[data-tab="track"] #paneDetail,body[data-tab="track"] .lede,body[data-tab="track"] .banner{display:none}
+  body:not([data-tab="track"]) #paneTrack{display:none}
   /* 탭 막대가 위에 붙어 있으니 입력 요약 띠는 붙이지 않음(탭에 결과가 보임) */
   .mini{position:static;box-shadow:none}
   .inputs .sec,.card,.cover{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 66px)}
@@ -1051,6 +1055,42 @@ body.choosing .top{border-bottom:0}
 .keep-t tr.neg td.l{color:inherit}
 .keep-t tr.sum td{border-top:1.5px solid var(--line,currentColor)}
 .tip-legend{margin:0 0 10px;font-size:.88em;line-height:1.55;color:var(--muted,inherit)}
+
+/* 연말 점검 */
+.tk-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:12px}
+.tk-bar label{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.tk-bar .sel{font-size:15px;padding:7px 10px}
+.tk-base{font-size:12.5px;color:var(--muted)}
+.tk-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.tk-sum>div{border:1px solid var(--rule);border-radius:8px;padding:8px 10px;min-width:0}
+.tk-sum small{display:block;font-size:11.5px;color:var(--muted)}
+.tk-sum b{display:block;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tk-sum .ok b{color:var(--good)} .tk-sum .no b{color:var(--seal)}
+.tk-t{width:100%;table-layout:fixed;border-collapse:collapse}
+.tk-t td,.tk-t th{padding:5px 6px;text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle}
+.tk-t th{font-size:11.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--rule)}
+.tk-t tr.tk-n td{text-align:left;font-weight:600;padding-top:10px;padding-bottom:0;border-top:1px solid var(--rule-2,var(--rule))}
+.tk-t tr.tk-g td{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding-top:14px;border:0}
+.tk-t tr.tk-s td{border-top:1.5px solid var(--rule);font-weight:700;padding-top:8px}
+.tk-t tr.tk-s td.l{text-align:left}
+.tk-t .in{display:flex;align-items:center;gap:4px;border:1px solid var(--field-line);border-radius:7px;background:var(--field);padding:0 6px;min-width:0}
+.tk-t .in input{width:100%;min-width:0;border:0;background:transparent;text-align:right;padding:7px 0;font:inherit;color:inherit}
+.tk-t .in em{font-style:normal;font-size:11px;color:var(--muted);flex:none}
+.tk-d{font-size:12.5px;line-height:1.35}
+.tk-d.ok{color:var(--good)} .tk-d.no{color:var(--seal)} .tk-d.na{color:var(--muted)}
+.tk-d .pill{margin-bottom:2px}
+.tk-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tk-y{width:100%;border-collapse:collapse}
+.tk-y td,.tk-y th{padding:6px 6px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--rule-2,var(--rule));white-space:nowrap}
+.tk-y th{font-size:11.5px;color:var(--muted);font-weight:600}
+.tk-y td.l,.tk-y th.l{text-align:left}
+.tk-y tr.on td{background:color-mix(in srgb,var(--accent-wash) 55%,transparent)}
+.tk-y button{border:0;background:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:4px 2px;text-decoration:underline}
+.tk-h{margin:0 0 8px;font-size:15px}
+.tk-p{margin:8px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.55}
+@media (max-width:560px){.tk-y td,.tk-y th{padding:6px 3px;font-size:12.5px}.tk-sum b{font-size:14px}}
+.tk-t th:nth-child(1){width:30%}.tk-t th:nth-child(2){width:38%}.tk-t th:nth-child(3){width:32%}
+@media (max-width:380px){.tk-t th:nth-child(1){width:27%}.tk-t th:nth-child(2){width:41%}.tk-t th:nth-child(3){width:32%}.tk-t td,.tk-t th{padding:5px 3px}.tk-t .in{padding:0 4px}.tk-t .in em{display:none}.tk-t td{font-size:13px}.tk-d{font-size:11.5px}.tk-y td,.tk-y th{padding:6px 2px;font-size:12px}.tk-y .pill{padding:2px 5px}}
 </style>
 </head>
 <body>
@@ -1093,6 +1133,7 @@ body.choosing .top{border-bottom:0}
     <button type="button" data-tab="input" aria-pressed="false"><span class="tb-l">입력</span><small id="tbInput">내 숫자 넣기</small></button>
     <button type="button" data-tab="result" aria-pressed="false"><span class="tb-l">결과</span><small id="tbResult">계산 중</small></button>
     <button class="pro-only" type="button" data-tab="detail" aria-pressed="false"><span class="tb-l">자세히</span><small>표·검증</small></button>
+    <button type="button" data-tab="track" aria-pressed="false"><span class="tb-l">점검</span><small id="tbTrack">연말 확인</small></button>
   </nav>
 
   <div class="banner" id="banner" hidden>
@@ -1314,6 +1355,13 @@ body.choosing .top{border-bottom:0}
         <section class="card">
           <details class="assume" id="assume"><summary>계산 가정과 한계</summary><div id="assumeBody"></div></details>
         </section>
+      </div>
+      <div class="pane" id="paneTrack" aria-label="연말 점검">
+        <div class="pane-h">
+          <h2>연말 점검</h2>
+          <p>해마다 12월 말에 계좌 잔액을 적어 두면, 계획한 금액만큼 모였는지 바로 알 수 있어요. 여기에 적는 숫자는 계산에는 영향을 주지 않아요.</p>
+        </div>
+        <div id="trackBody"></div>
       </div>
     </main>
   </div>
@@ -3128,6 +3176,9 @@ function RetirementEngine() {
     ['children', 'expenses', 'incomes', 'accounts', 'loans'].forEach(k => { s[k] = Array.isArray(o[k]) ? o[k].filter(x => x && typeof x === 'object') : []; s[k].forEach(x => { if (!x.id) x.id = uid(); }); });
     s.expenses.forEach(e => { e.start = e.start || { t: 'retire' }; e.end = e.end || { t: 'end' }; if (!e.cat) e.cat = guessCat(e.name); });
     if (s.penDeferAge == null) s.penDeferAge = '';
+    if (!s.track || typeof s.track !== 'object') s.track = { base: null, act: {} };
+    if (!s.track.act || typeof s.track.act !== 'object') s.track.act = {};
+    if (!s.track.base || typeof s.track.base !== 'object' || !s.track.base.rows) s.track.base = null;
     const oldV = num(o.v, 0);
     s.incomes.forEach(e => {
       e.start = e.start || { t: 'retire' }; e.end = e.end || { t: 'end' };
@@ -3231,6 +3282,7 @@ function RetirementEngine() {
   const mixCagr = p => { const w = Math.max(0, Math.min(100, num(p, 0))) / 100; return +(w * num(state.eqReturn, 7) + (1 - w) * num(state.bondReturn, 3)).toFixed(2); };
   function engineState() {
     const s = clone(state);
+    delete s.track;   // 연말 점검 기록은 계산에 쓰지 않음
     s.currentYear = CY;
     { const d = new Date(); s.yearLeft = d.getFullYear() === CY ? Math.max(0, Math.min(1, (new Date(CY + 1, 0, 1) - d) / (365.25 * 864e5))) : 1; }   // 올해 남은 기간(잔액을 오늘 기준으로 볼 때)
     s.accounts.forEach(a => { if (a.cagrMode === 'mix') { a.cagr = mixCagr(a.stockPct); a.cagrPost = blank(a.stockPctPost) ? '' : mixCagr(a.stockPctPost); } });
@@ -4253,7 +4305,7 @@ function RetirementEngine() {
   let uiT = null;
   function saveUi() { clearTimeout(uiT); uiT = setTimeout(() => { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (e) { /* 저장 불가 환경 */ } }, 300); }
   const mqWide = window.matchMedia('(min-width: 1100px)');
-  const TABS = ['input', 'result', 'detail'];
+  const TABS = ['input', 'result', 'detail', 'track'];
   const MODES = ['simple', 'pro'];
   const isSimple = () => document.body.dataset.mode === 'simple';
   function applyMode() {
@@ -4275,7 +4327,7 @@ function RetirementEngine() {
   const barH = () => { const tb = $('#tabbar'); return tb && tb.offsetHeight && getComputedStyle(tb).position === 'sticky' ? tb.offsetHeight : 0; };
   const tabScroll = {};
   const smooth = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
-  const paneOf = t => (t === 'input' ? $('#inputs') : t === 'result' ? $('#paneResult') : $('#paneDetail'));
+  const paneOf = t => (t === 'input' ? $('#inputs') : t === 'result' ? $('#paneResult') : t === 'track' ? $('#paneTrack') : $('#paneDetail'));
   // how: 'restore'(그 탭에서 보던 곳) · 'top'(그 화면 맨 위) · 'none'(스크롤은 호출한 쪽에서)
   function setTab(t, how) {
     if (!TABS.includes(t)) t = 'result';
@@ -5007,7 +5059,84 @@ var t=0;function step(){if(id!==latest)return;if(t<tasks.length){try{tasks[t++](
     renderStrat(R); renderScenario(R); renderFirst(R); renderPlace(R); renderTips();
     renderExtra(); renderScen(); renderPlan(); renderVerify(R); renderAssume(R);
     renderFoldSums(R);
+    renderTrack(R);
   }
+
+
+  // ───────── 연말 점검: 계획한 연말 잔액 ↔ 실제 잔액 ─────────
+  //  기준 계획은 처음 실제 금액을 적는 순간 고정(그 뒤 입력을 바꿔도 목표가 움직이지 않게). 금액은 만원
+  const trk = () => { if (!state.track || typeof state.track !== 'object') state.track = { base: null, act: {} }; if (!state.track.act) state.track.act = {}; return state.track; };
+  function trackLive(R) {
+    const A = R.planCur.accounts, P = R.meta.P, map = {};
+    A.forEach(a => { if (!a.auto) return; const t = A.find(x => !x.auto && x.group === a.group && x.owner === a.owner) || A.find(x => !x.auto && x.group === a.group); if (t) map[a.id] = t.id; });   // 자동으로 생긴 일반계좌는 내 일반계좌에 합쳐 보여 줌
+    const acc = A.filter(a => !map[a.id]).map(a => ({ id: a.id, name: (a.name || '계좌') + (P > 1 ? (a.owner ? ' · 배우자' : ' · 본인') : ''), tax: a.group === 'PEN' || a.group === 'ISA' }));
+    const rows = {};
+    R.planCur.rows.forEach(r => { const o = {}; Object.keys(r.bal).forEach(id => { const k = map[id] || id; o[k] = (o[k] || 0) + r.bal[id] / MAN; }); Object.keys(o).forEach(k => { o[k] = Math.round(o[k]); }); rows[r.y] = o; });
+    return { acc, rows };
+  }
+  let trackArm = false;
+  function renderTrack(R) {
+    const host = $('#trackBody'); if (!host || !R || !R.planCur) return;
+    const T = trk(), live = trackLive(R), base = T.base || live, m = R.meta;
+    const acc = base.acc.concat(live.acc.filter(a => !base.acc.some(b => b.id === a.id)));   // 기준을 잡은 뒤 새로 만든 계좌도 보임
+    const years = Object.keys(base.rows).map(Number).sort((a, b) => a - b);
+    if (!years.length) { host.innerHTML = ''; return; }
+    let Y = Math.round(num(ui.trackY, CY)); if (years.indexOf(Y) < 0) Y = years[0];
+    const man = v => won(v * MAN), planOf = (y, id) => ((base.rows[y] || {})[id]) || 0, actOf = (y, id) => { const v = (T.act[y] || {})[id]; return v === '' || v == null || !Number.isFinite(Number(v)) ? null : Number(v); };
+    // 한 해 합계: 실제를 적은 계좌끼리만 견줌
+    const sumY = y => { let p = 0, a = 0, n = 0, pAll = 0; acc.forEach(x => { const pv = planOf(y, x.id), av = actOf(y, x.id); pAll += pv; if (av != null) { p += pv; a += av; n++; } }); return { p, a, n, pAll, all: acc.filter(x => planOf(y, x.id) > 0.5 || actOf(y, x.id) != null).length }; };
+    const diffCell = (p, a) => a == null ? `<span class="tk-d na">미입력</span>` : a >= p ? `<span class="tk-d ok"><span class="pill good">달성</span><br>${a - p >= 0.5 ? '+' + man(a - p) + ' 초과' : '딱 맞음'}</span>` : `<span class="tk-d no"><span class="pill bad">미달</span><br>${man(p - a)} 부족</span>`;
+    const list = acc.filter(x => planOf(Y, x.id) > 0.5 || actOf(Y, x.id) != null || !/^auto_/.test(x.id));
+    const grp = (title, xs) => {
+      if (!xs.length) return '';
+      let p = 0, a = 0, n = 0;
+      const body = xs.map(x => { const pv = planOf(Y, x.id), av = actOf(Y, x.id); if (av != null) { p += pv; a += av; n++; }
+        return `<tr class="tk-n"><td colspan="3">${esc(x.name)}</td></tr><tr><td>${man(pv)}</td><td><span class="in"><input type="number" inputmode="numeric" data-tr="${esc(x.id)}" value="${av == null ? '' : av}" placeholder="만원" aria-label="${esc(x.name)} ${Y}년 말 실제 잔액(만원)"><em>만원</em></span></td><td>${diffCell(pv, av)}</td></tr>`; }).join('');
+      return `<tr class="tk-g"><td colspan="3">${title}</td></tr>${body}<tr class="tk-s"><td class="l" colspan="3">${title} 소계${n ? (n < xs.length ? ` <span class="muted">(적은 ${n}개만)</span>` : '') : ''}</td></tr><tr><td>${n ? man(p) : man(xs.reduce((t, x) => t + planOf(Y, x.id), 0))}</td><td>${n ? man(a) : '—'}</td><td>${n ? diffCell(p, a) : diffCell(0, null)}</td></tr>`;
+    };
+    const S = sumY(Y), d = S.a - S.p;
+    const sumBox = `<div class="tk-sum"><div><small>계획한 합계</small><b>${man(S.pAll)}</b></div><div><small>실제 합계${S.n && S.n < S.all ? ` (${S.n}/${S.all}개)` : ''}</small><b>${S.n ? man(S.a) : '미입력'}</b></div>
+      <div class="${!S.n ? '' : d >= 0 ? 'ok' : 'no'}"><small>${!S.n ? '차이' : d >= 0 ? '달성 · 남는 돈' : '미달 · 모자란 돈'}</small><b>${!S.n ? '—' : (d >= 0 ? '+' : '−') + man(Math.abs(d))}${S.n && S.p > 0 ? ` <span class="muted" style="font-weight:400;font-size:12px">${Math.round(S.a / S.p * 100)}%</span>` : ''}</b></div></div>`;
+    const yearsShown = years.filter(y => y < m.retYear || sumY(y).n > 0 || y === Y);
+    const yTbl = `<div class="tblwrap"><table class="tk-y"><thead><tr><th class="l">연말</th><th>계획</th><th>실제</th><th>차이</th><th class="l">결과</th></tr></thead><tbody>${yearsShown.map(y => { const s = sumY(y), dd = s.a - s.p;
+      return `<tr${y === Y ? ' class="on"' : ''}><td class="l"><button type="button" data-try="${y}">${y}</button></td><td>${won(s.pAll * MAN, { short: true })}</td><td>${s.n ? won(s.a * MAN, { short: true }) : '—'}</td><td>${s.n ? (dd >= 0 ? '+' : '−') + won(Math.abs(dd) * MAN, { short: true }) : '—'}</td><td class="l">${!s.n ? '<span class="muted">미입력</span>' : `<span class="pill ${dd >= 0 ? 'good' : 'bad'}">${dd >= 0 ? '달성' : '미달'}</span>${s.n < s.all ? ` <span class="muted">${s.n}/${s.all}</span>` : ''}`}</td></tr>`; }).join('')}</tbody></table></div>`;
+    const hasAct = Object.keys(T.act).some(y => Object.keys(T.act[y] || {}).length);
+    host.innerHTML = `<section class="card">
+      <div class="tk-bar"><label>확인할 해 <select class="sel" data-tract="year" aria-label="확인할 해">${years.map(y => `<option value="${y}"${y === Y ? ' selected' : ''}>${y}년 12월 말${y >= m.retYear ? ' (은퇴 후)' : ''}</option>`).join('')}</select></label>
+        <span class="tk-base">${T.base ? `기준: ${esc(T.base.at || '')}에 고정한 계획` : '기준: 지금 계획(실제 금액을 적으면 고정돼요)'}</span></div>
+      ${sumBox}
+      <div class="tblwrap"><table class="tk-t"><thead><tr><th>계획한 잔액</th><th>실제 잔액</th><th>차이</th></tr></thead><tbody>${grp('세제혜택 계좌', list.filter(x => x.tax))}${grp('일반계좌·그 밖', list.filter(x => !x.tax))}</tbody></table></div>
+      <p class="tk-p">${Y}년 12월 말 잔액을 계좌마다 만원 단위로 적어 주세요. 계획보다 많으면 <b>달성</b>과 남는 돈이, 적으면 <b>미달</b>과 모자란 돈이 나와요. 합계는 실제 금액을 적은 계좌끼리만 견줘요.</p>
+      <div class="tk-acts">${T.base ? `<button class="btn" type="button" data-tract="rebase">${trackArm ? '한 번 더 누르면 기준이 지금 계획으로 바뀌어요' : '기준을 지금 계획으로 다시 잡기'}</button>` : ''}${Object.keys(T.act[Y] || {}).length ? `<button class="btn" type="button" data-tract="clear">${Y}년 입력 지우기</button>` : ''}</div>
+    </section>
+    <section class="card"><h3 class="tk-h">해마다 한눈에</h3>${yTbl}
+      <p class="tk-p">연도를 누르면 그 해를 적을 수 있어요. ${hasAct ? '' : '아직 적은 해가 없어요. '}계획 금액은 은퇴 전 수익률과 해마다 넣는 돈이 계획대로일 때의 연말 잔액이에요. 기록은 ‘설정 내보내기’ 파일에 함께 저장돼요.</p></section>`;
+    const tb = $('#tbTrack'); if (tb) { const s0 = sumY(Y); tb.textContent = s0.n ? `${Y} ${s0.a >= s0.p ? '달성' : '미달'}` : '연말 확인'; tb.className = s0.n ? (s0.a >= s0.p ? 'good' : 'bad') : ''; }
+  }
+  function trackEvents() {
+    const pane = $('#paneTrack'); if (!pane) return;
+    const redraw = keep => { saveSoon(); const k = keep && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.tr : null; if (lastMain) renderTrack(lastMain); if (k) { const el = pane.querySelector(`[data-tr="${CSS.escape(k)}"]`); if (el) { el.focus(); el.select(); } } };
+    pane.addEventListener('change', e => {
+      const el = e.target;
+      if (el.dataset && el.dataset.tract === 'year') { ui.trackY = Number(el.value); saveUi(); trackArm = false; if (lastMain) renderTrack(lastMain); return; }
+      if (!el.dataset || !el.dataset.tr || !lastMain) return;
+      const T = trk(), sel = pane.querySelector('[data-tract="year"]'), Y = sel ? Number(sel.value) : CY, v = el.value === '' ? null : Math.max(0, Number(el.value));
+      if (!T.act[Y]) T.act[Y] = {};
+      if (v == null || !Number.isFinite(v)) delete T.act[Y][el.dataset.tr]; else T.act[Y][el.dataset.tr] = Math.round(v);
+      if (!Object.keys(T.act[Y]).length) delete T.act[Y];
+      if (!T.base && v != null) { const L = trackLive(lastMain), d = new Date(); T.base = { at: `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`, acc: L.acc, rows: L.rows }; }
+      setTimeout(() => redraw(true), 0);   // 다음 칸으로 넘어간 뒤 다시 그림(포커스 유지)
+    });
+    pane.addEventListener('click', e => {
+      const yb = e.target.closest('[data-try]');
+      if (yb) { ui.trackY = Number(yb.dataset.try); saveUi(); trackArm = false; if (lastMain) renderTrack(lastMain); if (!mqWide.matches) setTab('track', 'top'); return; }
+      const b = e.target.closest('button[data-tract]'); if (!b || !lastMain) return;
+      const T = trk();
+      if (b.dataset.tract === 'rebase') { if (!trackArm) { trackArm = true; renderTrack(lastMain); return; } trackArm = false; const L = trackLive(lastMain), d = new Date(); T.base = { at: `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`, acc: L.acc, rows: L.rows }; redraw(false); return; }
+      if (b.dataset.tract === 'clear') { const sel = pane.querySelector('[data-tract="year"]'); delete T.act[sel ? Number(sel.value) : CY]; if (!Object.keys(T.act).length) T.base = null; redraw(false); }
+    });
+  }
+  trackEvents();
 
   // 접힌 결과 카드 머리의 한 줄 요약(펼치지 않아도 핵심이 보이게)
   function renderFoldSums(R) {
